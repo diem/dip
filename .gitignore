@@ -1,0 +1,25 @@
+# Dependencies
+/node_modules
+/all-docs__generated
+
+# Production
+/build
+/all-docs__GENERATED
+
+# Generated files
+.docusaurus
+.cache-loader
+LIPMetadata.json
+
+# Misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+.now

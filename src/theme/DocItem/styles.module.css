@@ -1,0 +1,169 @@
+@value table-border-radius: 10px;
+
+.docTitle {
+  font-size: 1.8rem;
+  margin-bottom: 40px;
+}
+
+@media only screen and (max-width: 996px) {
+  .docTitle {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+}
+
+.docItemContainer {
+  margin: 0 auto;
+  padding: 0 0.5rem;
+}
+
+.docItemContainer ul > li {
+  list-style: disc;
+}
+
+.docItemContainer ul ul > li {
+  list-style: none;
+}
+
+@media only screen and (min-width: 997px) {
+  .docItemCol {
+    max-width: 75% !important;
+  }
+}
+
+.tableOfContents {
+  display: inherit;
+  max-height: calc(100vh - (var(--ifm-navbar-height) + 2rem));
+  overflow-y: auto;
+  /* 
+   * Because of our nav-spacer implementation, the user 
+   * is not able to fully scroll to the bottom of the TOC unless
+   * they get to the bottom of the document. By adding a buffer 
+   * at the bottom, we push the bottom contents up relative to
+   * the item overall.
+  */
+  padding-bottom: 150px;
+  position: sticky;
+  top: 0;
+}
+
+.tableOfContents::-webkit-scrollbar {
+  width: 7px;
+}
+
+.tableOfContents::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.tableOfContents::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.tableOfContents::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+@media only screen and (max-width: 996px) {
+  .tableOfContents {
+    display: none;
+  }
+
+  .docItemContainer {
+    padding: 0 0.3rem;
+  }
+}
+
+.docLastUpdatedAt {
+  font-weight: bold;
+}
+
+/* Custom */
+.header {
+  display: flex;
+  justify-content: space-between;
+  /*
+   * When jumping to a section in the table of contents,
+   * we want there to be a some space so that the section 
+   * jumped to is slightly below the exact top of the page.
+   * Header has to be treated a little different because it
+   * is what the user sees when they first land on the page,
+   * and cannot therefore appear to have a top padding
+   */
+  margin-top: -50px;
+  padding-top: 50px;
+}
+
+.editButton {
+  background-color: white;
+  border: 1px solid var(--ifm-color-primary);
+  border-radius: 5em;
+  color: var(--ifm-color-primary);
+  font-size: 10px;
+  height: 2.2rem;
+  line-height: 2.2rem;
+  text-align: center;
+  padding: 0 15px;
+  transition: all .2s;
+}
+
+.editButton:hover {
+  background-color: var(--ifm-color-primary);
+  color: white;
+  text-decoration: none;
+}
+
+.tableOfContents .tocLink:first-child {
+  margin-top: 0;
+}
+
+.metadataTable {
+  border-collapse: separate;
+  display: table;
+  margin-bottom: 50px;
+}
+
+.metadataTable tr:nth-child(odd) {
+  background-color: #F7FAFC;
+}
+
+.metadataTable tr:nth-child(even) {
+  background-color: white;
+}
+
+.metadataTable td:first-child {
+  width: 160px;
+  font-weight: bold;
+  padding-left: 15px;
+}
+
+.metadataTable td:nth-child(2) {
+  padding-left: 35px;
+}
+
+.metadataTable a {
+  color: #5092E6;
+}
+
+.metadataTable tr:first-child td:first-child {
+  border-top-left-radius: table-border-radius;
+}
+
+.metadataTable tr:first-child td:last-child {
+  border-top-right-radius: table-border-radius;
+}
+
+.metadataTable tr:last-child td:first-child {
+  border-bottom-left-radius: table-border-radius;
+}
+
+.metadataTable tr:last-child td:last-child {
+  border-bottom-right-radius: table-border-radius;
+}
+
+.copyright {
+  /*margin-top: 75px;*/
+  color: darkgray;
+  font-size: 11px;
+}

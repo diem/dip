@@ -1,0 +1,14 @@
+.root {
+  border-bottom: 1px solid #e5e5e5;
+  border-top: 1px solid #e5e5e5;
+  background-color: #F9F8F8;
+  padding: 0px var(--body-horizontal-padding);
+}
+
+.root li {
+  margin-left: 0;
+}
+
+.root a {
+  color: black;
+}

@@ -1,0 +1,4 @@
+.root {
+  padding: 0px var(--body-horizontal-padding);  
+  text-shadow: 0.5px 0 0;
+}

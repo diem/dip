@@ -1,0 +1,15 @@
+.root {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  height: var(--subnav-height-desktop);
+}
+
+.right {
+  display: flex;
+}
+
+.search {
+  margin-left: 18px;
+  padding-top: 5px;
+}

@@ -1,0 +1,20 @@
+.root {
+  height: unset;
+}
+
+.menu {
+  background-color: white;
+  border-bottom: 1px solid #e5e5e5;
+  font-size: 16px;
+  left: 0;
+  padding: 16px;
+  position: fixed;
+  top: unset;
+  width: 100%;
+  z-index: 10;
+}
+
+.menu a {
+  color: var(--nav-black);
+  text-decoration: none;
+}

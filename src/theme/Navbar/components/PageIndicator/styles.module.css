@@ -1,0 +1,38 @@
+@value large-tablet-breakpoint-query from '~CSS/variables.module.css';
+
+.root {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: center;
+}
+
+.primary {
+  color: #354052;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.divider {
+  display: none;
+  margin: 0 7px;
+}
+
+.secondary {
+  color: #63708C;
+  font-size: 12px;
+  line-height: 12px;
+}
+
+@media large-tablet-breakpoint-query {
+  .root {
+    display: block;
+  }
+
+  .divider {
+    display: inline-block;
+  }
+
+  .secondary {
+    font-size: 14px;
+  }
+}

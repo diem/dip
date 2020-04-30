@@ -1,0 +1,55 @@
+@value medium-tablet-breakpoint-query from '~CSS/variables.module.css';
+
+/* Custom */ 
+.copyright {
+  color: hsla(0,0%,100%,.4);
+}
+
+.logo {
+  opacity: .4;
+  transition: opacity 0.15s ease-in-out;
+  width: 57px;
+  height: 57px;
+  margin-top: 0 !important;
+  margin-bottom: 5px;
+  padding-left: 5px;
+}
+
+.logo:hover {
+  opacity: 1;
+}
+
+.linkColumn {
+  width: 100%;
+}
+
+.title {
+  margin-bottom: 10px;
+}
+
+.linkSection {
+  margin-bottom: 25px !important;
+}
+
+.socialLink {
+  margin-bottom: 5px;
+}
+
+@media medium-tablet-breakpoint-query {
+  .linkColumn {
+    flex: 1;
+  }
+
+  .linkSection {
+    margin-bottom: 25px !important;
+  }
+
+  .logo {
+    width: 72px;
+    height: 72px;
+  }
+
+  .socialLink {
+    margin-bottom: 15px;
+  }
+}
