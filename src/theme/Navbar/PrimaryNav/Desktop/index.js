@@ -20,9 +20,10 @@ const PrimaryDesktop = () => {
         />
       </a>
       <ul className={styles.right}>
-        {primaryLinks.map(({label, to}) =>
+        {primaryLinks.map(({isExternal, label, to}) =>
           <NavLink 
             key={label}
+            isExternal={isExternal}
             label={label}
             to={to}
           />

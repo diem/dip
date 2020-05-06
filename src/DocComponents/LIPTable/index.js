@@ -16,9 +16,20 @@ const LIPRow = ({ author, num, title }) => {
 
   return (
     <tr>
-      <td><a href={useBaseUrl(`/lip-${num}`)}>{num}</a></td>
+      <td>
+        <a href={useBaseUrl(`/lip-${num}`)}>
+          {num}
+        </a>
+      </td>
       <td>{title}</td>
-      <td><a href={`https://github.com/${author}`}>{author}</a></td>
+      <td>
+        <a 
+          href={`https://github.com/${author}`} 
+          target="_blank"
+        >
+          {author}
+        </a>
+      </td>
     </tr>
   );
 };

@@ -1,6 +1,6 @@
 # Important: How to live reload markdown files
 
-Right now, because they are being moved to a separate build file, markdown files will not automatically reload on save. The way around this is to modify the 'path' value of the Docusuarus docs preset to be the parent folder of the file you're editing. So if you are editing lips, change it to 'lips', if you're editing a doc, change it to 'docs'. This way docusuarus will source directly from that folder, and you can live reload during development. Don't forget to change it back!
+Right now, because all markdown folders are being moved to a separate build folder, they will not automatically reload on save. The way around this is to modify the 'path' value of the Docusuarus docs preset to be the parent folder of the file you're editing. So if you are editing lips, change it to 'lips', if you're editing a doc, change it to 'docs'. This way docusuarus will source directly from that folder, and you can live reload during development.
 
 # Website
 

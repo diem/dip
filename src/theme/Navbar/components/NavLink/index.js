@@ -10,7 +10,7 @@ export const BUTTON_TYPES = {
   CTA: 'cta',
 }
 
-const NavLink = ({ label, to, type }) => {
+const NavLink = ({ isExternal, label, to, type }) => {
   const href = isInternalUrl(to) ? useBaseUrl(to) : to;
 
   return (
@@ -19,18 +19,25 @@ const NavLink = ({ label, to, type }) => {
       styles[type],
       {[styles.active]: isInternalUrl(href)},
     )}>
-      <a href={href}>{label}</a>
+      <a 
+        href={href} 
+        target={isExternal ? "_blank" : "_self"}
+      >
+        {label}
+      </a>
     </li>
   );
 };
 
 NavLink.propTypes = {
+  isExternal: PropTypes.bool,
   label: PropTypes.string.isRequired,
   type: PropTypes.oneOf(Object.values(BUTTON_TYPES)),
   to: PropTypes.string.isRequired,
 }
 
 NavLink.defaultProps = {
+  isExternal: false,
   type: BUTTON_TYPES.DEFAULT,
 }
 

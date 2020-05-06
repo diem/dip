@@ -57,7 +57,10 @@ const MetadataTable = ({rows}) => (
             <tr>
               <td>{key}</td>
               <td>
-                {link ? <a href={link}>{val}</a> : val}
+                {link
+                  ? <a href={link} target="_blank">{val}</a>
+                  : val
+                }
               </td>
             </tr>
           }
