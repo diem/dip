@@ -83,6 +83,10 @@
   margin-top: 0;
 }
 
+.menu {
+  font-weight: 400;
+}
+
 .menu > ul > li:first-child a {
   font-size: 18px;
   padding-top: 0;

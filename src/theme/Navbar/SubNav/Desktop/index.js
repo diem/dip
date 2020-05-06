@@ -15,9 +15,10 @@ const SubnavDesktop = () => {
     <div className={styles.root}>
       <PageIndicator />
       <div className={styles.right}>
-        {secondaryLinks.map(({label, to}) =>
+        {secondaryLinks.map(({isExternal, label, to}) =>
           <NavLink 
             key={label}
+            isExternal={isExternal}
             label={label}
             to={to}
           />
