@@ -31,6 +31,6 @@ body {
 
 .nav-pusher {
   overflow-y: scroll;
-  height: calc(100vh - 180px);
+  height: calc(100vh - 140px);
   padding-top: 60px;
 }
