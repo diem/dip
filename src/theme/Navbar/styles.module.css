@@ -7,6 +7,6 @@
   z-index: 10;
 }
 
-.logo {
+.logo, .logo img {
   height: 21px;
 }

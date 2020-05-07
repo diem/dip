@@ -12,10 +12,9 @@ const PrimaryDesktop = () => {
 
   return (
     <div className={styles.root}>
-      <a href={logo.href}>
+      <a className={navStyles.logo} href={logo.href}>
         <img 
           alt={logo.alt} 
-          className={navStyles.logo}
           src={useBaseUrl(logo.src)} 
         />
       </a>

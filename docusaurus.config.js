@@ -68,7 +68,7 @@ module.exports = {
         },
         {
           isExternal: true,
-          label: 'Github',
+          label: 'GitHub',
           to: 'https://github.com/libra/libra',
         }
       ],
