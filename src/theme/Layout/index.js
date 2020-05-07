@@ -79,7 +79,7 @@ function Layout(props) {
           <div className="nav-spacer"></div>
         </div>
         <div className={OVERFLOW_CONTAINER_CLASS}>
-          <div className="main-wrapper">{children}</div>
+          <div className="main-wrapper width-wrapper">{children}</div>
           {!noFooter && <Footer />}
         </div>
       </TabGroupChoiceProvider>

@@ -16,7 +16,7 @@ module.exports = {
       title: 'My Site',
       logo: {
         alt: 'My Site Logo',
-        src: 'img/libra-nav-logo.png',
+        src: 'img/libra-nav-logo.svg',
         href: 'https://libra.org',
       },
       primaryLinks: [
@@ -59,12 +59,12 @@ module.exports = {
           to: 'https://developers.libra.org/docs/welcome-to-libra',
         },
         {
-          label: 'Community',
-          to: 'https://community.libra.org/c/member-portal',
-        },
-        {
           label: 'Governance',
           to: '/',
+        },
+        {
+          label: 'Community',
+          to: 'https://community.libra.org/c/member-portal',
         },
         {
           isExternal: true,

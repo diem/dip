@@ -23,6 +23,7 @@ li.active a, li:hover a {
 .cta {
   background-color: var(--ifm-color-primary);
   border-radius: 2.25rem;
+  font-weight: 400;
 }
 
 .cta a {
