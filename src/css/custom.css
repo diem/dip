@@ -15,7 +15,7 @@ html {
   --primary-nav-height-desktop: 80px;
   --subnav-height-desktop: 60px;
   --nav-height-mobile: 60px;
-  --body-horizontal-padding: 40px;
+  --body-horizontal-padding: 20px;
   --nav-black: #414f64;
   --body-padding-top: 50px;
   --cumulative-desktop-body-padding: calc(

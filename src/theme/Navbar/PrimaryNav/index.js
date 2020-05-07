@@ -7,15 +7,17 @@ import styles from './styles.module.css';
 
 const PrimaryNav = ({ activePopupMenu, setPopupMenu }) => (
   <div className={styles.root}>
-    <Breakpoint medium down>
-      <Mobile 
-        activePopupMenu={activePopupMenu} 
-        setPopupMenu={setPopupMenu} 
-      />
-    </Breakpoint>
-    <Breakpoint large up>
-      <Desktop />
-    </Breakpoint>
+    <div className="width-wrapper"> 
+      <Breakpoint medium down>
+        <Mobile 
+          activePopupMenu={activePopupMenu} 
+          setPopupMenu={setPopupMenu} 
+        />
+      </Breakpoint>
+      <Breakpoint large up>
+        <Desktop />
+      </Breakpoint>
+    </div>
   </div>
 );
 

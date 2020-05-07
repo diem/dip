@@ -16,7 +16,7 @@ module.exports = {
       title: 'My Site',
       logo: {
         alt: 'My Site Logo',
-        src: 'img/libra-nav-logo.png',
+        src: 'img/libra-nav-logo.svg',
         href: 'https://libra.org',
       },
       primaryLinks: [
