@@ -59,12 +59,12 @@ module.exports = {
           to: 'https://developers.libra.org/docs/welcome-to-libra',
         },
         {
-          label: 'Community',
-          to: 'https://community.libra.org/c/member-portal',
-        },
-        {
           label: 'Governance',
           to: '/',
+        },
+        {
+          label: 'Community',
+          to: 'https://community.libra.org/c/member-portal',
         },
         {
           isExternal: true,
