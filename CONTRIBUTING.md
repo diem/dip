@@ -6,10 +6,6 @@ Our goal is to make contributing a Libra Improvment Protocol (LIP), or make chan
 
 To contribute a LIP, follow [the LIP process guidelines](https://lip.libra.org/overview#the-lip-process). For example, one way to contribute a LIP is to file a GitHub issue in this repo, gather feedback, and then, once the discussion is over, create a pull request with your LIP in the `libra/lips` folder of this repo.
 
-## Coding Guidelines
-
-For detailed guidance on how to contribute to the Libra Core codebase refer to [Coding Guidelines](https://developers.libra.org/docs/coding-guidelines).
-
 ## Documentation
 
 The documentation for https://lip.libra.org is published from this repo. The site is open source, and is built using [Docusaurus](https://v2.docusaurus.io/).
