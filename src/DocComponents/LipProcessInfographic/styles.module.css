@@ -1,0 +1,61 @@
+.root {
+  background-color: #F6F9FC;
+  font-size: 12px;
+  padding: 34px 0 27px 0;
+  margin: 30px auto;
+}
+
+.stagesContainer {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+  min-width: 250px;
+  max-width: 600px;
+}
+
+.stage {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  width: 65px;
+}
+
+.stage:nth-child(1) .counter {
+  opacity: .4;
+}
+
+.stage:nth-child(3) .counter {
+  opacity: .55;
+}
+
+.stage:nth-child(5) .counter {
+  opacity: .70;
+}
+
+.stage:nth-child(7) .counter {
+  opacity: .85;
+}
+
+.counter {
+  --size: 45px;
+  background-color: var(--ifm-color-primary);
+  border-radius: 50%;
+  color: white;
+  text-align: center;
+  width: var(--size);
+  height: var(--size);
+  line-height: var(--size);
+}
+
+.stageName {
+  color: #91A1B1;
+  letter-spacing: .75px;
+  margin-top: 13px;
+}
+
+.divider {
+  height: 0;
+  flex: 1;
+  margin-right: 5px;
+  margin-left: 5px;
+}

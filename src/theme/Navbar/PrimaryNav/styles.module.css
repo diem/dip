@@ -1,0 +1,7 @@
+.root {
+  text-shadow: 0.5px 0 0;
+}
+
+.root :global(.width-wrapper) {
+  padding: 0px var(--body-horizontal-padding);  
+}
