@@ -4,7 +4,7 @@ Our goal is to make contributing a Libra Improvment Protocol (LIP), or make chan
 
 ## Contributing a LIP
 
-To contribute a LIP, follow [the LIP process guidelines](https://libra-lip.netlify.app/overview#the-lip-process). For example, one way to contribute a LIP is to file a GitHub issue in this repo, gather feedback, and then, once the discussion is over, create a pull request with your LIP in the `libra/lips` folder of this repo.
+To contribute a LIP, follow [the LIP process guidelines](https://lip.libra.org/overview#the-lip-process). For example, one way to contribute a LIP is to file a GitHub issue in this repo, gather feedback, and then, once the discussion is over, create a pull request with your LIP in the `libra/lips` folder of this repo.
 
 ## Coding Guidelines
 
