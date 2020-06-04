@@ -4,6 +4,6 @@ title: Off-chain API
 author: Kevin Hurley (@kphfb), Dmitry Pimenov
 status: Draft
 type: Informational
-created: 2020-05-29
+created: 05/29/2020
 ---
 
