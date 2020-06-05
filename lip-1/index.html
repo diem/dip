@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="generator" content="Docusaurus v2.0.0-alpha.50">
+
+
+<title data-react-helmet="true">Off-chain API | Libra Improvement Proposals</title>
+
+<meta data-react-helmet="true" name="twitter:card" content="summary_large_image"><meta data-react-helmet="true" property="og:title" content="Off-chain API | Libra Improvement Proposals"><meta data-react-helmet="true" property="og:url" content="https://lip.libra.org/lip-1">
+
+<link data-react-helmet="true" rel="shortcut icon" href="/img/favicon.ico">
+
+
+<link rel="stylesheet" href="/styles.20d821d6.css">
+
+
+<link rel="preload" href="/styles.8b0a8003.js" as="script">
+
+<link rel="preload" href="/runtime~main.578a4b61.js" as="script">
+
+<link rel="preload" href="/main.c386ea9d.js" as="script">
+
+<link rel="preload" href="/1.7274215f.js" as="script">
+
+<link rel="preload" href="/2.39c2aea6.js" as="script">
+
+<link rel="preload" href="/1be78505.1f737c4e.js" as="script">
+
+<link rel="preload" href="/ec1ed54d.55c206d4.js" as="script">
+
+<link rel="preload" href="/17896441.aea4b98d.js" as="script">
+
+<link rel="preload" href="/1b03c569.f27fb70d.js" as="script">
+
+</head>
+<body>
+
+<div id="__docusaurus">
+<div><nav class="root_KcOm"><div class="root_1De0"><div class="width-wrapper"><div class="breakpoint__large-up"><div class="root_3cy3"><a class="logo_9i2f" href="https://libra.org"><img alt="Libra Improvement Proposals" src="/img/libra-nav-logo.svg"></a><ul class="right_25B3"><li class="root_MA3i default_1B_h"><a href="https://libra.org/en-US/vision/" target="_self">Vision</a></li><li class="root_MA3i default_1B_h"><a href="https://libra.org/en-US/association/" target="_self">Association</a></li><li class="root_MA3i default_1B_h"><a href="https://libra.org/en-US/open-source-developers/" target="_self">Developers</a></li><li class="root_MA3i default_1B_h"><a href="https://libra.org/en-US/learn-faqs/" target="_self">Learn</a></li><li class="root_MA3i default_1B_h"><a href="https://libra.org/en-US/media-press-news/" target="_self">Media</a></li><li class="root_MA3i cta_1E9R"><a href="https://libra.org/white-paper/" target="_self">White Paper</a></li></ul></div></div></div></div><div class="root_1_vZ"><div class="width-wrapper"><div class="breakpoint__large-up"><div class="root_1q8f"><div class="root_SF9E"><span class="primary_nL2L"><b>Developers</b></span><span class="divider_3SPO"> / </span><span class="secondary_2PRo">Governance</span></div><div class="right_2R6N"><li class="root_MA3i default_1B_h"><a href="https://libra.org/en-US/open-source-developers/" target="_self">Overview</a></li><li class="root_MA3i default_1B_h"><a href="https://developers.libra.org/docs/welcome-to-libra" target="_self">Libra Docs</a></li><li class="root_MA3i default_1B_h active_3h67"><a href="/" target="_self">Governance</a></li><li class="root_MA3i default_1B_h"><a href="https://community.libra.org/" target="_self">Community</a></li><li class="root_MA3i default_1B_h"><a href="https://github.com/libra/libra" target="_blank">GitHub</a></li><div class="search_1wEX"><div class="navbar__search"><span aria-label="expand searchbar" role="button" class="search-icon" tabindex="0"></span><input type="search" id="search_input_react" placeholder="Search" aria-label="Search" class="navbar__search-input search-bar"></div></div></div></div></div></div></div></nav><div class="nav-spacer"></div></div><div class="nav-pusher"><div class="main-wrapper width-wrapper"><div class="docPage_1jis"><div class="docSidebarContainer_1kjN"><div class="sidebar_25T_"><div class="menu menu--responsive menu_1e9D"><button aria-label="Open Menu" aria-haspopup="true" class="button button--secondary button--sm menu__button" type="button"><svg aria-label="Menu" class="sidebarMenuIcon_1hKf" xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 32 32" role="img" focusable="false"><title>Menu</title><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><ul class="menu__list"><li class="menu__list-item category_2D3M"><a class="menu__link" href="#!">LIPs</a><ul class="menu__list"><li class="menu__list-item"><a class="menu__link" href="/overview">Overview</a></li><li class="menu__list-item category_2D3M"><a class="menu__link" href="/all-lips">All LIPs</a><ul class="menu__list"><li class="menu__list-item"><a class="menu__link" href="/standard-lips">Standard</a></li><li class="menu__list-item"><a class="menu__link" href="/process-lips">Process</a></li><li class="menu__list-item"><a class="menu__link" href="/info-lips">Info</a></li></ul></li></ul></li></ul></div></div></div><main class="docMainContainer_3j_A"><div><div class="container"><div class="row"><div class="col docItemCol_2AGf"><div class="docItemContainer_1tAC"><article><header class="header_2nJF" id="header"><h2 class="docTitle_cWlf">Off-chain API</h2><a class="editButton_3fJG" href="https://github.com/libra/lip/edit/master/lips/lip-1.md" target="_blank">EDIT</a></header><div id="metadata-table"><table class="metadataTable_2VQe"><tbody><tr><td>LIP</td><td>1</td></tr><tr><td>Title</td><td>Off-chain API</td></tr><tr><td>Author</td><td><a href="https://github.com/Kevin Hurley (@kphfb), Dmitry Pimenov" target="_blank">@Kevin Hurley (@kphfb), Dmitry Pimenov</a></td></tr><tr><td>Status</td><td>Draft</td></tr><tr><td>Type</td><td>Informational</td></tr><tr><td>Created</td><td>05/29/2020</td></tr></tbody></table></div><div class="markdown"></div></article><div class="margin-vert--xl"><div class="copyright_2KXk">Copyright Notice: This documentation is made available under the Creative Commons Attribution 4.0 International (CC BY 4.0) license (available at<a href="https://creativecommons.org/licenses/by/4.0/" target="blank"> https://creativecommons.org/licenses/by/4.0/</a>).</div><div class="row"></div></div></div></div><div class="col col--3"><div class="tableOfContents_tVyB"><ul class="contents contents__left-border"><li class="tocLink_b6W2"><a href="#metadata-table" class="contents__link">Meta data</a></li></ul></div></div></div></div></div></main></div></div><footer class="footer footer--dark"><div class="container"><div class="row footer__links"><a href="https://libra.org" target="_blank" rel="noopener noreferrer"><img class="footer__logo logo_2xof" src="/img/footer-logo.png"></a><div class="linkColumn_2ZUP"><div class="col footer__col linkSection_2zmd"><h4 class="footer__title title_34Di">Learn About Libra</h4><ul class="footer__items"><li class="footer__item"><a class="footer__link-item" to="https://developers.libra.org/docs/welcome-to-libra" href="https://developers.libra.org/docs/welcome-to-libra">Welcome to Libra</a></li><li class="footer__item"><a class="footer__link-item" to="https://developers.libra.org/docs/libra-protocol" href="https://developers.libra.org/docs/libra-protocol">Libra Protocol</a></li><li class="footer__item"><a class="footer__link-item" to="https://developers.libra.org/docs/the-libra-blockchain-paper" href="https://developers.libra.org/docs/the-libra-blockchain-paper">Libra Blockchain</a></li><li class="footer__item"><a class="footer__link-item" to="https://developers.libra.org/docs/life-of-a-transaction" href="https://developers.libra.org/docs/life-of-a-transaction">Life of a Transaction</a></li></ul></div><div class="col footer__col linkSection_2zmd"><h4 class="footer__title title_34Di">Try Libra Core</h4><ul class="footer__items"><li class="footer__item"><a class="footer__link-item" target="_blank" rel="noopener noreferrer" href="https://developers.libra.org/docs/my-first-transaction">My First Transaction</a></li><li class="footer__item"><a class="footer__link-item" target="_blank" rel="noopener noreferrer" href="https://developers.libra.org/docs/move-overview">Getting Started With Move</a></li></ul></div></div><div class="linkColumn_2ZUP"><div class="col footer__col linkSection_2zmd"><h4 class="footer__title title_34Di">Policies</h4><ul class="footer__items"><li class="footer__item"><a class="footer__link-item" target="_blank" rel="noopener noreferrer" href="https://developers.libra.org/docs/policies/privacy-policy">Privacy Policy</a></li><li class="footer__item"><a class="footer__link-item" target="_blank" rel="noopener noreferrer" href="https://developers.libra.org/docs/policies/terms-of-use">Terms of Use</a></li><li class="footer__item"><a class="footer__link-item" target="_blank" rel="noopener noreferrer" href="https://developers.libra.org/docs/policies/cookies-policy">Cookies Policy</a></li><li class="footer__item"><a class="footer__link-item" target="_blank" rel="noopener noreferrer" href="https://developers.libra.org/docs/policies/code-of-conduct">Code of Conduct</a></li></ul></div><div class="col footer__col linkSection_2zmd"><h4 class="footer__title title_34Di">Community</h4><ul class="footer__items"><li class="footer__item"><a class="footer__link-item" target="_blank" rel="noopener noreferrer" href="https://community.libra.org/">Developer Forum</a></li><li class="footer__item"><a class="footer__link-item" target="_blank" rel="noopener noreferrer" href="https://developers.libra.org/newsletter_form">Newsletter</a></li></ul></div></div><div class="linkColumn_2ZUP"><div class="col footer__col linkSection_2zmd"><h4 class="footer__title title_34Di">Social</h4><ul class="footer__items"><li class="socialLink_Gz8I"><span><a aria-label="Star lip on GitHub" data-show-count="true" href="https://github.com/libra/lip">lip</a></span></li><li class="socialLink_Gz8I"><div></div></li></ul></div></div></div><div class="text--center copyright_30z0"><div>© Libra Association</div></div></div></footer></div>
+</div>
+
+<script src="/styles.8b0a8003.js"></script>
+
+<script src="/runtime~main.578a4b61.js"></script>
+
+<script src="/main.c386ea9d.js"></script>
+
+<script src="/1.7274215f.js"></script>
+
+<script src="/2.39c2aea6.js"></script>
+
+<script src="/1be78505.1f737c4e.js"></script>
+
+<script src="/ec1ed54d.55c206d4.js"></script>
+
+<script src="/17896441.aea4b98d.js"></script>
+
+<script src="/1b03c569.f27fb70d.js"></script>
+
+
+</body>
+</html>
