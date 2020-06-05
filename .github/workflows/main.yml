@@ -26,9 +26,9 @@ jobs:
     # Build the website (site based on Docusaurus v2). 
     # Do build explicitly since it has a custom script. yarn deploy would not invoke custom script
     - name: Build website which includes custom script for lips in /scripts
-    run: |
-      yarn install
-      yarn build
+      run: |
+        yarn install
+        yarn build
     # Then deploy using the build directory
     # Could possibly use the --skip-build option for deploy when upgrading Docusaurus
     # to alpha-0.56 or beyond
