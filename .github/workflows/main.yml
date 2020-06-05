@@ -42,6 +42,6 @@ jobs:
     - name: Deploying Libra Lip Website to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@releases/v3
       with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACCESS_TOKEN: ${{ secrets.PUBLISH_AND_DEPLOY_TOKEN }}
           BRANCH: gh-pages # The branch the action should deploy to.
           FOLDER: build # The folder the action should deploy.
