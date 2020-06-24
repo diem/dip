@@ -24,6 +24,8 @@ The initial use-case for the Off-Chain protocol relates to _supporting complianc
 
 A secondary use-case for the Off-Chain protocol is to provide higher levels of privacy than those that can be achieved directly on a Blockchain. The exact details of the customer accounts involved in a payment, as well as any personal information that needs to be exchanged to support compliance, remain off-chain. They are exchanged within a secure, authenticated and encrypted, channel and only made available to the parties that strictly require them.
 
+In the future, the Off-Chain protocol will be further extended to include functionality such as batching of transactions and additional payments functionality.
+
 ---
 # Specification
 ---
@@ -52,7 +54,7 @@ The basic protocol interaction consists of:
 * The responding VASP listens for requests, and when received, processes them to generate and send `CommandResponseObject` responses, with a success or failure status, through the HTTP response body.
 * The initiating VASP receives the response and processes it to assess whether it was successful or not.
 
-Both VASPs in a channel can asynchronously attempt to initiate and execute commands on shared objects. 
+All objects contained within a command - for example `PaymentObject`, are considered as "shared objects" - meaning that either VASP may create a new command to modify the object, and will do so during the typical life-cycle of an object - an example being the addition of KYC data from both VASPs to a payment object. Both VASPs in a channel can asynchronously attempt to initiate and execute commands on shared objects. 
 
 As a reminder, all `CommandRequestObject` and `CommandResponseObject` objects sent are signed using JWS Signatures, using EdDSA and compact encoding. Recipients must verify the signatures when receiving any objects.
 
@@ -279,7 +281,7 @@ For a travel rule data exchange, the [command_type](basic_building_blocks.md#com
 
 ### PaymentObject
 
-The structure in this object can be a full payment of just the fields of an existing payment object that need to be changed. Some fields are immutable after they are defined once (see below). Others can by updated multiple times. Updating immutable fields with a different value results in a command error, but it is acceptable to re-send the same value.
+The structure in this object can be a full payment or just the fields of an existing payment object that need to be changed. Some fields are immutable after they are defined once (see below). Others can by updated multiple times. Updating immutable fields with a different value results in a command error, but it is acceptable to re-send the same value.
 
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
