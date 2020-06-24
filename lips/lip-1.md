@@ -64,12 +64,13 @@ All requests between VASPs are structured as [`CommandRequestObject`s](#commandr
 <details>
 <summary> Request Payload Example </summary>
 <pre>
-
+<code>
 {
     "_ObjectType": "CommandRequestObject",
     "command_type": "PaymentCommand", // Command type
     "command": CommandObject(), // Object of type as specified by command_type
 }
+</code>
 </pre>
 </details>
 
@@ -77,11 +78,12 @@ A response would look like the following:
 <details>
 <summary> CommandRequestObject example </summary>
 <pre>
-
+<code>
 {
     "_ObjectType": "CommandResponseObject",
     "status": "success",
 }
+</code>
 </pre>
 </details>
 
@@ -97,12 +99,13 @@ All requests between VASPs are structured as `CommandRequestObject`s.
 <details>
 <summary> CommandRequestObject example </summary>
 <pre>
-
+<code>
 {
     "_ObjectType": "CommandRequestObject",
     "command_type": CommandType,
     "command": CommandObject(),
 }
+</code>
 </pre>
 </details>
 
@@ -118,12 +121,13 @@ All responses to a CommandRequestObject are in the form of a CommandResponseObje
 <details>
 <summary> CommandResponseObject example </summary>
 <pre>
-
+<code>
 {
     "_ObjectType": "CommandResponseObject",
     "error": [OffChainErrorObject()],
     "status": "failure"
 }
+</code>
 </pre>
 </details>
 
@@ -142,14 +146,14 @@ Represents an error that occurred in response to a command.
 <details>
 <summary> OffChainErrorObject example </summary>
 <pre>
-
+<code>
 {
     "type": "command_error",
     "field": "0.sender.kyc_data.surname",
     "code": "missing_data",
     "message": "",
 }
-
+</code>
 </pre>
 </details>
 
@@ -185,7 +189,7 @@ All requests between VASPs are structured as [`CommandRequestObject`s](basic_bui
 <details>
 <summary> Sample Travel Rule Request Payload Example </summary>
 <pre>
-
+<code>
 {
     "_ObjectType": "CommandRequestObject",
     "command_type": "PaymentCommand",
@@ -236,6 +240,7 @@ All requests between VASPs are structured as [`CommandRequestObject`s](basic_bui
 		},
 	},
 }
+</code>
 </pre>
 </details>
 
@@ -243,11 +248,12 @@ A response would look like the following:
 <details>
 <summary> CommandRequestObject example </summary>
 <pre>
-
+<code>
 {
     "_ObjectType": "CommandResponseObject",
     "status": "success",
 }
+</code>
 </pre>
 </details>
 
@@ -265,7 +271,7 @@ For a travel rule data exchange, the [command_type](basic_building_blocks.md#com
 <details>
 <summary> PaymentCommand example </summary>
 <pre>
-
+<code>
 {
     "_ObjectType": "PaymentCommand",
     "_creates_versions": [
@@ -276,6 +282,7 @@ For a travel rule data exchange, the [command_type](basic_building_blocks.md#com
         PaymentObject(),
     }
 }
+</code>
 </pre>
 </details>
 
@@ -295,7 +302,7 @@ The structure in this object can be a full payment or just the fields of an exis
 <details>
 <summary> PaymentObject example </summary>
 <pre>
-
+<code>
 {
     "sender": payment_actor_object(),
     "receiver": payment_actor_object(),
@@ -305,6 +312,7 @@ The structure in this object can be a full payment or just the fields of an exis
     "action": payment_action_object(),
     "description": "A free form or structured description of the payment.",
 }
+</code>
 </pre>
 </details>
 
@@ -322,13 +330,14 @@ A `PaymentActorObject` represents a participant in a payment - either sender or 
 <details>
 <summary> PaymentActorObject example </summary>
 <pre>
-
+<code>
 {
     "address": "lbr1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
     "kyc_data": kyc_data_object(),
     "status": "ready_for_settlement",
     "metadata": [],
 }
+</code>
 </pre>
 </details>
 
@@ -351,7 +360,7 @@ A `KYCDataObject` represents the KYC data for a single subaddress.  Proof of non
 <details>
 <summary> KYCDataObject example </summary>
 <pre>
-
+<code>
 {
     "payload_type": "KYC_DATA"
     "payload_version": 1,
@@ -369,6 +378,7 @@ A `KYCDataObject` represents the KYC data for a single subaddress.  Proof of non
     },
     "legal_entity_name": "Superstore",
 }
+</code>
 </pre>
 </details>
 
@@ -387,7 +397,7 @@ Represents a physical address
 <details>
 <summary> AddressObject example </summary>
 <pre>
-
+<code>
 {
     "city": "Sunnyvale",
     "country": "US",
@@ -396,6 +406,7 @@ Represents a physical address
     "postal_code": "12345",
     "state": "California",
 }
+</code>
 </pre>
 </details>
 
@@ -411,12 +422,13 @@ Represents a national ID.
 <details>
 <summary> NationalIdObject example </summary>
 <pre>
-
+<code>
 {
     "id_value": "123-45-6789",
     "country": "US",
     "type": "SSN",
 }
+</code>
 </pre>
 </details>
 
@@ -433,13 +445,14 @@ Represents a national ID.
 <details>
 <summary> PaymentActionObject example </summary>
 <pre>
-
+<code>
 {
     "amount": 100,
     "currency": "USD",
     "action": "charge",
     "timestamp": 72322,
 }
+</code>
 </pre>
 </details>
 
