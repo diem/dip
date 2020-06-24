@@ -62,6 +62,7 @@ All requests between VASPs are structured as [`CommandRequestObject`s](#commandr
 <details>
 <summary> Request Payload Example </summary>
 <pre>
+
 {
     "_ObjectType": "CommandRequestObject",
     "command_type": "PaymentCommand", // Command type
@@ -74,6 +75,7 @@ A response would look like the following:
 <details>
 <summary> CommandRequestObject example </summary>
 <pre>
+
 {
     "_ObjectType": "CommandResponseObject",
     "status": "success",
@@ -93,6 +95,7 @@ All requests between VASPs are structured as `CommandRequestObject`s.
 <details>
 <summary> CommandRequestObject example </summary>
 <pre>
+
 {
     "_ObjectType": "CommandRequestObject",
     "command_type": CommandType,
@@ -113,6 +116,7 @@ All responses to a CommandRequestObject are in the form of a CommandResponseObje
 <details>
 <summary> CommandResponseObject example </summary>
 <pre>
+
 {
     "_ObjectType": "CommandResponseObject",
     "error": [OffChainErrorObject()],
@@ -136,6 +140,7 @@ Represents an error that occurred in response to a command.
 <details>
 <summary> OffChainErrorObject example </summary>
 <pre>
+
 {
     "type": "command_error",
     "field": "0.sender.kyc_data.surname",
@@ -178,6 +183,7 @@ All requests between VASPs are structured as [`CommandRequestObject`s](basic_bui
 <details>
 <summary> Sample Travel Rule Request Payload Example </summary>
 <pre>
+
 {
     "_ObjectType": "CommandRequestObject",
     "command_type": "PaymentCommand",
@@ -235,6 +241,7 @@ A response would look like the following:
 <details>
 <summary> CommandRequestObject example </summary>
 <pre>
+
 {
     "_ObjectType": "CommandResponseObject",
     "status": "success",
@@ -256,6 +263,7 @@ For a travel rule data exchange, the [command_type](basic_building_blocks.md#com
 <details>
 <summary> PaymentCommand example </summary>
 <pre>
+
 {
     "_ObjectType": "PaymentCommand",
     "_creates_versions": [
@@ -285,6 +293,7 @@ The structure in this object can be a full payment of just the fields of an exis
 <details>
 <summary> PaymentObject example </summary>
 <pre>
+
 {
     "sender": payment_actor_object(),
     "receiver": payment_actor_object(),
@@ -311,6 +320,7 @@ A `PaymentActorObject` represents a participant in a payment - either sender or 
 <details>
 <summary> PaymentActorObject example </summary>
 <pre>
+
 {
     "address": "lbr1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
     "kyc_data": kyc_data_object(),
@@ -339,6 +349,7 @@ A `KYCDataObject` represents the KYC data for a single subaddress.  Proof of non
 <details>
 <summary> KYCDataObject example </summary>
 <pre>
+
 {
     "payload_type": "KYC_DATA"
     "payload_version": 1,
@@ -374,6 +385,7 @@ Represents a physical address
 <details>
 <summary> AddressObject example </summary>
 <pre>
+
 {
     "city": "Sunnyvale",
     "country": "US",
@@ -397,6 +409,7 @@ Represents a national ID.
 <details>
 <summary> NationalIdObject example </summary>
 <pre>
+
 {
     "id_value": "123-45-6789",
     "country": "US",
@@ -418,6 +431,7 @@ Represents a national ID.
 <details>
 <summary> PaymentActionObject example </summary>
 <pre>
+
 {
     "amount": 100,
     "currency": "USD",
