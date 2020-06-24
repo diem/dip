@@ -61,31 +61,21 @@ As a reminder, all `CommandRequestObject` and `CommandResponseObject` objects se
 ## Request/Response Payload
 All requests between VASPs are structured as [`CommandRequestObject`s](#commandrequestobject) and all responses are structured as [`CommandResponseObject`s](#commandresponseobject).  The resulting request takes a form of the following:
 
-<details>
-<summary> Request Payload Example </summary>
-<pre>
-<code>
+```
 {
     "_ObjectType": "CommandRequestObject",
     "command_type": "PaymentCommand", // Command type
     "command": CommandObject(), // Object of type as specified by command_type
 }
-</code>
-</pre>
-</details>
+```
 
 A response would look like the following:
-<details>
-<summary> CommandRequestObject example </summary>
-<pre>
-<code>
+```
 {
     "_ObjectType": "CommandResponseObject",
     "status": "success",
 }
-</code>
-</pre>
-</details>
+```
 
 ### CommandRequestObject
 All requests between VASPs are structured as `CommandRequestObject`s. 
@@ -96,18 +86,13 @@ All requests between VASPs are structured as `CommandRequestObject`s.
 |command_type | str| Y |A string representing the type of command contained in the request. |
 | command | Command object | Y | The command to sequence. |
 
-<details>
-<summary> CommandRequestObject example </summary>
-<pre>
-<code>
+```
 {
     "_ObjectType": "CommandRequestObject",
     "command_type": CommandType,
     "command": CommandObject(),
 }
-</code>
-</pre>
-</details>
+```
 
 ### CommandResponseObject
 All responses to a CommandRequestObject are in the form of a CommandResponseObject
@@ -118,18 +103,13 @@ All responses to a CommandRequestObject are in the form of a CommandResponseObje
 | status         | str      | Y             | Either `success` or `failure`. |
 | error          | List of [OffChainErrorObject](#offchainerrorobject) | N | Details on errors when status == "failure"
 
-<details>
-<summary> CommandResponseObject example </summary>
-<pre>
-<code>
+```
 {
     "_ObjectType": "CommandResponseObject",
     "error": [OffChainErrorObject()],
     "status": "failure"
 }
-</code>
-</pre>
-</details>
+```
 
 When the `CommandResponseObject` status field is `failure`, the `error` field is included in the response to indicate the nature of the failure. The `error` field (type `OffChainError`) is a list of OffChainError objects. 
 
@@ -143,19 +123,14 @@ Represents an error that occurred in response to a command.
 | code    | str (enum) | Y    | The error code of the corresponding error |
 | message         | str      | N             | Additional details about this error |
 
-<details>
-<summary> OffChainErrorObject example </summary>
-<pre>
-<code>
+```
 {
     "type": "command_error",
     "field": "0.sender.kyc_data.surname",
     "code": "missing_data",
     "message": "",
 }
-</code>
-</pre>
-</details>
+```
 
 # Command Sequencing
 
@@ -186,10 +161,7 @@ In the initial version of the off-chain APIs, the usage is intended as a means o
 ## Request/Response Payload
 All requests between VASPs are structured as [`CommandRequestObject`s](basic_building_blocks.md#commandrequestobject) and all responses are structured as [`CommandResponseObject`s](basic_building_blocks.md#commandresponseobject).  For a travel-rule data exchange, the resulting request takes a form of the following:
 
-<details>
-<summary> Sample Travel Rule Request Payload Example </summary>
-<pre>
-<code>
+```
 {
     "_ObjectType": "CommandRequestObject",
     "command_type": "PaymentCommand",
@@ -240,22 +212,15 @@ All requests between VASPs are structured as [`CommandRequestObject`s](basic_bui
 		},
 	},
 }
-</code>
-</pre>
-</details>
+```
 
 A response would look like the following:
-<details>
-<summary> CommandRequestObject example </summary>
-<pre>
-<code>
+```
 {
     "_ObjectType": "CommandResponseObject",
     "status": "success",
 }
-</code>
-</pre>
-</details>
+```
 
 ### CommandRequestObject
 For a travel rule data exchange, the [command_type](basic_building_blocks.md#commandrequestobject) field is set to "PaymentCommand".  The command object is a [`PaymentCommand` object](#paymentcommand-object).
@@ -268,10 +233,7 @@ For a travel rule data exchange, the [command_type](basic_building_blocks.md#com
 | _creates_versions | list of str |  Y | Must be a list containing a single str representing the version of the new or updated `PaymentObject` resulting from the success of this payment command. A list with any other number of items results in a command error.  This string must be a unique random string between this pair of VASPs and is used to represent the version of the item created. These should be at least 16 bytes long and encoded to string in hexadecimal notation using characters in the range[A-Za-z0-9] |	
 | _dependencies | list of str | Y | Can be an empty list or a list containing a single previous version. If the list is empty this payment command defines a new payment. If the list contains one item, then this command updates the shared `PaymentObject` with the given version. It is an error to include more versions, and it results in a command error response.  The value in this field must match a version previously specified by the `_creates_versions` parameter on a prior command. |
 
-<details>
-<summary> PaymentCommand example </summary>
-<pre>
-<code>
+```
 {
     "_ObjectType": "PaymentCommand",
     "_creates_versions": [
@@ -282,9 +244,7 @@ For a travel rule data exchange, the [command_type](basic_building_blocks.md#com
         PaymentObject(),
     }
 }
-</code>
-</pre>
-</details>
+```
 
 ### PaymentObject
 
@@ -299,10 +259,7 @@ The structure in this object can be a full payment or just the fields of an exis
 | action | [`PaymentActionObject`](#paymentactionobject) | Y | Number of cryptocurrency + currency type (USD, LBR, EUR, BTC, etc.) + type of action to take. This field is mandatory and immutable |
 | description | str | N | Description of the payment. To be displayed to the user. Unicode utf-8 encoded max length of 255 characters. This field is optional but can only be written once.
 
-<details>
-<summary> PaymentObject example </summary>
-<pre>
-<code>
+```
 {
     "sender": payment_actor_object(),
     "receiver": payment_actor_object(),
@@ -312,9 +269,7 @@ The structure in this object can be a full payment or just the fields of an exis
     "action": payment_action_object(),
     "description": "A free form or structured description of the payment.",
 }
-</code>
-</pre>
-</details>
+```
 
 ### PaymentActorObject
 
@@ -327,19 +282,14 @@ A `PaymentActorObject` represents a participant in a payment - either sender or 
 | status | str enum | Y | Status of the payment from the perspective of this actor. This field can only be set by the respective sender/receiver VASP and represents the status on the sender/receiver VASP side. This field is mandatory by this respective actor (either sender or receiver side) and mutable. Valid values are specified in [ StatusEnum ](#statusenum) |
 | metadata | list of str | Y | Can be specified by the respective VASP to hold metadata that the sender/receiver VASP wishes to associate with this payment. This is a mandatory field but can be set to an empty list (i.e. `[]`). New string-typed entries can be appended at the end of the list, but not deleted.
 
-<details>
-<summary> PaymentActorObject example </summary>
-<pre>
-<code>
+```
 {
     "address": "lbr1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
     "kyc_data": kyc_data_object(),
     "status": "ready_for_settlement",
     "metadata": [],
 }
-</code>
-</pre>
-</details>
+```
 
 ### KYCDataObject
 A `KYCDataObject` represents the KYC data for a single subaddress.  Proof of non-repudiation is provided by the signatures included in the JWS payloads.  The only mandatory fields are `payload_type`, `payload_version` and `type`. All other fields are optional from the point of view of the protocol -- however they may need to be included for another VASP to be ready to settle the payment.
@@ -357,10 +307,7 @@ A `KYCDataObject` represents the KYC data for a single subaddress.  Proof of non
 | national_id | [NationalIdObject](#nationalidobject) | N | National ID information for the holder of this account |
 | legal_entity_name | str | N | Name of the legal entity 
 
-<details>
-<summary> KYCDataObject example </summary>
-<pre>
-<code>
+```
 {
     "payload_type": "KYC_DATA"
     "payload_version": 1,
@@ -378,9 +325,7 @@ A `KYCDataObject` represents the KYC data for a single subaddress.  Proof of non
     },
     "legal_entity_name": "Superstore",
 }
-</code>
-</pre>
-</details>
+```
 
 ### AddressObject
 Represents a physical address
@@ -394,10 +339,7 @@ Represents a physical address
 | postal_code| str | N | ZIP or postal code |
 | state | str | N | State, county, province, region.
 
-<details>
-<summary> AddressObject example </summary>
-<pre>
-<code>
+```
 {
     "city": "Sunnyvale",
     "country": "US",
@@ -406,9 +348,7 @@ Represents a physical address
     "postal_code": "12345",
     "state": "California",
 }
-</code>
-</pre>
-</details>
+```
 
 ### NationalIdObject
 Represents a national ID.
@@ -419,18 +359,13 @@ Represents a national ID.
 | country | str | N | Two-letter country code (https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) |
 | type | str | N | Indicates the type of the ID |
 
-<details>
-<summary> NationalIdObject example </summary>
-<pre>
-<code>
+```
 {
     "id_value": "123-45-6789",
     "country": "US",
     "type": "SSN",
 }
-</code>
-</pre>
-</details>
+```
 
 
 ### PaymentActionObject
@@ -442,19 +377,14 @@ Represents a national ID.
 | action | enum | Y | Populated in the request.  This value indicates the requested action to perform, and the only valid value is `charge`. |
 | timestamp | uint | Y | Unix timestamp indicating the time that the payment command was created.
 
-<details>
-<summary> PaymentActionObject example </summary>
-<pre>
-<code>
+```
 {
     "amount": 100,
     "currency": "USD",
     "action": "charge",
     "timestamp": 72322,
 }
-</code>
-</pre>
-</details>
+```
 
 
 ### StatusEnum
