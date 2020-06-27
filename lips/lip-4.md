@@ -189,7 +189,7 @@ RawTransaction {
 
 For transactions under the travel rule threshold, transaction metadata inclusive of both to_subaddress and from_subaddress should be composed.
 
-For transactions over the travel rule limit, custodial to custodial transactions must follow the off-chain API specification, so the suggested way to exchange the metadata is during this off-chain exchange rather than using purely subaddressing.  More details can be seen at: https://fb.quip.com/aVekANHLI8Up#IMWACAtaegP.  Once the off-chain APIs have been utilized, there will be an off-chain reference ID which represents this transaction.  The on-chain transaction is now constructed.
+For transactions over the travel rule limit, custodial to custodial transactions must follow the off-chain API specification, so the suggested way to exchange the metadata is during this off-chain exchange rather than using purely subaddressing.  More details can be seen in LIP-1.  Once the off-chain APIs have been utilized, there will be an off-chain reference ID which represents this transaction.  The on-chain transaction is now constructed.
 
 User A who is on a custodial wallet (Where the C wallet has a public address of 0x7777 and user A has a sub-account of 0x987) wishes to send 100 microlibra to merchant B who is on a C wallet (where the C wallet has a public address of 0x1234 and merchant B has a sub-account of 0x567).  User A's wallet then composes a transaction via (note that the to/from subaddresses are not included since they were passed via the off-chain API):
 
