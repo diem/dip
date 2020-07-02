@@ -13,8 +13,9 @@ Merchants and wallet holders may rely on third parties to maintain custody of th
 ---
 # Terminology
 ___
-*subaddress:* Accounts on-chain are represented by an address.  To allow multiplexing of a single address into multiple wallets, custodial wallets may utilize “subaddresses” under the on-chain address for each underlying user.  These subaddresses represent the users and may have meaning only to the custodian - but the mapping from subaddress to user is not known on-chain, but rather is an internal mapping known by the custodian.
-*referenced_event:* In the case where funds must be returned, referenced_event refers to the event sequence number of the sender’s original sent payment event.  Since refunds are just another form of p2p transfer, the referenced event field allows a refunded payment to refer back to the original payment.
+*subaddress:* Accounts on-chain are represented by an address.  To allow multiplexing of a single address into multiple wallets, custodial wallets may utilize “subaddresses” under the on-chain address for each underlying user.  These subaddresses represent the users and may have meaning only to the custodian - but the mapping from subaddress to user is not known on-chain, but rather is an internal mapping known by the custodian.  The best practice is to use subaddresses as a single-use address to remove linkability.  In this way, subaddresses serve as a many-to-one mapping between subaddresses and a user - where ideally subaddresses are not re-used for more than one payment.
+
+*referenced_event:* In the case where funds must be returned, referenced_event refers to the event sequence number of the original sender’s sent payment event.  Since refunds are just another form of p2p transfer, the referenced event field allows a refunded payment to refer back to the original payment.
 
 
 ---
@@ -27,9 +28,9 @@ Merchants and wallet holders may rely on third parties to maintain custody of th
 
 As an example, assume a recipient account provides custodial wallets. To send funds to this wallet within Libra:
 
-* The recipient crafts a QR code containing a URI that references the account hosting the custodial wallet, or the host, and a reference to their wallet.
+* The recipient crafts a QR code containing a URI that references the account hosting the custodial wallet and a reference to their wallet.
 * The consumer scans the QR code and constructs a transaction and includes within it the subaddress.
-* Once the transaction has been submitted and committed to the blockchain, the host notifies the recipient of the transaction.
+* Once the transaction has been submitted and committed to the blockchain, the custodial wallet notifies the recipient of the transaction and credits the account associated with the subaddress.
 
 ---
 # Specification
@@ -59,7 +60,7 @@ struct GeneralMetadatav0 {
     // Subaddress from which the funds are being sent
     Option<Vec<u8>> from_subaddress,
     
-    // Event sequence number of referenced payment
+    // Event sequence number of the `SentPaymentEvent` that this transaction is refunding
     Option<u64> referenced_event,
 }
 
@@ -81,10 +82,10 @@ struct UnstructuredStringMetadata {
 ```
 
 
-Using the initial example described in the motivation, the merchant whose wallet, 0x5678, is hosted by 0x1234 may post a URI for shoes that cost 20 microlibra.  The purchaser would then submit a transaction containing the following metadata:
+Using the initial example described in the motivation, the merchant whose wallet's subaddress for this payment is "merch_a", is hosted by a custodian with a public address of 0x1234 may post a URI for shoes that cost 20 microlibra.  The purchaser would then submit a transaction containing the following metadata:
 
 ```
-0x01, 0x00, 01, 0x5678, 00, 00, 00
+0x01, 0x00, 01, "merch_a", 00, 00, 00
 /* general_metadata_type, general_metadata_v0, 
       to_subaddress_present, to_subaddress,  
       from_subaddress_not_present, 
@@ -93,21 +94,13 @@ Using the initial example described in the motivation, the merchant whose wallet
 
 ## Submitting a transaction
 
-With the metadata in hand, the sender can now submit a transaction to the Libra block chain via a deposit call in Move:
-
-```
-deposit<LBR>(
-    recipient_address, 
-    amount, 
-    metadata, 
-    metadata_signature);
-```
-
-In the case of the example above, 0x1234 would be the recipient and 20 LBR would be the amount.  Note that metadata_signature must only be present for travel-rule cases between VASPs.
+With the metadata in hand, the sender can now submit a transaction to the Libra block chain via a [deposit call](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/doc/peer_to_peer_with_metadata.md) in Move. Note that metadata_signature must only be present for travel-rule cases between VASPs.
 
 ## Processing the transaction
 
 Much like any other funds transfer request, validators only verify that the sender has the sufficient libra to support the transaction and that the transaction is properly formed and valid, they do not inspect or verify the correctness of the metadata.
+
+The recipient custodian should make an effort to refund in the case of malformed metadata or an invalid subaddress for the recipient.
 
 # Transaction Examples
 
@@ -119,14 +112,15 @@ For NC to NC transactions, there is no usage of subaddressing/metadata.
 
 ## NC to C Transaction Flow
 
-User A (address 0x1234) on a NC wallet wishes to send 100 microlibra to merchant B who is on a private custodial wallet (Where the custodial wallet has a public address of 0x7777 and the merchant has a sub-account of 0x987).  User A's client now composes a raw transaction with the following relevant fields:
+User A (address 0x1234) on a NC wallet wishes to send 100 microlibra to merchant B who is on a private custodial wallet (Where the custodial wallet has a public address of 0x7777 and the merchant has a sub-account of 'bob').  User A's client now composes a raw transaction with the following relevant fields:
 
 ```
 metadata = GeneralMetadatav0 {
-  to_subaddress: 0x987,
+  to_subaddress: 'bob',
 };
 
-program = deposit<LBR>(
+program = encode_peer_to_peer_with_metadata_script(
+    "LBR" /*currency*/,
     0x7777 /*recipient*/,
     100 /*amount*/, 
     lcs(MetadataType::GeneralMetadataType(
@@ -141,14 +135,15 @@ RawTransaction {
 
 ## C to NC transaction flow
 
-User A who is on a custodial wallet (Where the C wallet has a public address of 0x7777 and user A has a sub-account of 0x987) wishes to send 100 microlibra to merchant B who is on a NC wallet (with an address of 0x1234).  User A's wallet then composes a transaction via:
+User A who is on a custodial wallet (Where the C wallet has a public address of 0x7777 and user A has a sub-account of 'alice') wishes to send 100 microlibra to merchant B who is on a NC wallet (with an address of 0x1234).  User A's wallet then composes a transaction via:
 
 ```
 metadata = GeneralMetadatav0 {
-  from_subaddress: 0x987,
+  from_subaddress: 'alice',
 };
 
-program = deposit<LBR>(
+program = encode_peer_to_peer_with_metadata_script(
+    "LBR" /*currency*/,
     0x1234 /*recipient*/,
     100 /*amount*/, 
     lcs(MetadataType::GeneralMetadataType(
@@ -164,15 +159,16 @@ RawTransaction {
 
 ## Refunds
 
-Merchant B now wishes to refund user A. But user A was sending from a custodial account so merchant B must send the funds back to the custodial account and include subaddress information so that the funds are directed back to user A.  Merchant B’s client now constructs a transaction via the following where referenced_event is the committed event sequence number under the sending account of the original send payment event:
+Merchant B now wishes to refund user A. But user A was sending from a custodial account so merchant B must send the funds back to the custodial account and include subaddress information so that the funds are directed back to user A.  Merchant B’s client now constructs a transaction via the following where referenced_event is the committed event sequence number under the sending account of the original sent payment event:
 
 ```
 metadata = GeneralMetadatav0 {
-  to_subaddress: 0x987,
+  to_subaddress: 'alice',
   referenced_event: 123,
 };
 
-program = deposit<LBR>(
+program = encode_peer_to_peer_with_metadata_script(
+    "LBR" /*currency*/,
     0x7777 /*recipient*/,
     100 /*amount*/, 
     lcs(MetadataType::GeneralMetadataType(
@@ -191,7 +187,7 @@ For transactions under the travel rule threshold, transaction metadata inclusive
 
 For transactions over the travel rule limit, custodial to custodial transactions must follow the off-chain API specification, so the suggested way to exchange the metadata is during this off-chain exchange rather than using purely subaddressing.  More details can be seen in LIP-1.  Once the off-chain APIs have been utilized, there will be an off-chain reference ID which represents this transaction.  The on-chain transaction is now constructed.
 
-User A who is on a custodial wallet (Where the C wallet has a public address of 0x7777 and user A has a sub-account of 0x987) wishes to send 100 microlibra to merchant B who is on a C wallet (where the C wallet has a public address of 0x1234 and merchant B has a sub-account of 0x567).  User A's wallet then composes a transaction via (note that the to/from subaddresses are not included since they were passed via the off-chain API):
+User A who is on a custodial wallet (Where the C wallet has a public address of 0x7777 and user A has a sub-account of 'alice') wishes to send 100 microlibra to merchant B who is on a C wallet (where the C wallet has a public address of 0x1234 and merchant B has a sub-account of 'bob').  User A's wallet then composes a transaction via (note that the to/from subaddresses are not included since they were passed via the off-chain API):
 
 ```
 metadata = TravelRuleMetadatav0 {
@@ -207,7 +203,8 @@ lcs_metadata = lcs(MetadataType::TravelRuleMetadataType(
     metadata_signature = sign(metadata, sender_address, amount, receiver_key);
 }
 
-program = deposit<LBR>(
+program = encode_peer_to_peer_with_metadata_script(
+    "LBR" /*currency*/,
     0x1234 /*recipient*/,
     100 /*amount*/, 
     metadata,
