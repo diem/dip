@@ -18,13 +18,14 @@ This LIP describes the conceptual model and implementation of access control on 
 Libra uses a variant of role-based access control (RBAC) to restrict access to sensitive on-chain operations.
 
 A *role* is an entity with some authority in the Libra system. The roles in the initial system are:
-LibraRoot - the root authority of Libra. Controlled jointly by Libra Payment Networks and the Association Council 
+
+- LibraRoot - the root authority of Libra. Controlled jointly by Libra Payment Networks and the Association Council 
 TreasuryCompliance - An entity responsible for day-to-day treasury (e.g. minting, burning), and compliance (e.g., updating on-chain exchange rates, freezing accounts)
-Validator - The on-chain representation of a Libra Association member.
-ValidatorOperator - An entity authorized to operate one or more validator nodes on behalf of an Association member.
-Designated Dealer - An entity that manages fiat transfers to/from the Libra reserve
-ParentVASP - The primary account of a regulated wallet operating on the Libra blockchain
-ChildVASP - A subaccount of a particular parent VASP operating on the Libra blockchain
+- Validator - The on-chain representation of a Libra Association member.
+- ValidatorOperator - An entity authorized to operate one or more validator nodes on behalf of an Association member.
+- Designated Dealer - An entity that manages fiat transfers to/from the Libra reserve
+- ParentVASP - The primary account of a regulated wallet operating on the Libra blockchain
+- ChildVASP - A subaccount of a particular parent VASP operating on the Libra blockchain
 
 Every account in the Libra system is created with a single, immutable role that is granted at the time the account is created. Creating an account with a particular role is a privileged oepration (e.g., only an account with the ParentVASP role can create an account the ChildVASP role). In some cases, the role is globally unique (e.g., there is only one account with the LibraRoot role). In other cases, there may be many accounts with the given role (e.g., ChildVASP).
 
@@ -87,6 +88,7 @@ What follows is the public API for the Move `Roles` module:
 This module describes two things:
 1. The relationship between roles, e.g. Role_A can creates accounts of Role_B
 2. The granting of privileges to an account with a specific role
+
 It is important to note here that this module _does not_ describe the
 privileges that a specific role can have. This is a property of each of
 the modules that declares a privilege.
@@ -156,7 +158,7 @@ to an account as a top-level resource, and is otherwise immovable.
 
 ## Resource `Capability`
 
-Privileges are extracted in to capabilities. Capabilities hold /
+Privileges are extracted into capabilities. Capabilities hold
 the account address that they were extracted from (i.e. tagged or
 "tainted"). Capabilities can then only be restored to the account
 from which they were extracted.
@@ -188,7 +190,7 @@ from which they were extracted.
 
 ## Resource `Privilege`
 
-The internal representation of of a privilege. We wrap every
+The internal representation of a privilege. We wrap every
 privilege witness resource here to avoid having to write extractors/restorers
 for each privilege, but can instead write this generically.
 
