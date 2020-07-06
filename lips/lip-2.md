@@ -971,7 +971,7 @@ the new permission. e.g.
 public fun publish_new_privilege(account: &signer, _: &Capability<R>) {
 Roles::add_privilege_to_account(account, Roles::R_ROLE_ID());
 }
-``
+```
 <code>
 
 Publish a <a href="DesignatedDealer.md#0x1_DesignatedDealer">DesignatedDealer</a> </code>RoleId
