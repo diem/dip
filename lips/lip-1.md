@@ -397,15 +397,11 @@ Represents a national ID.
 | abort_code    | str (enum) | N    | In the case of an `abort` status, this field may be used to describe the reason for the abort. Represents the error code of the corresponding error |
 | abort_message         | str      | N             | Additional details about this error.  To be used only when `code` is populated |
 
-<details>
-<summary> StatusObject example </summary>
-<pre>
+```
 {
     "status": "needs_kyc_data",
 }
-</pre>
-</details>
-
+```
 
 ### StatusEnum
 Valid values are:
