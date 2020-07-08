@@ -196,7 +196,9 @@ All requests between VASPs are structured as [`CommandRequestObject`s](basic_bui
 					"state": "California",
 				    }
 				},
-			    "status": "ready_for_settlement",
+			    	"status": {
+			    		"status": "ready_for_settlement",
+			    	}
 			},
 		    "receiver": {
 			    "address": "lbr1pgfpnegv9gfpyysjzgfpyysjzgf3xycnzvf3xycsmxycyy",
@@ -279,14 +281,15 @@ A `PaymentActorObject` represents a participant in a payment - either sender or 
 |-------	    |------	|-----------	|-------------	|
 | address | str | Y | Address of the sender/receiver account. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Libra addresses, refer to (TODO) for format. |
 | kyc_data | [KycDataObject](#kycdataobject) | N | The KYC data for this account. This field is optional but immutable once it is set. |
-| status | str enum | Y | Status of the payment from the perspective of this actor. This field can only be set by the respective sender/receiver VASP and represents the status on the sender/receiver VASP side. This field is mandatory by this respective actor (either sender or receiver side) and mutable. Valid values are specified in [ StatusEnum ](#statusenum) |
+| status | [StatusObject](#statusobject) | Y | Status of the payment from the perspective of this actor. This field can only be set by the respective sender/receiver VASP and represents the status on the sender/receiver VASP side. This field is mandatory by this respective actor (either sender or receiver side) and mutable. |
+| metadata | list of str | Y | Can be specified by the respective VASP to hold metadata that the sender/receiver VASP wishes to associate with this payment. This is a mandatory field but can be set to an empty list (i.e. `[]`). New string-typed entries can be appended at the end of the list, but not deleted.	
 | metadata | list of str | Y | Can be specified by the respective VASP to hold metadata that the sender/receiver VASP wishes to associate with this payment. This is a mandatory field but can be set to an empty list (i.e. `[]`). New string-typed entries can be appended at the end of the list, but not deleted.
 
 ```
 {
     "address": "lbr1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
     "kyc_data": kyc_data_object(),
-    "status": "ready_for_settlement",
+    "status": status_object(),
     "metadata": [],
 }
 ```
@@ -305,7 +308,8 @@ A `KYCDataObject` represents the KYC data for a single subaddress.  Proof of non
 | dob | str | N | Date of birth for the holder of this account.  Specified as an ISO 8601 calendar date format: https://en.wikipedia.org/wiki/ISO_8601 |
 | place_of_birth | [AddressObject](#addressobject) | N | Place of birth for this user.  line1 and line2 fields should not be populated for this usage of the address object |
 | national_id | [NationalIdObject](#nationalidobject) | N | National ID information for the holder of this account |
-| legal_entity_name | str | N | Name of the legal entity.  Used when subaddress represents a legal entity rather than an individual. KYCDataObject should only include one of legal_entity_name OR given_name/surname
+| legal_entity_name | str | N | Name of the legal entity.  Used when subaddress represents a legal entity rather than an individual. KYCDataObject should only include one of legal_entity_name OR given_name/surname |
+| additional_kyc_data | str | N | Freeform KYC data.  If a soft-match occurs, this field should be used to specify additional KYC data which can be used to clear the soft-match.  It is suggested that this data be JSON, XML, or another human-readable form.
 
 ```
 {
@@ -385,6 +389,19 @@ Represents a national ID.
 }
 ```
 
+### StatusObject
+
+| Field 	    | Type 	| Required? 	| Description 	|
+|-------	    |------	|-----------	|-------------	|
+| status | str enum | Y | Status of the payment from the perspective of this actor. This field can only be set by the respective sender/receiver VASP and represents the status on the sender/receiver VASP side. This field is mandatory by this respective actor (either sender or receiver side) and mutable. Valid values are specified in [ StatusEnum ](#statusenum)  |
+| abort_code    | str (enum) | N    | In the case of an `abort` status, this field may be used to describe the reason for the abort. Represents the error code of the corresponding error |
+| abort_message         | str      | N             | Additional details about this error.  To be used only when `code` is populated |
+
+```
+{
+    "status": "needs_kyc_data",
+}
+```
 
 ### StatusEnum
 Valid values are:
@@ -394,8 +411,14 @@ Valid values are:
 * `ready_for_settlement` - Transaction is ready for settlement according to this actor (i.e. the required signatures/KYC data have been provided)
 * `settled` - Payment has been settled on chain and funds delivered to the subaddress
 * `abort` - Indicates the actor wishes to abort this payment, instead of settling it.
+* `pending_review` - Payment is pending review.
+* `soft_match` - Actor's KYC data resulted in a soft-match.  The VASP associated with this actor should send any available KYC information which may clear the soft-match via the KYCObject field of `additional_kyc_data`.  If not sent within SLA window, this transaction will be aborted.
 
-**Valid Status Transitions**. Each side of the transaction is only allowed to mutate their own status (sender or receiver), and upon payment creation may only set the status of the other party to `none`. Subsequently, each party may only modify their own state to a higher or equal state in the order `none`, (`needs_kyc_data`, `needs_recipient_signature`, `abort`), `ready_for_settlement`, and `settled`. A status of `abort` and `settle` is terminal and must not be changed. As a consequence of this ordering of valid status updates once a transaction is in a `ready_for_settlement` state by both parties it cannot be aborted any more and can be considered final from the point of view of the off-chain protocol. It is therefore safe for a VASP sending funds to initiate an On-Chain payment to settle an Off-chain payment after it observed the other party setting their status to `ready_for_settlement` and it is also willing to go past this state.
+**Valid Status Transitions**. Each side of the transaction is only allowed to mutate their own status (sender or receiver), and upon payment creation may only set the status of the other party to `none`. Subsequently, each party may only modify their own state to a higher or equal state in the order `none`, (`needs_kyc_data`, `needs_recipient_signature`, `abort`, `pending_review`), (`soft_match`, `ready_for_settlement`, `abort`), and `settled`. A status of `abort` and `settle` is terminal and must not be changed. As a consequence of this ordering of valid status updates once a transaction is in a `ready_for_settlement` state by both parties it cannot be aborted any more and can be considered final from the point of view of the off-chain protocol. It is therefore safe for a VASP sending funds to initiate an On-Chain payment to settle an Off-chain payment after it observed the other party setting their status to `ready_for_settlement` and it is also willing to go past this state.
+
+A state of `pending_review` may exist due to manual review. This state may result in any of `soft_match`, `ready_for_settlement`, or `abort`.
+
+A state of `soft_match` requires that the VASP associated with this actor must send all available KYC data via `additional_kyc_data`.  After human review of this data, this state may result in any of `ready_for_settlement` or `abort` (`abort` if the soft-match was unable to be cleared).  If data is not received within a reasonable SLA (suggested to be 24 hours), this state will result in `abort`.  The party who needs to provide KYC data is also allowed to `abort` the transaction at any point if they do not have additional KYC data or do not wish to supply it.
 
 
 
