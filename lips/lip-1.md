@@ -32,7 +32,7 @@ In the future, the Off-Chain protocol will be further extended to include functi
 
 # Off-Chain Protocal Design Principles
 
-**Scalability**. In the initial version of the Off-chain protocol all off-chain PaymentObjects that are ready for settlement, are then settled individually (gross) through a separate Blockchain transaction. However, the architecture of the Off-chain protocol allows in the future the introduction of netting batches of transactions, and settling all of them through a single Blockchain transaction. This allows costs associated with multiple on-chain transactions to be kept low for VASPs, and allows for a number of user transactions or payment between VASPs that exceed the capacity of the underlying Blockchain. Additionally, batches enhance privacy via hiding the number of transactions between VASPs and by only placing a single on-chain transaction which hides the individual transaction amounts.
+**Scalability**. In the initial version of the Off-chain protocol, all off-chain PaymentObjects that are ready for settlement, are then settled individually (gross) through a separate Blockchain transaction. However, the architecture of the Off-chain protocol allows in the future the introduction of netting batches of transactions and settling all of them through a single Blockchain transaction. This allows costs associated with multiple on-chain transactions to be kept low for VASPs, and allows for a number of user transactions or payment between VASPs that exceed the capacity of the underlying Blockchain. Additionally, batches enhance privacy via hiding the number of transactions between VASPs and by only placing a single on-chain transaction which hides the individual transaction amounts.
 
 **Extensibility**. The current Off-Chain protocols accommodate simple payments where a customer of a VASP sends funds to the customer of another VASP over a limit, requiring some additional compliance-related information. However, in the future the blockchains may support more complex flows of funds between customers of VASPs as well as merchants. The Off-chain protocol can be augmented to support the transfer of rich meta-data relating to those flows between VASPs in a compliant, secure, private, scalable and extensible manner.
 
@@ -41,18 +41,18 @@ In the future, the Off-Chain protocol will be further extended to include functi
 We describe a number of additional lower-level requirements throughout the remaining of the documents, such as ease of deployment through the use of established web technologies (like HTTP and JSON), tolerance to delays and crash-recovery failures of either VASPs, and compatibility with common cryptography and serialization schemes.
 
 # Terminology
-**Object**- Equivalent to a record in a database.  A payment is an example of an object.
+**Object**: Equivalent to a record in a database.  A payment is an example of an object.
 
-**Command**- A mutation/creation of one or more objects.  In the case of a mutation, this command will depend upon the current value of one of more existing shared objects.
+**Command**: An instruction to mutate/create one or more objects.  In the case of a mutation, this command will depend upon the current value of one of more existing shared objects.
 
-**Channel**- The communication path between a pair of entities who execute commands to track the evolution of a set of objects.
+**Channel**: The communication path between a pair of entities who execute commands and track the evolution of a set of shared objects.
 
-**Shared Object**- All objects contained within a command - for example PaymentObject, are considered as "shared objects" - meaning that either VASP may create a new command to modify the object, and will do so during the typical life-cycle of an object - an example being the addition of KYC data from both VASPs to a payment object. Both VASPs in a channel can asynchronously attempt to initiate and execute commands on shared objects.
+**Shared Object**: All objects contained within a command - for example `PaymentObject`s, are considered as "shared objects" - meaning that either VASP may create a new command to modify the object, and will do so during the typical life-cycle of an object - an example being the addition of KYC data from both VASPs to a payment object. Both VASPs in a channel can asynchronously attempt to initiate and execute commands on shared objects.
 
-**Version**- The state of an object.  Every creation or mutation creates a new version of the object which was created/mutated.  VASPs operate upon the latest version of shared objects.  Once a version is mutated, it is no longer a valid version upon which a new command may depend - the newly updated value of the version is the latest version for that object and must be acted upon.
+**Version**: The state of an object at a specific point in time.  Every creation or mutation creates a new version of the object which was created/mutated.  VASPs operate upon the latest version of shared objects.  Once a version is mutated, it is no longer a valid version upon which a new command may depend - the newly updated value of the version is the latest version for that object and must be acted upon.
 
 # Overall Off-Chain Properties
-The off-chain protocol formulates methodologies to abide by the following high-level properties:
+The off-chain protocol formulates methodologies to provide the following high-level properties:
 
 ### Channel Establishment
 The off-chain protocol allows two entities A and B to form a communication channel for manipulating a consistent database of objects and agreeing on commands that manipulate those objects.
@@ -74,23 +74,25 @@ The off-chain protocol ensures eventual consistency of shared objects.
 The basic building blocks provide the methodology for [Channel Establishment](#channel-establishment).
 
 * **HTTP end-points**: Each VASP exposes an HTTPS POST end point at
-`https://hostname:port/<protocol_version>/<localVASPAddress>/<RemoteVASPAddress>/command`. It receives `CommandRequestObject`s in the POST body, and responds with `CommandResponseObject`s in the HTTP response (See [Travel Rule Data Exchange](travel_rule_data_exchange.md) for more details. Single command requests-responses are supported (HTTP1.0) but also pipelined request-responses are supported (HTTP1.1). The version for the Off-chain protocol is the string `v1`. All HTTP requests and responses contain a header `X-Request-ID` with a unique ID for the request, used for tracking requests and debugging. Responses must have the same string in the `X-Request-ID` header value as the requests they correspond to.
+`https://hostname:port/<protocol_version>/<localVASPAddress>/<RemoteVASPAddress>/command`. It receives `CommandRequestObject`s in the POST body, and responds with `CommandResponseObject`s in the HTTP response (See [Request/Response Payload](#requestresponse-payload) for more details. Single command requests-responses are supported (HTTP1.0) but also pipelined request-responses are supported (HTTP1.1). The version for the Off-chain protocol is the string `v1`. All HTTP requests and responses contain a header `X-Request-ID` with a unique ID for the request, used for tracking requests and debugging. Responses must have the same string in the `X-Request-ID` header value as the requests they correspond to.
 * **Serialization to JSON**: All structures transmitted, nested within `CommandRequestObject` and `CommandResponseObject` are valid JSON serialized objects and can be parsed and serialized using standard JSON libraries. The content type for requests and responses is set to `Content-type: application/json; charset=utf-8` indicating all content is JSON encoded.
 * **JWS Signatures**: all transmitted requests/responses are signed by the sending party using the JWS Signature standard (with the Ed25519 / EdDSA ciphersuite, and `compact` encoding).  The party's compliance key shall be used to sign these messages. This ensures all information and meta-data about payments is authenticated and cannot be repudiated.
 
 ## Basic Protocol Interaction
-The basic protocol interaction provides the methodology for [Multi-Party Command Issuance](#multi-party-command-issuance) and consists of:
+Assume two VASPs A and B.  The basic protocol interaction consists of:
 
-* An initiating VASP creates a `CommandRequestObject` containing a command, and sends it to the other VASP, in the body of an HTTP POST.
-* The responding VASP listens for requests, and when received, processes them to generate and send `CommandResponseObject` responses, with a success or failure status, through the HTTP response body.
-* The initiating VASP receives the response and processes it to assess whether it was successful or not.
+* An initiating VASP A creates a `CommandRequestObject` containing a command of the desired type.  Commands inform the other VASP what to create or mutate.  Every command includes one or more objects to create or update.  For each of those objects, the version of that object is updated by the command and the old version becomes obsolete once the command is applied successfully.
+* VASP A packages the command via JWS using EdDSA and compact encoding.
+* VASP A establishes a connection to VASP B and sends the packaged command to VASP B in the body of an HTTP POST.
+* VASP B listens for requests, and when received, verfies VASP A's signature and then processes the request to generate and send `CommandResponseObject` responses, with a success or failure status, through the HTTP response body.
+* The initiating VASP A receives the response and processes it to assess whether it was successful or not.
 
-All objects contained within a command - for example `PaymentObject`, are considered as "shared objects" - meaning that either VASP may create a new command to modify the object, and will do so during the typical life-cycle of an object - an example being the addition of KYC data from both VASPs to a payment object. Both VASPs in a channel can asynchronously attempt to initiate and execute commands on shared objects. 
+If VASP A fails to receive a response from B, it must re-send the request at some cadence until a response is received to ensure eventual consistency.
 
-As a reminder, all `CommandRequestObject` and `CommandResponseObject` objects sent are signed using JWS Signatures, using EdDSA and compact encoding. Recipients must verify the signatures when receiving any objects.
+Commands may flow in both directions - A to B or B to A - and may happen simultaneously in an asynchronous manner, providing [Multi-Party Command Issuance](#multi-party-command-issuance).  By only allowing commands to build upon the latest agreed-upon version of an object, concurrent requests are possible with minimal contention - contention only occurs if simultaneous commands operate upon the same object(s) and contention in that case is resolved by nature of [Client/Server Roles](#protocol-server-and-client-roles).
 
 ## Request/Response Payload
-All requests between VASPs are structured as [`CommandRequestObject`s](#commandrequestobject) and all responses are structured as [`CommandResponseObject`s](#commandresponseobject).  The resulting request takes a form of the following:
+All requests between VASPs are structured as [`CommandRequestObject`s](#commandrequestobject) and all responses are structured as [`CommandResponseObject`s](#commandresponseobject).  The resulting request takes a form of the following (prior to JWS):
 
 ```
 {
