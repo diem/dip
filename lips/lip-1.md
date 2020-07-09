@@ -40,17 +40,44 @@ In the future, the Off-Chain protocol will be further extended to include functi
 
 We describe a number of additional lower-level requirements throughout the remaining of the documents, such as ease of deployment through the use of established web technologies (like HTTP and JSON), tolerance to delays and crash-recovery failures of either VASPs, and compatibility with common cryptography and serialization schemes.
 
+# Terminology
+**Object**- Equivalent to a record in a database.  A payment is an example of an object.
+**Command**- A mutation/creation of one or more objects.  In the case of a mutation, this command will depend upon the current value of one of more existing shared objects.
+**Channel**- The communication path between a pair of entities who execute commands to track the evolution of a set of objects.
+**Shared Object**- All objects contained within a command - for example PaymentObject, are considered as "shared objects" - meaning that either VASP may create a new command to modify the object, and will do so during the typical life-cycle of an object - an example being the addition of KYC data from both VASPs to a payment object. Both VASPs in a channel can asynchronously attempt to initiate and execute commands on shared objects.
+**Version**- The state of an object.  Every creation or mutation creates a new version of the object which was created/mutated.  VASPs operate upon the latest version of shared objects.  Once a version is mutated, it is no longer a valid version upon which a new command may depend - the newly updated value of the version is the latest version for that object and must be acted upon.
+
+# Overall Off-Chain Properties
+The off-chain protocol formulates methodologies to abide by the following high-level properties:
+
+### Channel Establishment
+The off-chain protocol allows two entities A and B to form a communication channel for manipulating a consistent database of objects and agreeing on commands that manipulate those objects.
+
+### Multi-Party Command Issuance
+Both ends of the channel can issue commands upon shared objects.
+
+### Object Versioning
+To ensure a consistent view of object states, every object is versioned. Mutations may only occur upon the latest version of an object.
+
+### Concurrency Control
+The off-chain protocol manages concurrent requests on objects and ensures that object states will not become out of sync.
+
+### Eventual Consistency
+The off-chain protocol ensures eventual consistency of shared objects.
+
 # Basic Off-Chain Building Blocks
+
+The basic building blocks provide the methodology for [Channel Establishment](#channel-establishment).
 
 * **HTTP end-points**: Each VASP exposes an HTTPS POST end point at
 `https://hostname:port/<protocol_version>/<localVASPAddress>/<RemoteVASPAddress>/command`. It receives `CommandRequestObject`s in the POST body, and responds with `CommandResponseObject`s in the HTTP response (See [Travel Rule Data Exchange](travel_rule_data_exchange.md) for more details. Single command requests-responses are supported (HTTP1.0) but also pipelined request-responses are supported (HTTP1.1). The version for the Off-chain protocol is the string `v1`. All HTTP requests and responses contain a header `X-Request-ID` with a unique ID for the request, used for tracking requests and debugging. Responses must have the same string in the `X-Request-ID` header value as the requests they correspond to.
 * **Serialization to JSON**: All structures transmitted, nested within `CommandRequestObject` and `CommandResponseObject` are valid JSON serialized objects and can be parsed and serialized using standard JSON libraries. The content type for requests and responses is set to `Content-type: application/json; charset=utf-8` indicating all content is JSON encoded.
 * **JWS Signatures**: all transmitted requests/responses are signed by the sending party using the JWS Signature standard (with the Ed25519 / EdDSA ciphersuite, and `compact` encoding).  The party's compliance key shall be used to sign these messages. This ensures all information and meta-data about payments is authenticated and cannot be repudiated.
 
-### Basic Protocol Interaction
-The basic protocol interaction consists of:
+## Basic Protocol Interaction
+The basic protocol interaction provides the methodology for [Multi-Party Command Issuance](#multi-party-command-issuance) and consists of:
 
-* An initiating VASP creates a `CommandRequestObject` containing a PaymentCommand, and sends it to the other VASP, in the body of an HTTP POST.
+* An initiating VASP creates a `CommandRequestObject` containing a command, and sends it to the other VASP, in the body of an HTTP POST.
 * The responding VASP listens for requests, and when received, processes them to generate and send `CommandResponseObject` responses, with a success or failure status, through the HTTP response body.
 * The initiating VASP receives the response and processes it to assess whether it was successful or not.
 
@@ -134,14 +161,18 @@ Represents an error that occurred in response to a command.
 
 # Command Sequencing
 
-The low-level Off-Chain protocol allows two VASPs to sequence request-responses for commands originating from either VASP, in order to maintain a consistent database of shared objects. Sequencing a command requires both VAPSs to confirm it is valid, as well as its sequence in relation to other commands operating upon the same objects.  Since commands may operate upon multiple objects, a command only succeeds if the command is able to be applied to every dependent object - ensuring atomicity of the command and consistency of the objects. Both VASPs in a channel can asynchronously attempt to initiate and execute commands on shared objects. All commands upon shared objects which are exchanged between pairs of VASPs are sequenced relative to the prior state of each shared object in the command.
+The low-level Off-Chain protocol allows two VASPs to sequence request-responses for commands originating from either VASP, in order to maintain a consistent database of shared objects. Sequencing a command requires both VAPSs to confirm it is valid, as well as its sequence in relation to other commands operating upon the same objects.  Since commands may operate upon multiple objects, a command only succeeds if the command is able to be applied to every dependent object - ensuring atomicity of the command and consistency of the objects, providing for [Concurrency Control](#concurrency-control). Both VASPs in a channel can asynchronously attempt to initiate and execute commands on shared objects. All commands upon shared objects which are exchanged between pairs of VASPs are sequenced relative to the prior state of each shared object in the command. For example, a command might depend on object X having version Y. If there has been a concurrent update to object X and it has version Z at the time the command is processed, the command will be rejected.
 
 
 ## Object Versioning
 
-When either VASP creates a request, they assign a `_creates_version` to the object being created or mutated.  This string must be a unique random string between this pair of VASPs and is used to represent the version of the item created. These should be at least 16 bytes long and encoded to string in hexadecimal notation using characters in the range[A-Za-z0-9].  Upon every mutation of an object, this string must be updated to a new unique value.
+To ensure a consistent view of object states, every object is [versioned](#object-versioning). A command can create or modify one or more objects. Mutations may only occur upon the latest version of an object. When either VASP creates a request, they assign a `_creates_version` to the object being created or mutated - a globally unique representation of the new state of the object.  To maintain relative ordering of commands on objects, every creation or mutation of an object must also specify the `_dependencies`.  The value(s) in this field must match a version previously specified by the `_creates_versions` parameter on a prior command and indicates the version(s) being mutated (or in the case of a new object being created which depends on no previous objects, the `_dependencies` list may be empty).  Each version may only be mutated a single time - because once it has been mutated, a new version is created to represent the latest state of the object and the old version can be garbage-collected. This results in what is essentially a per-object sequencing.
 
-To maintain relative ordering of commands on objects, every creation or mutation of an object must also specify the `_dependencies`.  The value(s) in this field must match a version previously specified by the `_creates_versions` parameter on a prior command and indicates the version(s) being mutated (or in the case of a new object being created which depends on no previous objects, the `_dependencies` list may be empty).  Each version may only be mutated a single time - because once it has been mutated, a new version is created to represent the latest state of the object. This results in what is essentially a per-object sequencing.
+Both `_dependencies` and `_creates_version` must be exact - meaning that if unused dependencies are specified or insufficient dependencies are specified, the command will be rejected.
+
+This string must be a unique random string between this pair of VASPs and is used to represent the version of the item created. These should be at least 16 bytes long and encoded to string in hexadecimal notation using characters in the range[A-Za-z0-9].  Upon every mutation of an object, this string must be updated to a new unique value.
+
+TODO: Specify standardized methodology for calculating version string
 
 
 ## Protocol Server and Client Roles
@@ -153,6 +184,10 @@ If the result is 0, the lexicographically lower parent address is used as the se
 If the result is 1, the lexicographically higher parent address is used as the server side. Lexicographic ordering determines which binary address is higher by comparing byte positions one by one, and returning the address with the first higher byte.
 
 To avoid excessive locking and intermediate state management during API requests, by convention the _server_ acts as the source of truth for the state of an object.  In practice, this means that in the case of lock contention on a shared object, the _server_ command is prioritized.
+
+# Network Error Handling
+
+In the case of network failure, the sending party for this command is required to re-send the command until it gets a response from the counterparty VASP.  An exponential backoff is suggested for command re-sends.  This retransmission strategy allows the off-chain protocol to achieve [eventual consistency](#eventual-consistency) of the shared objects.  Retransmission must be done regardless of the role of the VASP (protocol client or protocol server).  Upon receipt of a command that has already been applied, the receiving side must reply with the same response as was previously issued.
 
 # Travel Rule Data Exchange
 
@@ -233,7 +268,7 @@ For a travel rule data exchange, the [command_type](basic_building_blocks.md#com
 | _ObjectType   | str  | Y             | The fixed string `PaymentCommand` |
 | payment| [`PaymentObject`](#paymentobject) | Y | contains a `PaymentObject` that either creates a new payment or updates an existing payment. Note that strict validity check apply when updating payments, that are listed in the section below describing these objects. An invalid update or initial payment object results in a command error
 | _creates_versions | list of str |  Y | Must be a list containing a single str representing the version of the new or updated `PaymentObject` resulting from the success of this payment command. A list with any other number of items results in a command error.  This string must be a unique random string between this pair of VASPs and is used to represent the version of the item created. These should be at least 16 bytes long and encoded to string in hexadecimal notation using characters in the range[A-Za-z0-9] |	
-| _dependencies | list of str | Y | Can be an empty list or a list containing a single previous version. If the list is empty this payment command defines a new payment. If the list contains one item, then this command updates the shared `PaymentObject` with the given version. It is an error to include more versions, and it results in a command error response.  The value in this field must match a version previously specified by the `_creates_versions` parameter on a prior command. |
+| _dependencies | list of str | Y | For a payment command, can be an empty list or a list containing a single previous version. If the list is empty this payment command defines a new payment. If the list contains one item, then this command updates the shared `PaymentObject` with the given version. It is an error to include more versions since payments may only depend upon the prior version of the same payment object, and it results in a command error response.  The value in this field must match a version previously specified by the `_creates_versions` parameter on a prior command for this payment object. |
 
 ```
 {
