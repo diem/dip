@@ -42,9 +42,13 @@ We describe a number of additional lower-level requirements throughout the remai
 
 # Terminology
 **Object**- Equivalent to a record in a database.  A payment is an example of an object.
+
 **Command**- A mutation/creation of one or more objects.  In the case of a mutation, this command will depend upon the current value of one of more existing shared objects.
+
 **Channel**- The communication path between a pair of entities who execute commands to track the evolution of a set of objects.
+
 **Shared Object**- All objects contained within a command - for example PaymentObject, are considered as "shared objects" - meaning that either VASP may create a new command to modify the object, and will do so during the typical life-cycle of an object - an example being the addition of KYC data from both VASPs to a payment object. Both VASPs in a channel can asynchronously attempt to initiate and execute commands on shared objects.
+
 **Version**- The state of an object.  Every creation or mutation creates a new version of the object which was created/mutated.  VASPs operate upon the latest version of shared objects.  Once a version is mutated, it is no longer a valid version upon which a new command may depend - the newly updated value of the version is the latest version for that object and must be acted upon.
 
 # Overall Off-Chain Properties
