@@ -178,9 +178,9 @@ To ensure a consistent view of object states, every object is [versioned](#objec
 
 Both `_dependencies` and `_creates_version` must be exact - meaning that if unused dependencies are specified or insufficient dependencies are specified, the command will be rejected.
 
-This string must be a unique random string between this pair of VASPs and is used to represent the version of the item created. These should be at least 16 bytes long and encoded to string in hexadecimal notation using characters in the range[A-Za-z0-9].  Upon every mutation of an object, this string must be updated to a new unique value.
+This string must be a unique random string between this pair of VASPs and is used to represent the version of the item created. The version string must be formed in the format of `object_reference_id` + _ + monotonically increasing object version.  Every object type contains a `reference_id` field which is a unique reference ID for the object.  As an example, see the reference_id field on the [PaymentObject](#paymentobject).  The monotonically increasing version begins at 0 and is incremented upon every mutation of an object.  If a payment object is created with a `reference_id` field of "lbr1x23456abcd_seqABCD", upon object creation, the `_creates_version` for this object would become "lbr1x23456abcd_seqABCD_0".  Upon the first mutation, the `_dependencies` list will include "lbr1x23456abcd_seqABCD_0" and the `_creates_version` will be "lbr1x23456abcd_seqABCD_1".
 
-TODO: Specify standardized methodology for calculating version string
+![Object Versioning](object_versioning.png)
 
 
 ## Protocol Server and Client Roles
