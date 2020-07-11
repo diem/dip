@@ -95,7 +95,37 @@ Commands may flow in both directions - A to B or B to A - and may happen simulta
 
 ![Command Exchange](command_exchange.png)
 
-## Request/Response Payload
+![Command State Flow](command_state_flow.png)
+
+# Command Sequencing
+
+The low-level Off-Chain protocol allows two VASPs to sequence request-responses for commands originating from either VASP, in order to maintain a consistent database of shared objects. Sequencing a command requires both VAPSs to confirm it is valid, as well as its sequence in relation to other commands operating upon the same objects.  Since commands may operate upon multiple objects, a command only succeeds if the command is able to be applied to every dependent object - ensuring atomicity of the command and consistency of the objects, providing for [Concurrency Control](#concurrency-control). Both VASPs in a channel can asynchronously attempt to initiate and execute commands on shared objects. All commands upon shared objects which are exchanged between pairs of VASPs are sequenced relative to the prior state of each shared object in the command. For example, a command might depend on object X having version Y. If there has been a concurrent update to object X and it has version Z at the time the command is processed, the command will be rejected.
+
+
+## Command Sequencing: Object Versioning
+
+To ensure a consistent view of object states, every object is [versioned](#object-versioning). A command can create or modify one or more objects. Mutations may only occur upon the latest version of an object. When either VASP creates a request, they must denote which objects are read and which are written during this command. These are specified in the `_reads` and `_writes` fields of the command. As mentioned in [Terminology](#terminology), every object type contains a `reference_id` field which is a unique reference ID for the object.  The `_reads` field is specified as a JSON mapping of object `"reference_id"`: `"command_version"`, where `command_version` is the signature of the latest command which mutated the object referenced by the `reference_id`.  By specifying which object versions are read, the off-chain APIs maintain relative ordering of commands on objects and ensure a consistent view of the current state of objects.  Each version may only be mutated a single time - because once it has been mutated, a new version is created to represent the latest state of the object and the old version can be garbage-collected. This results in what is essentially a per-object sequencing.
+
+Both `_reads` and `_writes` must be exact - meaning that if unused dependencies are specified or insufficient dependencies are specified, the command will be rejected.
+
+![Object Versioning](object_versioning.png)
+
+
+## Protocol Server and Client Roles
+
+In each channel, one VASP takes the role of a _protocol server_ and the other the role of a _protocol client_ for the purposes of simplifying shared object locking / state management. Note that these roles are distinct to the HTTP client/server -- and both VASPs act as an HTTP server and client to listen and respond to requests. To avoid excessive locking and intermediate state management during API requests, by convention the _server_ acts as the source of truth for the state of an object.  In practice, this means that in the case of lock contention on a shared object, the _server_ command is prioritized.
+
+![Object Contention](object_contention.png)
+
+Who is the protocol server and who is the client VASP is determined by comparing their binary on-chain Address strings (we call those the _binary address_. The following rules are used to determine which entity serves as which party: The last bit of VASP A’s parent binary address _w_ (where `w = addr[15] & 0x1`) is XOR’d with the last bit in VASP B’s parent binary address _x_.  This results in either 0 or 1.
+If the result is 0, the lexicographically lower parent address is used as the server side.
+If the result is 1, the lexicographically higher parent address is used as the server side. Lexicographic ordering determines which binary address is higher by comparing byte positions one by one, and returning the address with the first higher byte.
+
+# Network Error Handling
+
+In the case of network failure, the sending party for this command is required to re-send the command until it gets a response from the counterparty VASP.  An exponential backoff is suggested for command re-sends.  This retransmission strategy allows the off-chain protocol to achieve [eventual consistency](#eventual-consistency) of the shared objects.  Retransmission must be done regardless of the role of the VASP (protocol client or protocol server).  Upon receipt of a command that has already been applied, the receiving side must reply with the same response as was previously issued.
+
+# Request/Response Payload
 All requests between VASPs are structured as [`CommandRequestObject`s](#commandrequestobject) and all responses are structured as [`CommandResponseObject`s](#commandresponseobject).  The resulting request takes a form of the following (prior to JWS):
 
 ```
@@ -169,33 +199,6 @@ Represents an error that occurred in response to a command.
 }
 ```
 
-# Command Sequencing
-
-The low-level Off-Chain protocol allows two VASPs to sequence request-responses for commands originating from either VASP, in order to maintain a consistent database of shared objects. Sequencing a command requires both VAPSs to confirm it is valid, as well as its sequence in relation to other commands operating upon the same objects.  Since commands may operate upon multiple objects, a command only succeeds if the command is able to be applied to every dependent object - ensuring atomicity of the command and consistency of the objects, providing for [Concurrency Control](#concurrency-control). Both VASPs in a channel can asynchronously attempt to initiate and execute commands on shared objects. All commands upon shared objects which are exchanged between pairs of VASPs are sequenced relative to the prior state of each shared object in the command. For example, a command might depend on object X having version Y. If there has been a concurrent update to object X and it has version Z at the time the command is processed, the command will be rejected.
-
-
-## Command Sequencing: Object Versioning
-
-To ensure a consistent view of object states, every object is [versioned](#object-versioning). A command can create or modify one or more objects. Mutations may only occur upon the latest version of an object. When either VASP creates a request, they must denote which objects are read and which are written during this command. These are specified in the `_reads` and `_writes` fields of the command. As mentioned in [Terminology](#terminology), every object type contains a `reference_id` field which is a unique reference ID for the object.  The `_reads` field is specified as a JSON mapping of object `"reference_id"`: `"command_version"`, where `command_version` is the signature of the latest command which mutated the object referenced by the `reference_id`.  By specifying which object versions are read, the off-chain APIs maintain relative ordering of commands on objects and ensure a consistent view of the current state of objects.  Each version may only be mutated a single time - because once it has been mutated, a new version is created to represent the latest state of the object and the old version can be garbage-collected. This results in what is essentially a per-object sequencing.
-
-Both `_reads` and `_writes` must be exact - meaning that if unused dependencies are specified or insufficient dependencies are specified, the command will be rejected.
-
-![Object Versioning](object_versioning.png)
-
-
-## Protocol Server and Client Roles
-
-In each channel, one VASP takes the role of a _protocol server_ and the other the role of a _protocol client_ for the purposes of simplifying shared object locking / state management. Note that these roles are distinct to the HTTP client/server -- and both VASPs act as an HTTP server and client to listen and respond to requests. To avoid excessive locking and intermediate state management during API requests, by convention the _server_ acts as the source of truth for the state of an object.  In practice, this means that in the case of lock contention on a shared object, the _server_ command is prioritized.
-
-![Object Contention](object_contention.png)
-
-Who is the protocol server and who is the client VASP is determined by comparing their binary on-chain Address strings (we call those the _binary address_. The following rules are used to determine which entity serves as which party: The last bit of VASP A’s parent binary address _w_ (where `w = addr[15] & 0x1`) is XOR’d with the last bit in VASP B’s parent binary address _x_.  This results in either 0 or 1.
-If the result is 0, the lexicographically lower parent address is used as the server side.
-If the result is 1, the lexicographically higher parent address is used as the server side. Lexicographic ordering determines which binary address is higher by comparing byte positions one by one, and returning the address with the first higher byte.
-
-# Network Error Handling
-
-In the case of network failure, the sending party for this command is required to re-send the command until it gets a response from the counterparty VASP.  An exponential backoff is suggested for command re-sends.  This retransmission strategy allows the off-chain protocol to achieve [eventual consistency](#eventual-consistency) of the shared objects.  Retransmission must be done regardless of the role of the VASP (protocol client or protocol server).  Upon receipt of a command that has already been applied, the receiving side must reply with the same response as was previously issued.
 
 # Travel Rule Data Exchange
 
