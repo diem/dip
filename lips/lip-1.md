@@ -51,6 +51,8 @@ We describe a number of additional lower-level requirements throughout the remai
 
 **Version**: The state of an object at a specific point in time.  Every creation or mutation creates a new version of the object which was created/mutated.  VASPs operate upon the latest version of shared objects.  Once a version is mutated, it is no longer a valid version upon which a new command may depend - the newly updated value of the version is the latest version for that object and must be acted upon.
 
+**reference_id**: Every object type contains a `reference_id` field which is a unique reference ID for the object.  The reference ID is used as a unique identifier of the object. The reference ID is always specified by the payment initiator VASP (the VASP which originally created the object). This value should be unique, and formatted as “<creator_vasp_onchain_address_bech32>_<unique_id>”. For example, ”lbr1x23456abcd_seqABCD“. As an example, see the reference_id field on the [PaymentObject](#paymentobject). Unicode utf-8 encoded.
+
 # Overall Off-Chain Properties
 The off-chain protocol formulates methodologies to provide the following high-level properties:
 
@@ -172,13 +174,11 @@ Represents an error that occurred in response to a command.
 The low-level Off-Chain protocol allows two VASPs to sequence request-responses for commands originating from either VASP, in order to maintain a consistent database of shared objects. Sequencing a command requires both VAPSs to confirm it is valid, as well as its sequence in relation to other commands operating upon the same objects.  Since commands may operate upon multiple objects, a command only succeeds if the command is able to be applied to every dependent object - ensuring atomicity of the command and consistency of the objects, providing for [Concurrency Control](#concurrency-control). Both VASPs in a channel can asynchronously attempt to initiate and execute commands on shared objects. All commands upon shared objects which are exchanged between pairs of VASPs are sequenced relative to the prior state of each shared object in the command. For example, a command might depend on object X having version Y. If there has been a concurrent update to object X and it has version Z at the time the command is processed, the command will be rejected.
 
 
-## Object Versioning
+## Command Sequencing: Object Versioning
 
-To ensure a consistent view of object states, every object is [versioned](#object-versioning). A command can create or modify one or more objects. Mutations may only occur upon the latest version of an object. When either VASP creates a request, they assign a `_creates_version` to the object being created or mutated - a globally unique representation of the new state of the object.  To maintain relative ordering of commands on objects, every creation or mutation of an object must also specify the `_dependencies`.  The value(s) in this field must match a version previously specified by the `_creates_versions` parameter on a prior command and indicates the version(s) being mutated (or in the case of a new object being created which depends on no previous objects, the `_dependencies` list may be empty).  Each version may only be mutated a single time - because once it has been mutated, a new version is created to represent the latest state of the object and the old version can be garbage-collected. This results in what is essentially a per-object sequencing.
+To ensure a consistent view of object states, every object is [versioned](#object-versioning). A command can create or modify one or more objects. Mutations may only occur upon the latest version of an object. When either VASP creates a request, they must denote which objects are read and which are written during this command. These are specified in the `_reads` and `_writes` fields of the command. As mentioned in [Terminology](#terminology), every object type contains a `reference_id` field which is a unique reference ID for the object.  The `_reads` field is specified as a JSON mapping of object `"reference_id"`: `"command_version"`, where `command_version` is the signature of the latest command which mutated the object referenced by the `reference_id`.  By specifying which object versions are read, the off-chain APIs maintain relative ordering of commands on objects and ensure a consistent view of the current state of objects.  Each version may only be mutated a single time - because once it has been mutated, a new version is created to represent the latest state of the object and the old version can be garbage-collected. This results in what is essentially a per-object sequencing.
 
-Both `_dependencies` and `_creates_version` must be exact - meaning that if unused dependencies are specified or insufficient dependencies are specified, the command will be rejected.
-
-This string must be a unique random string between this pair of VASPs and is used to represent the version of the item created. The version string must be formed in the format of `object_reference_id` + _ + monotonically increasing object version.  Every object type contains a `reference_id` field which is a unique reference ID for the object.  As an example, see the reference_id field on the [PaymentObject](#paymentobject).  The monotonically increasing version begins at 0 and is incremented upon every mutation of an object.  If a payment object is created with a `reference_id` field of "lbr1x23456abcd_seqABCD", upon object creation, the `_creates_version` for this object would become "lbr1x23456abcd_seqABCD_0".  Upon the first mutation, the `_dependencies` list will include "lbr1x23456abcd_seqABCD_0" and the `_creates_version` will be "lbr1x23456abcd_seqABCD_1".
+Both `_reads` and `_writes` must be exact - meaning that if unused dependencies are specified or insufficient dependencies are specified, the command will be rejected.
 
 ![Object Versioning](object_versioning.png)
 
@@ -210,10 +210,8 @@ All requests between VASPs are structured as [`CommandRequestObject`s](basic_bui
     "command_type": "PaymentCommand",
     "command": {
 	    "_ObjectType": "PaymentCommand",
-	    "_creates_versions": [
-	        "08697804e12212fa1c979283963d5c71"
-	    ],
-	    "_dependencies": [],
+	    "_reads": { "lbr1x78901abcd_seqABD": "ef123" },
+	    "_writes": ["lbr1x78901abcd_seqABD"],
 	    "payment": {
 		    "sender": {
 			    "address": "lbr1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
@@ -275,16 +273,17 @@ For a travel rule data exchange, the [command_type](basic_building_blocks.md#com
 |-------	    |------	|-----------	|-------------	|
 | _ObjectType   | str  | Y             | The fixed string `PaymentCommand` |
 | payment| [`PaymentObject`](#paymentobject) | Y | contains a `PaymentObject` that either creates a new payment or updates an existing payment. Note that strict validity check apply when updating payments, that are listed in the section below describing these objects. An invalid update or initial payment object results in a command error
-| _creates_versions | list of str |  Y | Must be a list containing a single str representing the version of the new or updated `PaymentObject` resulting from the success of this payment command. A list with any other number of items results in a command error.  This string must be a unique random string between this pair of VASPs and is used to represent the version of the item created. These should be at least 16 bytes long and encoded to string in hexadecimal notation using characters in the range[A-Za-z0-9] |	
-| _dependencies | list of str | Y | For a payment command, can be an empty list or a list containing a single previous version. If the list is empty this payment command defines a new payment. If the list contains one item, then this command updates the shared `PaymentObject` with the given version. It is an error to include more versions since payments may only depend upon the prior version of the same payment object, and it results in a command error response.  The value in this field must match a version previously specified by the `_creates_versions` parameter on a prior command for this payment object. |
+| _reads | JSON object map |  Y | Must be an object containing mappings of `reference_id` to latest version as represented by the signature of the latest command which successfully mutated the object referenced by the `reference_id`. The value in this field must match a version previously specified by the `_writes` parameter on a prior command for this payment object.  For a payment command, only zero or one `_reads` values should be specified since payments are only dependent upon at most prior version of an object. A list with any other number of items results in a command error.  If the list is empty this payment command defines a new payment. If the list contains one item, then this command updates the shared `PaymentObject`. |	
+
+| _writes | list of str | Y | For a payment command, the `_writes` field may only be a single value since a payment command only operates upon one object.  This field specifies the `reference_id` of the object bring written. |
 
 ```
 {
     "_ObjectType": "PaymentCommand",
-    "_creates_versions": [
+    "_writes": [
         "08697804e12212fa1c979283963d5c71"
     ],
-    "_dependencies": [],
+    "_reads": {},
     "payment": {
         PaymentObject(),
     }
