@@ -1,3 +1,5 @@
+@value mobile-breakpoint-max-query from '~libra-docusaurus-components/src/variables.module.css';
+
 .root {
   background-color: #F6F9FC;
   font-size: 12px;
@@ -58,4 +60,19 @@
   flex: 1;
   margin-right: 5px;
   margin-left: 5px;
+}
+
+@media mobile-breakpoint-max-query {
+  .stagesContainer {
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .stage:not(:last-child) {
+    margin-bottom: 12px;
+  }
+
+  .divider {
+    display: none;
+  }
 }
