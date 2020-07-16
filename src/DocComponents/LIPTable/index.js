@@ -23,8 +23,8 @@ const LIPRow = ({ author, num, title }) => {
       </td>
       <td>{title}</td>
       <td>
-        <a 
-          href={`https://github.com/${author}`} 
+        <a
+          href={`https://github.com/${author}`}
           target="_blank"
         >
           {author}
@@ -47,12 +47,12 @@ const LIPTable = ({status, title, types}) => {
         </tr>
       </thead>
       <tbody>
-        {lips.map(({lip: num, author, title}) => 
-          <LIPRow 
-            author={author} 
-            key={num} 
-            num={num} 
-            title={title} 
+        {lips.map(({lip: num, author, title}) =>
+          <LIPRow
+            author={author}
+            key={num}
+            num={num}
+            title={title}
           />
         )}
       </tbody>

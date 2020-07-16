@@ -1,3 +1,5 @@
+@value large-desktop-breakpoint-query from '~libra-docusaurus-components/src/variables.module.css';
+
 .docPage {
   display: flex;
 }
@@ -19,7 +21,8 @@
   }
 }
 
-/* Custom */
-.docPage > div {
-  border-right: none;
+@media large-desktop-breakpoint-query {
+  html {
+    --doc-padding-top: 67px !important;
+  }
 }
