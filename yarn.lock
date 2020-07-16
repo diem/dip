@@ -6184,10 +6184,10 @@ levenary@^1.1.1:
   dependencies:
     leven "^3.1.0"
 
-libra-docusaurus-components@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/libra-docusaurus-components/-/libra-docusaurus-components-0.2.0.tgz#2c41712c13e431ffca5240c32329b91dcc231871"
-  integrity sha512-ylfdcrHMocOpzpE7aH/T/Nxslqerq2041NQH2eU/OGBwAMOGSfpg0VQtthdUSrkLsr34BMs/ElA+bl6F3yGGcw==
+libra-docusaurus-components@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/libra-docusaurus-components/-/libra-docusaurus-components-0.2.2.tgz#85fca20932cfe06dca77224f39ec81676533e0df"
+  integrity sha512-SL9Sx4TaYZXhH676OBxveml4ppy7l/v8yqvNIvqlvVw6ASIXfG01PhVpXyA4UzS8axwBAFkKNCDWHS1GeDzXVw==
   dependencies:
     "@svgr/webpack" "^5.4.0"
     prop-types "^15.7.2"
@@ -10389,9 +10389,9 @@ websocket-driver@>=0.5.1:
     websocket-extensions ">=0.1.1"
 
 websocket-extensions@>=0.1.1:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/websocket-extensions/-/websocket-extensions-0.1.3.tgz#5d2ff22977003ec687a4b87073dfbbac146ccf29"
-  integrity sha512-nqHUnMXmBzT0w570r2JpJxfiSD1IzoI+HGVdd3aZ0yNi3ngvQ4jv1dtHt5VGxfI2yj5yqImPhOK4vmIh2xMbGg==
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/websocket-extensions/-/websocket-extensions-0.1.4.tgz#7f8473bc839dfd87608adb95d7eb075211578a42"
+  integrity sha512-OqedPIGOfsDlo31UNwYbCFMSaO9m9G/0faIHj5/dZFDMFqPTcx6UwqyOy3COEaEOg/9VsGIpdqn62W5KhoKSpg==
 
 whatwg-url@^7.0.0:
   version "7.1.0"
