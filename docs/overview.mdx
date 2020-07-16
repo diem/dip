@@ -1,21 +1,25 @@
 ---
 id: overview
-title: LIP overview and governance
+title: LIP Overview + Governance
 sidebar_label: Overview
-title_toc_label: LIP overview and governance
 ---
 
 import LipProcessInfographic from '../src/DocComponents/LipProcessInfographic';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import Icon, {TYPES} from '../src/DocComponents/Icon';
 
-Libra Improvement Proposals (LIPs) offer the Libra developer community a way to participate in advancing the features and functioning of the Libra payment network (LPN), either by proposing a change or engaging in discussion about a proposal.
+<Section>
 
-Soon after a full Libra specification is posted to libra.org as the root standard LIP, proposals that  address the core Libra Blockchain protocol, the Move development platform, smart contracts and systems for smart-contract verification, operating standards, APIs, and off-chain mechanisms can be addressed with a LIP. The LIP itself is the design document that describes the proposed change or new feature. As a text file maintained in a versioned repository, it serves as the historical record of decisions made during the approval process.
+  Libra Improvement Proposals (LIPs) offer the Libra developer community a way to participate in advancing the features and functioning of the Libra payment network (LPN), either by proposing a change or engaging in discussion about a proposal.
 
-The LIP program operates under the governance of the Libra Association, with technical decisions supervised by the Association’s Technical Steering Committee (TSC). Day-to-day technical decisions are made using a framework inspired by standards bodies (such as the W3C and IETF) and open source projects (such as Python, the Linux Foundation, and Apache) to coordinate the work of open source contributors. 
+  Soon after a full Libra specification is posted to libra.org as the root standard LIP, proposals that  address the core Libra Blockchain protocol, the Move development platform, smart contracts and systems for smart-contract verification, operating standards, APIs, and off-chain mechanisms can be addressed with a LIP. The LIP itself is the design document that describes the proposed change or new feature. As a text file maintained in a versioned repository, it serves as the historical record of decisions made during the approval process.
 
-This process is based on the family of approaches derived from Python’s PEP process. It is supported by a team of Maintainers who are assigned individually to serve as the LIP Manager on an active LIP and who work to build consensus among Libra community members about technical decisions. Additionally, LIP matters are routinely discussed by the Lead Maintainer with the TSC.
+  The LIP program operates under the governance of the Libra Association, with technical decisions supervised by the Association’s Technical Steering Committee (TSC). Day-to-day technical decisions are made using a framework inspired by standards bodies (such as the W3C and IETF) and open source projects (such as Python, the Linux Foundation, and Apache) to coordinate the work of open source contributors. 
+
+  This process is based on the family of approaches derived from Python’s PEP process. It is supported by a team of Maintainers who are assigned individually to serve as the LIP Manager on an active LIP and who work to build consensus among Libra community members about technical decisions. Additionally, LIP matters are routinely discussed by the Lead Maintainer with the TSC.
+</Section>
+
+<Section>
 
 ## LIP types
 
@@ -26,6 +30,10 @@ There are three types of LIP:
 * **Process LIPs** describe the governance procedures and tools of the Libra project, such as the LIP procedure itself, GitHub plug-ins, and other development tools and guidelines.
 
 * **Informational LIPs** describe a Libra project design issue, or provide general guidelines or information to the Libra community, but do not propose a material change or addition to LPN. Informational LIPs do not necessarily represent Libra community consensus or a recommendation, so users and implementers are free to ignore Informational LIPs or follow their advice.
+
+</Section>
+
+<Section>
 
 ## The LIP process
 
@@ -65,6 +73,10 @@ The formal LIP process will typically (and advisably) begin after the champion o
 
 A LIP may refer to related/dependent LIPs. Every LIP will be assigned a status tag as it evolves. At every stage there can be multiple revisions/reviews until the next stage.
 
+</Section>
+
+<Section>
+
 ## What goes into a LIP
 
 The following is a summary of what each LIP should include. For an example LIP, see [LIP 0](/lip-0). There is also a <a href="https://github.com/libra/lip/blob/master/lip-template.md">template</a> to help you get started.
@@ -88,3 +100,5 @@ The following is a summary of what each LIP should include. For an example LIP, 
   * Implementations - The implementations must be completed before any LIP is given status “Final,” but it need not be completed before the LIP is merged as draft. While there is merit to the approach of reaching consensus on the specification and rationale before writing code, the principle of “rough consensus and running code” is still useful when it comes to resolving many discussions of API details.
 
   * Copyright Waiver – All LIPs must be in the public domain. Please use the copyright notice featured at the bottom of this page.
+
+</Section>
