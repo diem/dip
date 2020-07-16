@@ -1,4 +1,4 @@
-@value medium-tablet-breakpoint-query from '~CSS/variables.module.css';
+@value medium-tablet-breakpoint-query from '~libra-docusaurus-components/src/variables.module.css';
 
 /* Custom */ 
 .copyright {

@@ -5,18 +5,19 @@
   "scripts": {
     "start": "node scripts/createDocsDir.js && docusaurus start",
     "build": "node scripts/createDocsDir.js && docusaurus build",
+    "start-with-ada": "TEST_ADA=1 npm start",
     "swizzle": "docusaurus swizzle",
     "deploy": "node scripts/createDocsDir.js && docusaurus deploy"
   },
   "dependencies": {
-    "@docusaurus/core": "^2.0.0-alpha.50",
-    "@docusaurus/preset-classic": "^2.0.0-alpha.50",
+    "@docusaurus/core": "^2.0.0-alpha.53",
+    "@docusaurus/preset-classic": "^2.0.0-alpha.53",
+    "@svgr/webpack": "^5.4.0",
     "classnames": "^2.2.6",
-    "fs-extra": "^9.0.0",
+    "libra-docusaurus-components": "^0.2.2",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
     "react-github-btn": "^1.1.1",
-    "react-socks": "^2.1.0",
     "react-twitter-embed": "^3.0.3"
   },
   "browserslist": {
@@ -30,5 +31,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "react-axe": "^3.4.1"
   }
 }

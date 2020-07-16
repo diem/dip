@@ -1,120 +1,31 @@
+@value large-desktop-breakpoint-query from '~libra-docusaurus-components/src/variables.module.css';
+@value desktop-breakpoint-query from '~libra-docusaurus-components/src/variables.module.css';
+@value larget-tablet-breakpoint-size from '~libra-docusaurus-components/src/variables.module.css';
 @value table-border-radius: 10px;
 
-.docTitle {
-  font-size: 1.8rem;
-  margin-bottom: 16px;
-}
-
-@media only screen and (max-width: 996px) {
-  .docTitle {
-    font-size: 2rem;
-  }
-}
-
 .docItemContainer {
+  font-size: 18px;
+  font-weight: lighter;
   margin: 0 auto;
-  padding: 0 0.5rem;
+  position: relative;
 }
 
-.docItemContainer ul > li {
-  list-style: disc;
+.docItemWrapper {
+  color: var(--doc-primary);
+  display: flex;
+  padding: 0;
 }
 
-.docItemContainer ul ul > li {
-  list-style: none;
-}
-
-@media only screen and (min-width: 997px) {
-  .docItemCol {
-    max-width: 75% !important;
-  }
-}
-
-.tableOfContents {
-  display: inherit;
-  max-height: calc(100vh - (var(--ifm-navbar-height) + 2rem));
-  overflow-y: auto;
-  /* 
-   * Because of our nav-spacer implementation, the user 
-   * is not able to fully scroll to the bottom of the TOC unless
-   * they get to the bottom of the document. By adding a buffer 
-   * at the bottom, we push the bottom contents up relative to
-   * the item overall.
-  */
-  padding-bottom: 150px;
-  position: sticky;
-  top: 0;
-}
-
-.tableOfContents::-webkit-scrollbar {
-  width: 7px;
-}
-
-.tableOfContents::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.tableOfContents::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 10px;
-}
-
-.tableOfContents::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-@media only screen and (max-width: 996px) {
-  .tableOfContents {
-    display: none;
-  }
-
-  .docItemContainer {
-    padding: 0 0.3rem;
-  }
+.docItemWrapper article {
+  padding: 
+    var(--doc-padding-top) 
+    var(--doc-padding-right) 
+    var(--doc-padding-bottom) 
+    var(--doc-padding-left);
 }
 
 .docLastUpdatedAt {
   font-weight: bold;
-}
-
-/* Custom */
-.header {
-  display: flex;
-  justify-content: space-between;
-  /*
-   * When jumping to a section in the table of contents,
-   * we want there to be a some space so that the section 
-   * jumped to is slightly below the exact top of the page.
-   * Header has to be treated a little different because it
-   * is what the user sees when they first land on the page,
-   * and cannot therefore appear to have a top padding
-   */
-  margin-top: -50px;
-  padding-top: 50px;
-}
-
-.editButton {
-  background-color: white;
-  border: 1px solid var(--ifm-color-primary);
-  border-radius: 5em;
-  color: var(--ifm-color-primary);
-  font-size: 10px;
-  height: 2.2rem;
-  line-height: 2.2rem;
-  text-align: center;
-  padding: 0 15px;
-  transition: all .2s;
-}
-
-.editButton:hover {
-  background-color: var(--ifm-color-primary);
-  color: white;
-  text-decoration: none;
-}
-
-.tableOfContents .tocLink:first-child {
-  margin-top: 0;
 }
 
 .metadataTable {
@@ -123,11 +34,11 @@
   margin-bottom: 50px;
 }
 
-.metadataTable tr:nth-child(odd) {
+html:not[data-theme='dark'].metadataTable tr:nth-child(odd) {
   background-color: #F7FAFC;
 }
 
-.metadataTable tr:nth-child(even) {
+html:not[data-theme='dark'].metadataTable tr:nth-child(even) {
   background-color: white;
 }
 
@@ -162,7 +73,24 @@
 }
 
 .copyright {
-  /*margin-top: 75px;*/
-  color: darkgray;
+  color: var(--copyright-color);
   font-size: 11px;
+}
+
+@media only screen and (max-width: calc(large-tablet-breakpoint-size * 1px)) {
+  .docTitle {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+}
+
+html[data-theme='dark'] {
+  --copyright-color: white;
+  --doc-primary: white;
+  --doc-secondary-color: var(--dark-mode-gray-2)
+}
+
+:root {
+  --copyright-color: darkgray;
+  --doc-primary: #15112C;
 }
