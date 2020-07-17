@@ -45,7 +45,7 @@ enum MetadataType {
   Undefined,
   GeneralMetadataType(GeneralMetadata),
   TravelRuleMetadataType(TravelRuleMetadata),
-  UnstructuredStringMetadataType(UnstructuredStringMetadata),
+  UnstructuredBytesMetadataType(UnstructuredBytesMetadata),
 }
 
 // Used for versioning of general metadata
@@ -75,9 +75,9 @@ struct TravelRuleMetadatav0 {
     Option<String> off_chain_reference_id,
 }
 
-struct UnstructuredStringMetadata {
-    // Unstructured string metadata
-    Option<String> metadata,
+struct UnstructuredBytesMetadata {
+    // Unstructured bytes metadata
+    Option<Vec<u8>> metadata,
 }
 ```
 
