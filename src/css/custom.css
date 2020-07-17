@@ -1,136 +1,68 @@
-html {
-  overflow-y: hidden;
-}
-
-/* stylelint-disable docusaurus/copyright-header */
-:root {
-  --ifm-color-primary: #42318C;
-  --ifm-color-primary-dark: rgb(33, 175, 144);
-  --ifm-color-primary-darker: rgb(31, 165, 136);
-  --ifm-color-primary-darkest: rgb(26, 136, 112);
-  --ifm-color-primary-light: rgb(70, 203, 174);
-  --ifm-color-primary-lighter: rgb(102, 212, 189);
-  --ifm-color-primary-lightest: rgb(146, 224, 208);
-  --ifm-code-font-size: 95%;
-  --primary-nav-height-desktop: 80px;
-  --subnav-height-desktop: 60px;
-  --nav-height-mobile: 60px;
-  --body-horizontal-padding: 20px;
-  --nav-black: #414f64;
-  --body-padding-top: 50px;
-  --cumulative-desktop-body-padding: calc(
-    var(--primary-nav-height-desktop) +
-    var(--subnav-height-desktop) +
-    var(--body-padding-top)
-  );
-}
-
-
-.docusaurus-highlight-code-line {
-  background-color: rgb(72, 77, 91);
-  display: block;
-  margin: 0 calc(-1 * var(--ifm-pre-padding));
-  padding: 0 var(--ifm-pre-padding);
-}
-
-* {
-  list-style: none;
-}
-
-body {
-  font-family: 'NB International Pro';
-}
-
-/* Overrides */
-.navbar__search-input {
-  appearance: none;
-  background-image: url('data:image/svg+xml;utf8,<svg fill="silver" alt="Search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" height="16px" width="16px"><path d="M6.02945,10.20327a4.17382,4.17382,0,1,1,4.17382-4.17382A4.15609,4.15609,0,0,1,6.02945,10.20327Zm9.69195,4.2199L10.8989,9.59979A5.88021,5.88021,0,0,0,12.058,6.02856,6.00467,6.00467,0,1,0,9.59979,10.8989l4.82338,4.82338a.89729.89729,0,0,0,1.29912,0,.89749.89749,0,0,0-.00087-1.29909Z" /></svg>');
-  background-position-x: 0.75rem;
-  background-position-y: center;
-  background-repeat: no-repeat;
-  background-size: 1rem 1rem;
-  border-radius: 2rem;
-  border: 1px solid var(--ifm-color-primary);
-  cursor: text;
-  color: var(--ifm-navbar-search-input-color);
-  display: inline-block;
-  font-size: 0.9rem;
-  line-height: 2rem;
-  outline: none;
-  padding: 0 0.5rem 0 2.25rem;
-  width: 11rem;
-  transition: width .3s ease;
-
-  @media (--ifm-narrow-window) {
-    width: 9rem;
-  }
-}
-
-.navbar__search-input::placeholder {
-  color: #bec3c9;
-}
-
-.navbar__search-input:active, .navbar__search-input:focus {
-  width: 220px;
-}
-
-.footer {
-  background-color: #15112c !important;
-}
-
-.footer a:hover {
-  color: #19cda6 !important;
-  text-decoration: none;
-}
-
-/* main */
-.markdown h1 {
-  font-size: 29px;
-  margin-bottom: 20px;
-  margin-top: 0;
-}
-
-.markdown h2 {
-  margin: 20px 0 16px 0;
-}
-
-.markdown p {
+main article header h1 {
   margin-bottom: 20px;
 }
 
-.markdown .description {
-  margin-bottom: 60px;
+main .markdown h2,
+main article h2 {
+  font-size: var(--header-size);
+  font-weight: normal;
 }
 
-.markdown li > p {
-  margin-bottom: 5px;
+main .markdown > h2 {
+  margin-bottom: 15px;
 }
 
-body .hash-link {
-  position: inherit;
-  padding-right: 5px ;
+body h2 .hash-link {
+  margin-left: -1.5rem;
 }
 
-@font-face {
-  font-family: 'NB International Pro';
-  font-weight: 400;
-  font-style: normal;
-  font-display: auto;
-  src: local('NBInternationalPro-Reg'), local('NBInternationalRegularWebfont'),
-    url('/fonts/nb_international_pro_regular-webfont-c77cab7d176ad6c0a735e9e54398f4b5.eot') format('embedded-opentype'),
-    url('/fonts/nb_international_pro_regular-webfont-23316df531b081018ab50f3fdebb911d.woff2') format('woff2'),
-    url('/fonts/nb_international_pro_regular-webfont-2055eda1f28e3f2766b54ff5d7fa9c3a.woff') format('woff'),
-    url('/fonts/nb_international_pro_regular-webfont-5a1862044e5200d96d6e081b00abaab2.tff') format('truetype');
+.menu__link {
+  font-family: var(--font-bold);
 }
 
-@font-face {
-  font-family: 'NB International Pro';
-  font-weight: 300;
-  font-style: normal;
-  font-display: auto;
-  src: local('NBInternationalPro-Lig'), local('NBInternationalLightWebfont'),
-    url('/fonts/nb_international_pro_light-webfont-79e1edf03d8ddf7d46731839a1463613.eot') format('embedded-opentype'),
-    url('/fonts/nb_international_pro_light-webfont-51e77a94d273016b7b0fbf54dc201e99.woff2') format('woff2'),
-    url('/fonts/nb_international_pro_light-webfont-21efbc5b931089585cc7d67affc7490e.woff') format('woff'),
-    url('/fonts/nb_international_pro_light-webfont-07bd85ca228c4cd11e30a21b915f20c6.ttf') format('truetype');
+.menu__link span {
+  margin-top: 1px;
 }
+
+.menu {
+  --sidebar-horizontal-padding: 32px;
+}
+
+/* Sidebar icon classes */
+
+a.icon-indented,
+.icon-indented a {
+  background-position: -2px 0 !important;
+  padding-left: calc( var(--icon-size) + 23px ) !important;
+}
+
+a.lip-back-to-home,
+.lip-back-to-home a {
+  --icon-size: 15px;
+  background-position: 2px 1px !important;
+  font-weight: normal;
+  font-family: var(--font-normal);
+  padding-left: calc( var(--icon-size) + .65em ) !important;
+}
+
+.lip-category > li:first-child {
+  margin-bottom: .35em !important;
+}
+
+a.lip-main-sidebar-icon,
+.lip-main-sidebar-icon a {
+  --icon-size: 25px !important;
+  background-position: 4px 0px !important;
+  margin: .4em 0;
+  padding-left: calc( var(--icon-size) + 21px ) !important;
+}
+
+.lip-category > .lip-main-sidebar-icon {
+  margin: .45em 0 !important;
+}
+
+.lip-info-icon a {
+  background-position: 7px 0px !important;
+}
+
+/* Universal media queries are located in DocPage/styles.module.css */

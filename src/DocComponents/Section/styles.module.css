@@ -1,0 +1,33 @@
+.root {
+  --section-vertical-spacing: 75px;
+}
+
+.root:not(:last-child) {
+  padding-bottom: var(--section-vertical-spacing);
+}
+
+.root:last-child > hr {
+  display: none;
+}
+
+.root *:first-child {
+  margin-top: 0;
+}
+
+.community {
+  display: block;
+  font-size: 15px;
+}
+
+.root:not(:last-child) .community {
+  margin-bottom: var(--section-vertical-spacing);
+}
+
+.root > hr {
+  border-color: var(--default-border-color);
+  border-width: 1px;
+  margin: 0;
+  position: absolute;
+  left: 0;
+  width: calc( 100% - 1px );
+}
