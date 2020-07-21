@@ -93,9 +93,9 @@ If VASP A fails to receive a response from B, it must re-send the request at som
 
 Commands may flow in both directions - A to B or B to A - and may happen simultaneously in an asynchronous manner, providing [Multi-Party Command Issuance](#multi-party-command-issuance).  By only allowing commands to build upon the latest agreed-upon version of an object, concurrent requests are possible with minimal contention - contention only occurs if simultaneous commands operate upon the same object(s) and contention in that case is resolved by nature of [Client/Server Roles](#protocol-server-and-client-roles).
 
-![Command Exchange](/img/command_exchange.png)
+![Command Exchange](img/command_exchange.png)
 
-![Command State Flow](/img/command_state_flow.png)
+![Command State Flow](img/command_state_flow.png)
 
 # Command Sequencing
 
@@ -108,14 +108,14 @@ To ensure a consistent view of object states, every object is [versioned](#objec
 
 Both `_reads` and `_writes` must be exact - meaning that if unused dependencies are specified or insufficient dependencies are specified, the command will be rejected.
 
-![Object Versioning](/img/object_versioning.png)
+![Object Versioning](img/object_versioning.png)
 
 
 ## Protocol Server and Client Roles
 
 In each channel, one VASP takes the role of a _protocol server_ and the other the role of a _protocol client_ for the purposes of simplifying shared object locking / state management. Note that these roles are distinct to the HTTP client/server -- and both VASPs act as an HTTP server and client to listen and respond to requests. To avoid excessive locking and intermediate state management during API requests, by convention the _server_ acts as the source of truth for the state of an object.  In practice, this means that in the case of lock contention on a shared object, the _server_ command is prioritized.
 
-![Object Contention](/img/object_contention.png)
+![Object Contention](img/object_contention.png)
 
 Who is the protocol server and who is the client VASP is determined by comparing their binary on-chain Address strings (we call those the _binary address_. The following rules are used to determine which entity serves as which party: The last bit of VASP A’s parent binary address _w_ (where `w = addr[15] & 0x1`) is XOR’d with the last bit in VASP B’s parent binary address _x_.  This results in either 0 or 1.
 If the result is 0, the lexicographically lower parent address is used as the server side.
