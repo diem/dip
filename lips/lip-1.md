@@ -9,7 +9,7 @@ created: 05/29/2020
 
 # Summary
 ---
-The Off-Chain protocol is an API and payload specification to support compliance, privacy and scalability on blockchains.
+The Off-Chain protocol is an API and payload specification that could be used to support compliance, privacy and scalability on blockchains. Note that this API is being published by the Libra Association on an “as is” basis.  Publication of this API by the Libra Association does not mean that the Association is taking any position on whether the API addresses issues of compliance, privacy and scalability.  Users of this API must make such determinations on their own.
 
 ---
 # Abstract / Motivation
@@ -20,11 +20,11 @@ It is executed between pairs of _Virtual Asset Service Providers_ (VASPs),
 such as wallets, exchanges or designated dealers and allows them to privately exchange payment information
 before, while, or after settling it on a Blockchain.
 
-The initial use-case for the Off-Chain protocol relates to _supporting compliance_, and in particular the implementation of the _Travel Rule_ recommendation by the FATF. Those recommendations specify that when money transfers above a certain amount are executed by VASPs, some information about the sender and recipient of funds must become available to both VASPs. The Off-Chain protocols allows VASPs to exchange this information privately.
+The initial use-case for the Off-Chain protocol relates to _supporting compliance_, and in particular supporting the implementation of the _Travel Rule_ recommendation by the FATF. Those recommendations specify that when money transfers above a certain amount are executed by VASPs, some information about the sender and recipient of funds must become available to both VASPs. The Off-Chain protocols allows VASPs to exchange this information privately.
 
-A secondary use-case for the Off-Chain protocol is to provide higher levels of privacy than those that can be achieved directly on a Blockchain. The exact details of the customer accounts involved in a payment, as well as any personal information that needs to be exchanged to support compliance, remain off-chain. They are exchanged within a secure, authenticated and encrypted, channel and only made available to the parties that strictly require them.
+A secondary use-case for the Off-Chain protocol is to provide higher levels of privacy than those that can be achieved directly on a Blockchain. The exact details of the customer accounts involved in a payment, as well as personal information that may need to be exchanged to support compliance, remain off-chain. The information is exchanged within a secure, authenticated and encrypted, channel and would only be made available to the parties that strictly require them.
 
-In the future, the Off-Chain protocol will be further extended to include functionality such as batching of transactions and additional payments functionality.
+In the future, the Off-Chain protocol may be further extended to include functionality such as batching of transactions and additional payments functionality.
 
 ---
 # Specification
@@ -32,11 +32,11 @@ In the future, the Off-Chain protocol will be further extended to include functi
 
 # Off-Chain Protocal Design Principles
 
-**Scalability**. In the initial version of the Off-chain protocol, all off-chain PaymentObjects that are ready for settlement, are then settled individually (gross) through a separate Blockchain transaction. However, the architecture of the Off-chain protocol allows in the future the introduction of netting batches of transactions and settling all of them through a single Blockchain transaction. This allows costs associated with multiple on-chain transactions to be kept low for VASPs, and allows for a number of user transactions or payment between VASPs that exceed the capacity of the underlying Blockchain. Additionally, batches enhance privacy via hiding the number of transactions between VASPs and by only placing a single on-chain transaction which hides the individual transaction amounts.
+**Scalability**. Pursuant to the design of the initial version of the Off-chain protocol, all off-chain PaymentObjects that are ready for settlement, would be settled individually (gross) through a separate Blockchain transaction. However, the architecture of the Off-chain protocol allows in the future the introduction of netting batches of transactions and settling all of them through a single Blockchain transaction. This allows costs associated with multiple on-chain transactions to be kept low for VASPs, and allows for a number of user transactions or payment between VASPs that exceed the capacity of the underlying Blockchain. Additionally, batches enhance privacy via hiding the number of transactions between VASPs and by only placing a single on-chain transaction which hides the individual transaction amounts.
 
-**Extensibility**. The current Off-Chain protocols accommodate simple payments where a customer of a VASP sends funds to the customer of another VASP over a limit, requiring some additional compliance-related information. However, in the future the blockchains may support more complex flows of funds between customers of VASPs as well as merchants. The Off-chain protocol can be augmented to support the transfer of rich meta-data relating to those flows between VASPs in a compliant, secure, private, scalable and extensible manner.
+**Extensibility**. This initial version of the Off-Chain protocol accommodates simple payments where a customer of a VASP sends funds to the customer of another VASP over a limit, requiring some additional compliance-related information. However, in the future the blockchains may support more complex flows of funds between customers of VASPs as well as merchants. The Off-Chain protocol can be augmented to support the transfer of rich meta-data relating to those flows between VASPs in a compliant, secure, private, scalable and extensible manner.
 
-**Generic Communication Framework**. The Off-Chain protocol is designed as a generic communication framework which can be utilized by any Blockchain and requires no ties to any specific blockchain. While the first usage of the Off-Chain protocol is within the Libra Blockchain, the Off-Chain protocol makes few and well defined assumptions about the underlying Blockchain environment, which can be fulfilled by other Blockchains. The Off-chain protocol can therefore be re-purposed to support compliance, privacy and scalability use-cases between VASPs in other Blockchains, as well as in multiple blockchains simultaneously.
+**Generic Communication Framework**. The Off-Chain protocol is designed as a generic communication framework which can be utilized by any Blockchain and requires no ties to any specific blockchain. While the first potential usage of the Off-Chain protocol is presented as within the Libra Blockchain, the Off-Chain protocol makes few and well defined assumptions about the underlying Blockchain environment, which can be fulfilled by other Blockchains. The Off-Chain protocol can therefore be re-purposed to support compliance, privacy and scalability use-cases between VASPs in other Blockchains, as well as in multiple blockchains simultaneously.
 
 We describe a number of additional lower-level requirements throughout the remaining of the documents, such as ease of deployment through the use of established web technologies (like HTTP and JSON), tolerance to delays and crash-recovery failures of either VASPs, and compatibility with common cryptography and serialization schemes.
 
@@ -93,9 +93,9 @@ If VASP A fails to receive a response from B, it must re-send the request at som
 
 Commands may flow in both directions - A to B or B to A - and may happen simultaneously in an asynchronous manner, providing [Multi-Party Command Issuance](#multi-party-command-issuance).  By only allowing commands to build upon the latest agreed-upon version of an object, concurrent requests are possible with minimal contention - contention only occurs if simultaneous commands operate upon the same object(s) and contention in that case is resolved by nature of [Client/Server Roles](#protocol-server-and-client-roles).
 
-![Command Exchange](command_exchange.png)
+![Command Exchange](/img/command_exchange.png)
 
-![Command State Flow](command_state_flow.png)
+![Command State Flow](/img/command_state_flow.png)
 
 # Command Sequencing
 
@@ -108,14 +108,14 @@ To ensure a consistent view of object states, every object is [versioned](#objec
 
 Both `_reads` and `_writes` must be exact - meaning that if unused dependencies are specified or insufficient dependencies are specified, the command will be rejected.
 
-![Object Versioning](object_versioning.png)
+![Object Versioning](/img/object_versioning.png)
 
 
 ## Protocol Server and Client Roles
 
 In each channel, one VASP takes the role of a _protocol server_ and the other the role of a _protocol client_ for the purposes of simplifying shared object locking / state management. Note that these roles are distinct to the HTTP client/server -- and both VASPs act as an HTTP server and client to listen and respond to requests. To avoid excessive locking and intermediate state management during API requests, by convention the _server_ acts as the source of truth for the state of an object.  In practice, this means that in the case of lock contention on a shared object, the _server_ command is prioritized.
 
-![Object Contention](object_contention.png)
+![Object Contention](/img/object_contention.png)
 
 Who is the protocol server and who is the client VASP is determined by comparing their binary on-chain Address strings (we call those the _binary address_. The following rules are used to determine which entity serves as which party: The last bit of VASP A’s parent binary address _w_ (where `w = addr[15] & 0x1`) is XOR’d with the last bit in VASP B’s parent binary address _x_.  This results in either 0 or 1.
 If the result is 0, the lexicographically lower parent address is used as the server side.
@@ -465,6 +465,13 @@ A state of `pending_review` may exist due to manual review. This state may resul
 
 A state of `soft_match` requires that the VASP associated with this actor must send all available KYC data via `additional_kyc_data`.  After human review of this data, this state may result in any of `ready_for_settlement` or `abort` (`abort` if the soft-match was unable to be cleared).  If data is not received within a reasonable SLA (suggested to be 24 hours), this state will result in `abort`.  The party who needs to provide KYC data is also allowed to `abort` the transaction at any point if they do not have additional KYC data or do not wish to supply it.
 
+# Disclaimers
+
+THIS API IS PROVIDED "AS IS" WITH NO EXPRESS OR IMPLIED WARRANTIES WHATSOEVER, INCLUDING ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, COMPLIANCE WITH LAW, ACCURACY, COMPLETENESS, OR NONINFRINGEMENT OF INTELLECTUAL PROPERTY RIGHTS.
+
+The Libra Association disclaims all liability relating to this API and to the
+implementation of this API, and disclaims all liability for cost of procurement of substitute services, lost profits, loss of use, loss of data or any incidental, consequential, direct,
+indirect, or special damages, whether under contract, tort, warranty or otherwise, arising in any way out of use or reliance upon this API or any information herein.
 
 
 
