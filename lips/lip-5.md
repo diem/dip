@@ -111,7 +111,7 @@ The Intent Identifier consists of
 * Query parameters
   * Provides details for how the request should be fulfilled
   * Initially, currency code and amount to specify transaction request preferences
-    * currency uses the 'c' key, with the value encoded as a 3-letter currency code
+    * currency uses the 'c' key, with the value encoded as a 3-letter currency code (ex. LBR)
     * amount uses the 'am' key, with the value encoded in micro units (10e-6)
 
 ### Example of request intent
