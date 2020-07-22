@@ -121,7 +121,7 @@ Identifier information
 * Prefix 
   * `libra://`
 * Base URI
-  * Address: `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`
+  * Account Identifier: `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`
 * Query parameters
   * none
 
