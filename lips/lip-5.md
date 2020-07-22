@@ -50,7 +50,7 @@ For communicating account identity, we propose using a compact, versioned and ca
 
 ### Constraints for subaddresses
 - Fixed length at 8 bytes (we don’t accept other sizes, strictly 8 bytes).
-- Unique to their custodian/on-chain account: addresses must be non-ambiguous (ie. Recipient VASPs should not issue the same address to multiple users).
+- Unique to their custodian/on-chain account: subaddresses must be non-ambiguous (ie. Recipient VASPs should not issue the same subaddress to multiple users).
 - By convention, 8 zero bytes (`0x0000000000000000`) is reserved to denote the root (VASP owned) account.
 
 ### Format
