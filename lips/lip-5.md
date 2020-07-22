@@ -63,7 +63,7 @@ The Libra Account Identifier consists of
 * A Bech32 version identifier
   * The character “p” (version = 1) for on-chain with subaddress
 * A Bech32 encoded payload
-  * For version 1 is Libra account address + subaddress (16 + 8 bytes)
+  * For version 1, is Libra account address + subaddress (16 + 8 bytes)
 The last 6 characters correspond to the Bech32 checksum
 
 Overall address format: *prefix* | *delimiter* | *version* | *encoded payload* | *checksum*
