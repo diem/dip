@@ -31,7 +31,7 @@ A common pattern to a cross-wallet transaction would be:
 
 Examples of cross-wallet payment scenarios include:
 
-* A user may want to share a compact identifier over traditional communication channels (eg. SMS) and receive payment from a user of a different wallet
+* A user may want to share a compact identifier over traditional communication channels (eg. SMS) and receive a payment from a user of a different wallet
     * The recipient user may want to specify a currency preference
     * The recipient user may want to specify a concrete amount they'd like to receive
 * A merchant may want to present a predefined payment request via QR code so that a customer would only need to authorize the funds
@@ -155,4 +155,3 @@ Identifier information
 
 ### Looking ahead
 We expect to evolve the Intent Identifier to support a broader range of payment and identity scenarios. These may range from sharing stable identity information to supporting richer payment metadata. 
-
