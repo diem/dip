@@ -6184,10 +6184,10 @@ levenary@^1.1.1:
   dependencies:
     leven "^3.1.0"
 
-libra-docusaurus-components@^0.2.5:
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/libra-docusaurus-components/-/libra-docusaurus-components-0.2.5.tgz#1d7538ed731ecee8ec250309a8d6518dfa92cdf1"
-  integrity sha512-FBdMLRTqMDUXLYCTt+2fwkp+v47w3OUXTNdAOYLVcxMiK9hHG7OnnTBgQDo6m+NKvLtF9NMyqDJmIJfRVAjnvQ==
+libra-docusaurus-components@^0.2.8:
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/libra-docusaurus-components/-/libra-docusaurus-components-0.2.8.tgz#5c803bc5432c527057d3c56bd46225984291fd25"
+  integrity sha512-74wjhWNyvMUyKbVk9csUXl8D7gr/Sed3JOc8qkQXQyFZbFgrFT0auXTE0TLl0rP4+VKBIFW2u28iGWOHTwSSKA==
   dependencies:
     "@svgr/webpack" "^5.4.0"
     prism-react-renderer "^1.1.1"
