@@ -14,7 +14,7 @@ Libra wallets benefit from consistent standards for serializing addresses and tr
 
 * **subaddress**: Accounts on-chain are represented by an address.  To allow multiplexing of a single address into multiple wallets, custodial wallets may use “subaddresses” under the on-chain address for each underlying user.  While custodians can keep an internal ledger for mapping subaddresses, these virtual identifiers are not stored as resources on the Libra blockchain. A best practice is to use subaddresses as a single-use address to remove linkability.  In this way, subaddresses serve as a many-to-one mapping between subaddresses and a user - where ideally subaddresses are not re-used for more than one payment.
 
-* **account identifier**:  An account identifier is a base-32 encoded string that captures 1) the network version the address is intended for, 2) the address type (with or without subaddress) and 3) the underlying address components. This identifier uses the bech32 encoding which consists of a human readable prefix, delimiter, serialized payload and checksum. An example of an account identifier is `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`.
+* **account identifier**:  An account identifier is a base-32 encoded string that captures 1) the network version the address is intended for, 2) the address type (with or without subaddress) and 3) the underlying address components. This identifier uses the bech32 encoding which consists of a human readable prefix, delimiter, serialized payload (account address, subaddress) and checksum. An example of an account identifier is `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`.
 
 * **intent identifier**: An intent identifier is a URI-serialized string that couples an *account identifier* with optional query parameters that specify preferences for an on-chain action. Initially, intent identifiers will be used for specifying transaction requests. In the fullness of time, we can expect using intent identifiers for sharing richer transaction metadata or identity information. an example of an intent identifier is `libra://lbr11q8mjtzdhrl6035feva9r7umfc6du7ezz300tv2hj7v5pyg?am=1000000&c=LBR`
 
@@ -24,10 +24,10 @@ For a range of peer-to-peer and peer-to-merchant use cases, merchants and wallet
 A common pattern to a cross-wallet transaction would be:
 
 1) The recipient generates a *intent identifier* consisting of their account identifier, and payment metadata
-2) The recipient shares this information with a would-be sender over some communication channel 
+2) The recipient shares this information with a would-be sender over some communication channel (eg. SMS, Email, QR code)
 3) The sender's wallet deserializes this information and populates a transaction for the sending user to authorize
 4) The sending user authorizes the request and their wallet submits the transaction to the Libra blockchain
-5) The recipient wallet witnesses the transaction on-chain and confirms the funds have been received
+5) The recipient wallet monitors on-chain events for its accounts and identifies a specific transaction by the unique subaddress passed in the transaction's metadata fields. Upon observing such a transaction, they can confirm funds have been received.
 
 Examples of cross-wallet payment scenarios include:
 
@@ -40,7 +40,7 @@ Examples of cross-wallet payment scenarios include:
 # Specification
 
 ## Account identifiers
-For communicating account identity, we propose using a compact, versioned and case-insensitive identifier. To meet this criteria, we selected the Bech32 encoding implementation used in Bitcoin Segwit (BIP 0173) excluding the Segwit byte known-length restrictions.
+For communicating account identity, we propose using a compact, versioned and case-insensitive identifier. To meet this criteria, we selected the Bech32 encoding implementation used in Bitcoin Segwit ([BIP 0173](https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki)) excluding the Segwit byte known-length restrictions. 
 
 ### Desired attributes
 - Consistent - Users can build a muscle memory for identifying and using these account addresses
@@ -64,7 +64,7 @@ The Libra Account Identifier consists of
   * The character “p” (version = 1) for on-chain with subaddress
 * A Bech32 encoded payload
   * For version 1, is Libra account address + subaddress (16 + 8 bytes)
-The last 6 characters correspond to the Bech32 checksum
+* The last 6 characters correspond to the Bech32 checksum
 
 Overall address format: *prefix* | *delimiter* | *version* | *encoded payload* | *checksum*
 
@@ -73,9 +73,10 @@ Identifier information
 * Prefix (string)
   * Network: `lbr`
 * Address type (version prefix): `01` (letter p in Bech32 alphabet)
-* Payload (in hex)
-  * Address: `f72589b71ff4f8d139674a3f7369c69b`
-  * Subaddress: `cf64428bdeb62af2`
+* Address payload (in hex)
+  * Address: `0xf72589b71ff4f8d139674a3f7369c69b`
+  * Subaddress: `0xcf64428bdeb62af2`
+* Checksum: `w5p72t`
 
 **Result**: `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`
 
@@ -84,9 +85,10 @@ Identifier information
 * Prefix (string)
   * Network: `lbr`
 * Address type (version prefix): `01` (letter p in Bech32 alphabet)
-* Payload (in hex)
-  * Address: `f72589b71ff4f8d139674a3f7369c69b`
-  * Subaddress: `0000000000000000`
+* Address payload (in hex)
+  * Address: `0xf72589b71ff4f8d139674a3f7369c69b`
+  * Subaddress: `0x0000000000000000`
+* Checksum: `flf8ma`
 
 **Result**: `lbr1p7ujcndcl7nudzwt8fglhx6wxnvqqqqqqqqqqqqqflf8ma`
 
@@ -94,7 +96,7 @@ Identifier information
 In the future, we plan to define additional Account Identifier versions to support other forms of identity, such as a more human-readable subaddress format. These would leverage a similar overall structure but would have a different version identifier, preventing naming collisions.  
 
 ## Intent identifiers
-In addition to the account identifier standard, we propose a common serialization format for denoting specific actions involving an on-chain account. This format is intended to evolve and support a broad range of user-to-user and user-to-merchant scenarios.
+In addition to the Account Identifier standard, we propose a common serialization format for denoting specific actions involving an on-chain account. This format is intended to evolve and support a broad range of user-to-user and user-to-merchant scenarios. 
 
 ### Desired attributes
 - Familiar - define standards that are easy to understand and implement (by merchant, exchange and wallet developers)
