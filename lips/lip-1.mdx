@@ -125,7 +125,7 @@ In each channel, one VASP takes the role of a _protocol server_ and the other th
 
 <img alt="Object Contention" src={useBaseUrl('img/object_contention.png')} />
 
-The protocol server/client role is determined by comparing their binary on-chain Address strings (we call those the _binary address_. The following rules are used to determine which entity serves as which party: The last bit of VASP A’s parent binary address _w_ (where `w = addr[15] & 0x1`) is XOR’d with the last bit in VASP B’s parent binary address _x_.  This results in either 0 or 1. (Refer to TODO for additional information on parent/child VASP accounts).
+The protocol server/client role is determined by comparing their binary on-chain Address strings (we call those the _binary address_. The following rules are used to determine which entity serves as which party: The last bit of VASP A’s parent binary address _w_ (where `w = addr[15] & 0x1`) is XOR’d with the last bit in VASP B’s parent binary address _x_.  This results in either 0 or 1. (Refer to https://github.com/libra/libra/tree/master/client/libra-dev#vasp-account-roles for additional information on parent/child VASP accounts).
 If the result is 0, the lexicographically lower parent address is used as the server side.
 If the result is 1, the lexicographically higher parent address is used as the server side. Lexicographic ordering determines which binary address is higher by comparing byte positions one by one, and returning the address with the first higher byte.
 
