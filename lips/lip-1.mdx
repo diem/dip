@@ -32,7 +32,7 @@ In the future, the Off-Chain protocol may be further extended to include functio
 # Specification
 ---
 
-# Off-Chain Protocal Design Principles
+# Off-Chain Protocol Design Principles
 
 **Scalability**. Pursuant to the design of the initial version of the Off-chain protocol, all off-chain PaymentObjects that are ready for settlement, would be settled individually (gross) through a separate Blockchain transaction. However, the architecture of the Off-chain protocol allows in the future the introduction of netting batches of transactions and settling all of them through a single Blockchain transaction. This allows costs associated with multiple on-chain transactions to be kept low for VASPs, and allows for a number of user transactions or payment between VASPs that exceed the capacity of the underlying Blockchain. Additionally, batches enhance privacy via hiding the number of transactions between VASPs and by only placing a single on-chain transaction which hides the individual transaction amounts.
 
