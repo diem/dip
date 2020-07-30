@@ -6184,12 +6184,13 @@ levenary@^1.1.1:
   dependencies:
     leven "^3.1.0"
 
-libra-docusaurus-components@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/libra-docusaurus-components/-/libra-docusaurus-components-0.2.0.tgz#2c41712c13e431ffca5240c32329b91dcc231871"
-  integrity sha512-ylfdcrHMocOpzpE7aH/T/Nxslqerq2041NQH2eU/OGBwAMOGSfpg0VQtthdUSrkLsr34BMs/ElA+bl6F3yGGcw==
+libra-docusaurus-components@^0.2.9:
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/libra-docusaurus-components/-/libra-docusaurus-components-0.2.9.tgz#ab340f47ead847db2f60a4745d3fb904dc23266f"
+  integrity sha512-0v0h9fVcHsAA1K3ML8rD6GAC8q0yLt61G8DuZ5qllYTOA/5Sf/qhrMUMeqhXP1g50ywY8eAHc4+PWEZnghrCLQ==
   dependencies:
     "@svgr/webpack" "^5.4.0"
+    prism-react-renderer "^1.1.1"
     prop-types "^15.7.2"
     react "^16.13.1"
     react-dom "^16.8.4"
@@ -8171,6 +8172,11 @@ prism-react-renderer@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/prism-react-renderer/-/prism-react-renderer-1.1.0.tgz#6fe1b33f1de1b23afbdb07663d135f9026eef4ad"
   integrity sha512-WZAw+mBoxk1qZDD1h1WOg0BVHgyk9zqbuIBFNgP+Z71i515jGL0WZIN1FIF8EgOyh06x8Rr7HAUXxsRsoUZKyg==
+
+prism-react-renderer@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/prism-react-renderer/-/prism-react-renderer-1.1.1.tgz#1c1be61b1eb9446a146ca7a50b7bcf36f2a70a44"
+  integrity sha512-MgMhSdHuHymNRqD6KM3eGS0PNqgK9q4QF5P0yoQQvpB6jNjeSAi3jcSAz0Sua/t9fa4xDOMar9HJbLa08gl9ug==
 
 prismjs@^1.20.0:
   version "1.20.0"

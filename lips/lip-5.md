@@ -1,7 +1,7 @@
 ---
 lip: 5
 title: Address formatting
-author: Dmitry Pimenov (@dpim)
+authors: Dmitry Pimenov (@dpim)
 status: Draft
 type: Informational
 created: 07/08/2020
@@ -19,7 +19,7 @@ Libra wallets benefit from consistent standards for serializing addresses and tr
 * **intent identifier**: An intent identifier is a URI-serialized string that couples an *account identifier* with optional query parameters that specify preferences for an on-chain action. Initially, intent identifiers will be used for specifying transaction requests. In the fullness of time, we can expect using intent identifiers for sharing richer transaction metadata or identity information. an example of an intent identifier is `libra://lbr11q8mjtzdhrl6035feva9r7umfc6du7ezz300tv2hj7v5pyg?am=1000000&c=LBR`
 
 # Abstract / Motivation
-For a range of peer-to-peer and peer-to-merchant use cases, merchants and wallets will need to coordinate an information exchange about the intended recipient and transaction payload. Standardizing the format of this payment envelope promotes interoperability across the client ecosystem. This proposal covers standards for several related identifiers. 
+For a range of peer-to-peer and peer-to-merchant use cases, merchants and wallets will need to coordinate an information exchange about the intended recipient and transaction payload. Standardizing the format of this payment envelope promotes interoperability across the client ecosystem. This proposal covers standards for several related identifiers.
 
 A common pattern to a cross-wallet transaction would be:
 
@@ -40,7 +40,7 @@ Examples of cross-wallet payment scenarios include:
 # Specification
 
 ## Account identifiers
-For communicating account identity, we propose using a compact, versioned and case-insensitive identifier. To meet this criteria, we selected the Bech32 encoding implementation used in Bitcoin Segwit ([BIP 0173](https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki)) excluding the Segwit byte known-length restrictions. 
+For communicating account identity, we propose using a compact, versioned and case-insensitive identifier. To meet this criteria, we selected the Bech32 encoding implementation used in Bitcoin Segwit ([BIP 0173](https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki)) excluding the Segwit byte known-length restrictions.
 
 ### Desired attributes
 - Consistent - Users can build a muscle memory for identifying and using these account addresses
@@ -54,7 +54,7 @@ For communicating account identity, we propose using a compact, versioned and ca
 - By convention, 8 zero bytes (`0x0000000000000000`) is reserved to denote the root (VASP owned) account.
 
 ### Format
-The Libra Account Identifier consists of 
+The Libra Account Identifier consists of
 * A prefix (also known as hrp (human readable part) which identifies the network version this address is intended for
   * “lbr” for Mainnet addresses
   * “tlb” for Testnet addresses
@@ -68,7 +68,7 @@ The Libra Account Identifier consists of
 
 Overall address format: *prefix* | *delimiter* | *version* | *encoded payload* | *checksum*
 
-### Example with explicit subaddress 
+### Example with explicit subaddress
 Identifier information
 * Prefix (string)
   * Network: `lbr`
@@ -93,10 +93,10 @@ Identifier information
 **Result**: `lbr1p7ujcndcl7nudzwt8fglhx6wxnvqqqqqqqqqqqqqflf8ma`
 
 ### Looking ahead
-In the future, we plan to define additional Account Identifier versions to support other forms of identity, such as a more human-readable subaddress format. These would leverage a similar overall structure but would have a different version identifier, preventing naming collisions.  
+In the future, we plan to define additional Account Identifier versions to support other forms of identity, such as a more human-readable subaddress format. These would leverage a similar overall structure but would have a different version identifier, preventing naming collisions.
 
 ## Intent identifiers
-In addition to the Account Identifier standard, we propose a common serialization format for denoting specific actions involving an on-chain account. This format is intended to evolve and support a broad range of user-to-user and user-to-merchant scenarios. 
+In addition to the Account Identifier standard, we propose a common serialization format for denoting specific actions involving an on-chain account. This format is intended to evolve and support a broad range of user-to-user and user-to-merchant scenarios.
 
 ### Desired attributes
 - Familiar - define standards that are easy to understand and implement (by merchant, exchange and wallet developers)
@@ -104,7 +104,7 @@ In addition to the Account Identifier standard, we propose a common serializatio
 - Extensible - a versioned protocol with room for supporting new capabilities
 
 ### Format
-The Intent Identifier consists of 
+The Intent Identifier consists of
 * A prefix
   * `libra://` to explicitly specify how the identifier should be interpreted
 * A base URI
@@ -117,10 +117,10 @@ The Intent Identifier consists of
     * amount uses the 'am' key, with the value encoded in micro units (10e-6)
 
 ### Example of request intent
-This intent represents a request to receive funds at a given address. Since neither the amount nor currency are prefilled, the sender will define these fields. 
+This intent represents a request to receive funds at a given address. Since neither the amount nor currency are prefilled, the sender will define these fields.
 
 Identifier information
-* Prefix 
+* Prefix
   * `libra://`
 * Base URI
   * Account Identifier: `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`
@@ -130,10 +130,10 @@ Identifier information
 **Result**: `libra://lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`
 
 ### Example of request intent with currency specified
-This intent represents a request to receive funds in a specific currency at a given address. The amount is defined by the sender. 
+This intent represents a request to receive funds in a specific currency at a given address. The amount is defined by the sender.
 
 Identifier information
-* Prefix 
+* Prefix
   * `libra://`
 * Base URI
   * Account Identifier: `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`
@@ -146,7 +146,7 @@ Identifier information
 This intent represents a request to receive a specific amount in a specific currency for a given address.
 
 Identifier information
-* Prefix 
+* Prefix
   * `libra://`
 * Base URI
   * Address: `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`
@@ -156,4 +156,4 @@ Identifier information
 **Result**: `libra://lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t?c=LBR&am=1000000`
 
 ### Looking ahead
-We expect to evolve the Intent Identifier to support a broader range of payment and identity scenarios. These may range from sharing stable identity information to supporting richer payment metadata. 
+We expect to evolve the Intent Identifier to support a broader range of payment and identity scenarios. These may range from sharing stable identity information to supporting richer payment metadata.
