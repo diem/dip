@@ -14,7 +14,7 @@ import Icon, {TYPES} from '../src/DocComponents/Icon';
 
   Soon after a full Libra specification is posted to libra.org as the root standard LIP, proposals that  address the core Libra Blockchain protocol, the Move development platform, smart contracts and systems for smart-contract verification, operating standards, APIs, and off-chain mechanisms can be addressed with a LIP. The LIP itself is the design document that describes the proposed change or new feature. As a text file maintained in a versioned repository, it serves as the historical record of decisions made during the approval process.
 
-  The LIP program operates under the governance of the Libra Association, with technical decisions supervised by the Association’s Technical Steering Committee (TSC). Day-to-day technical decisions are made using a framework inspired by standards bodies (such as the W3C and IETF) and open source projects (such as Python, the Linux Foundation, and Apache) to coordinate the work of open source contributors.
+  The LIP program operates under the governance of the Libra Association, with technical decisions supervised by the Association’s Technical Steering Committee (TSC). Day-to-day technical decisions are made using a framework inspired by standards bodies (such as the W3C and IETF) and open source projects (such as Python, the Linux Foundation, and Apache) to coordinate the work of open source contributors. 
 
   This process is based on the family of approaches derived from Python’s PEP process. It is supported by a team of Maintainers who are assigned individually to serve as the LIP Manager on an active LIP and who work to build consensus among Libra community members about technical decisions. Additionally, LIP matters are routinely discussed by the Lead Maintainer with the TSC.
 </Section>
@@ -37,18 +37,18 @@ There are three types of LIP:
 
 ## The LIP process
 
-<LipProcessInfographic
+<LipProcessInfographic 
   stages={['IDEA', 'DRAFT', 'LAST CALL', 'ACCEPTED', 'FINAL']}
 />
 
-Parties involved in the process are the ***LIP author(s)*** and a designated ***LIP Manager***. The Lead Maintainer shall act as the primary LIP Manager and can appoint at any time a delegate Manager to specific LIPs.
+Parties involved in the process are the ***LIP author(s)*** and a designated ***LIP Manager***. The Lead Maintainer shall act as the primary LIP Manager and can appoint at any time a delegate Manager to specific LIPs. 
 
 The formal LIP process will typically (and advisably) begin after the champion of the proposal has already discussed and socialized it with the Libra community (see below for what goes into a LIP). It is comprised of the following steps:
 
   * **Idea** – Authors will socialize their idea with the developer community and Maintainers, possibly by writing a GitHub Issue and getting feedback. If possible (and relevant), authors should include in discussions an implementation to support their proposal.
 
-    Once the discussion reaches a mature point, the formal LIP process starts with a pull-request to the libra/lips folder. The status field of the document should be “Draft” at this point. A LIP Manager will review/comment/approve/deny the pull-request.
-
+    Once the discussion reaches a mature point, the formal LIP process starts with a pull-request to the libra/lips folder. The status field of the document should be “Draft” at this point. A LIP Manager will review/comment/approve/deny the pull-request. 
+    
     * <Icon type={TYPES.INLINE_START} src={useBaseUrl('img/check.svg')} /> Draft – If agreeable, LIP Manager will assign the LIP a number (generally the issue or PR number related to the LIP, and ask to rename or move to a folder/file with that number) and approve the pull request. The LIP Manager will not unreasonably deny a LIP.
     * <Icon type={TYPES.INLINE_START} src={useBaseUrl('img/stop.svg')} /> Draft – Reasons for denying Draft status include misalignment with Libra mission or Association policy, being too unfocused, too broad, duplication of effort, being technically unjustified, not providing proper motivation, or not addressing backwards compatibility. The Authors can work to refine and resubmit their LIP Idea for review again.
 

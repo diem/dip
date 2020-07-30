@@ -5,7 +5,7 @@ const globalClass = className => ({
 
 const backToHome = {
   extra: {
-    classNames: ['backToHome', globalClass('back-to-home')],
+    classNames: ['backToHome', globalClass('lip-back-to-home')],
     icon: 'img/shared/arrow-left.svg',
     iconHover: 'img/shared/arrow-left-hover.svg',
     iconDarkHover: 'img/shared/arrow-left-dark-hover.svg',
@@ -21,9 +21,9 @@ module.exports = {
       type: 'doc',
       id: 'overview',
       extra: {
-        classNames: ['home', globalClass('home'), globalClass('main-sidebar-icon')],
-        icon: 'img/overview.png',
-        iconDark: 'img/overview-dark.png',
+        classNames: ['home', globalClass('lip-main-sidebar-icon')],
+        icon: 'img/overview.svg',
+        iconDark: 'img/overview-dark.svg',
       },
     },
     {
@@ -36,31 +36,27 @@ module.exports = {
           type: 'ref',
           id: 'all-lips',
           extra: {
-            classNames: [
-              globalClass('main-sidebar-icon'),
-              globalClass('background-contain'),
-              globalClass('main-sidebar-all-lips')
-            ],
-            icon: 'img/all-lips.png',
-            iconDark: 'img/all-lips-dark.png',
+            classNames: [globalClass('lip-main-sidebar-icon')],
+            icon: 'img/all-lips.svg',
+            iconDark: 'img/all-lips-dark.svg',
           },
         },
         {
           type: 'ref',
           id: 'standard-lips',
           extra: {
-            classNames: [globalClass('main-sidebar-icon')],
+            classNames: [globalClass('lip-main-sidebar-icon')],
             icon: 'img/standard-lips.svg',
-            iconDark: 'img/standard-lips-dark.png',
+            iconDark: 'img/standard-lips-dark.svg',
           },
         },
         {
           type: 'ref',
           id: 'process-lips',
           extra: {
-            classNames: [globalClass('main-sidebar-icon'), globalClass('background-contain')],
-            icon: 'img/process-lips.png',
-            iconDark: 'img/process-lips-dark.png',
+            classNames: [globalClass('lip-main-sidebar-icon')],
+            icon: 'img/process-lips.svg',
+            iconDark: 'img/process-lips-dark.svg',
           },
         },
         {
@@ -68,7 +64,7 @@ module.exports = {
           id: 'info-lips',
           extra: {
             classNames: [
-              globalClass('main-sidebar-icon'),
+              globalClass('lip-main-sidebar-icon'),
               globalClass('lip-info-icon'),
             ],
             icon: 'img/info-lips.svg',
@@ -85,12 +81,9 @@ module.exports = {
       type: 'doc',
       id: 'all-lips',
       extra: {
-        classNames: [
-          'categoryLabel',
-          globalClass('background-contain'),
-        ],
-        icon: 'img/all-lips.png',
-        iconDark: 'img/all-lips-dark.png',
+        classNames: ['categoryLabel', globalClass('icon-indented')],
+        icon: 'img/all-lips.svg',
+        iconDark: 'img/all-lips-dark.svg',
       },
     },
   ],
@@ -102,7 +95,7 @@ module.exports = {
       extra: {
         classNames: ['categoryLabel', globalClass('icon-indented')],
         icon: 'img/standard-lips.svg',
-        iconDark: 'img/standard-lips-dark.png',
+        iconDark: 'img/standard-lips-dark.svg',
       },
     },
   ],
@@ -127,9 +120,9 @@ module.exports = {
       type: 'doc',
       id: 'process-lips',
       extra: {
-        classNames: ['categoryLabel'],
-        icon: 'img/process-lips.png',
-        iconDark: 'img/process-lips-dark.png',
+        classNames: ['categoryLabel', globalClass('icon-indented')],
+        icon: 'img/process-lips.svg',
+        iconDark: 'img/process-lips-dark.svg',
       },
     },
   ]
