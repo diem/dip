@@ -1,7 +1,7 @@
 ---
 lip: 4
 title: Transaction Metadata Specification
-authors: Kevin Hurley (@kphfb)
+author: Kevin Hurley (@kphfb)
 status: Draft
 type: Informational
 created: 06/26/2020
@@ -56,10 +56,10 @@ enum GeneralMetadata {
 struct GeneralMetadatav0 {
     // Subaddress to which the funds are being sent
     Option<Vec<u8>> to_subaddress,
-
+    
     // Subaddress from which the funds are being sent
     Option<Vec<u8>> from_subaddress,
-
+    
     // Event sequence number of the `SentPaymentEvent` that this transaction is refunding
     Option<u64> referenced_event,
 }
@@ -86,9 +86,9 @@ Using the initial example described in the motivation, the merchant whose wallet
 
 ```
 0x01, 0x00, 01, "merch_a", 00, 00, 00
-/* general_metadata_type, general_metadata_v0,
-      to_subaddress_present, to_subaddress,
-      from_subaddress_not_present,
+/* general_metadata_type, general_metadata_v0, 
+      to_subaddress_present, to_subaddress,  
+      from_subaddress_not_present, 
       referenced_event_not_present */
 ```
 
@@ -122,14 +122,14 @@ metadata = GeneralMetadatav0 {
 program = encode_peer_to_peer_with_metadata_script(
     "LBR" /*currency*/,
     0x7777 /*recipient*/,
-    100 /*amount*/,
+    100 /*amount*/, 
     lcs(MetadataType::GeneralMetadataType(
         GeneralMetadata::GeneralMetadataVersion0(metadata))),
     None /*metadata_signature*/);
 
 RawTransaction {
     sender_account: 0x1234,
-    program: program,
+    program: program, 
 }
 ```
 
@@ -145,14 +145,14 @@ metadata = GeneralMetadatav0 {
 program = encode_peer_to_peer_with_metadata_script(
     "LBR" /*currency*/,
     0x1234 /*recipient*/,
-    100 /*amount*/,
+    100 /*amount*/, 
     lcs(MetadataType::GeneralMetadataType(
         GeneralMetadata::GeneralMetadataVersion0(metadata))),
     None /*metadata_signature*/);
 
 RawTransaction {
     sender_account: 0x7777,
-    program: program,
+    program: program, 
 }
 ```
 
@@ -170,14 +170,14 @@ metadata = GeneralMetadatav0 {
 program = encode_peer_to_peer_with_metadata_script(
     "LBR" /*currency*/,
     0x7777 /*recipient*/,
-    100 /*amount*/,
+    100 /*amount*/, 
     lcs(MetadataType::GeneralMetadataType(
         GeneralMetadata::GeneralMetadataVersion0(metadata))),
     None /*metadata_signature*/);
 
 RawTransaction {
     sender_account: 0x1234,
-    program: program,
+    program: program, 
 }
 ```
 
@@ -206,13 +206,13 @@ lcs_metadata = lcs(MetadataType::TravelRuleMetadataType(
 program = encode_peer_to_peer_with_metadata_script(
     "LBR" /*currency*/,
     0x1234 /*recipient*/,
-    100 /*amount*/,
+    100 /*amount*/, 
     metadata,
     metadata_signature);
 
 RawTransaction {
     sender_account: 0x7777,
-    program: program,
+    program: program, 
 }
 ```
 

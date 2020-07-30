@@ -12,7 +12,6 @@ module.exports = function(context, options) {
             components: path.resolve(__dirname, '../../../src/components'),
             react: path.resolve('./node_modules/react'),
             img: path.resolve(__dirname, '../../../static/img'),
-            src: path.resolve(__dirname, '../../../src'),
           },
         },
         module: {
