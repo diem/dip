@@ -1,7 +1,7 @@
 ---
 lip: 2
 title: Libra Roles and Permissions
-author: Sam Blackshear, Tim Zakian
+authors: Sam Blackshear, Tim Zakian
 status: Draft
 type: Informational
 created: 06/26/2020

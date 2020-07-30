@@ -1,3 +1,7 @@
+main {
+  overflow-x: hidden;
+}
+
 main article header h1 {
   margin-bottom: 20px;
 }
@@ -32,12 +36,12 @@ body h2 .hash-link {
 
 a.icon-indented,
 .icon-indented a {
-  background-position: -2px 0 !important;
+  background-position: -2px center !important;
   padding-left: calc( var(--icon-size) + 23px ) !important;
 }
 
-a.lip-back-to-home,
-.lip-back-to-home a {
+a.back-to-home,
+.back-to-home a {
   --icon-size: 15px;
   background-position: 2px 1px !important;
   font-weight: normal;
@@ -49,20 +53,32 @@ a.lip-back-to-home,
   margin-bottom: .35em !important;
 }
 
-a.lip-main-sidebar-icon,
-.lip-main-sidebar-icon a {
+a.main-sidebar-icon,
+.main-sidebar-icon a {
   --icon-size: 25px !important;
-  background-position: 4px 0px !important;
+  background-position: 4px center !important;
   margin: .4em 0;
   padding-left: calc( var(--icon-size) + 21px ) !important;
 }
 
-.lip-category > .lip-main-sidebar-icon {
+.lip-category > .main-sidebar-icon {
   margin: .45em 0 !important;
 }
 
 .lip-info-icon a {
-  background-position: 7px 0px !important;
+  background-position: 7px center !important;
+}
+
+.home a {
+  background-size: var(--icon-size) !important;
+}
+
+.background-contain a {
+  background-size: contain !important;
+}
+
+.main-sidebar-all-lips a {
+  background-position: 5px center !important;
 }
 
 /* Universal media queries are located in DocPage/styles.module.css */
