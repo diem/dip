@@ -1,8 +1,27 @@
-import {OVERFLOW_CONTAINER_CLASS} from '@theme/Layout';
+const authorRegex = /@\w+/g;
 
-export const toTitleCase = str =>
+const parseAuthors = authors =>
+  authors
+    .split(',')
+    .map(author => {
+      let username;
+
+      if (author.match(authorRegex)) {
+        username = author.match(authorRegex)[0].substring(1);
+      } else if (!author.includes(' ')) {
+        username = author;
+      }
+
+      return {
+        title: author,
+        username,
+      };
+    });
+
+const toTitleCase = str =>
   str.split(' ').map(w => `${w[0].toUpperCase()}${w.substring(1)}`).join('');
 
-export const scrollToTop = () => {
-  document.querySelector(`.${OVERFLOW_CONTAINER_CLASS}`).scrollTo(0, 0);
-}
+module.exports = {
+  parseAuthors,
+  toTitleCase,
+};
