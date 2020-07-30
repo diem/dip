@@ -1,6 +1,6 @@
 const authorRegex = /@\w+/g;
 
-const parseAuthors = authors =>
+export const parseAuthors = authors =>
   authors
     .split(',')
     .map(author => {
@@ -18,10 +18,5 @@ const parseAuthors = authors =>
       };
     });
 
-const toTitleCase = str =>
+export const toTitleCase = str =>
   str.split(' ').map(w => `${w[0].toUpperCase()}${w.substring(1)}`).join('');
-
-module.exports = {
-  parseAuthors,
-  toTitleCase,
-};
