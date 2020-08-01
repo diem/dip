@@ -15,6 +15,8 @@ This LIP describes the conceptual model and implementation of validator configur
 # Abstract / Motivation
 ---
 
+The Libra Payment Network (“LPN”) is a blockchain-backed payment platform and an infrastructure for stablecoins that supports a regulated global digital payment network. Both the blockchain and the stablecoin financial instruments are controlled by Libra Networks, Ltd. (“Libra Networks” or “LN”) a subsidiary of the Libra Association  (the “Association” or “LA”).  LPN operates under a payment system license from FINMA (the “FINMA License”), and LN is responsible for ensuring that LPN operates in compliance with the FINMA License.
+
 The Libra Association is an independent membership organization that is responsible for the governance of the Libra Payment Network (LPN) and the development of the Libra project. The Association is governed by the Council, which is comprised of one representative per Association member. The Association Council manages the technology roadmap of the platform and oversees and maintains the Libra Improvement Proposal and Libra Upgrade Process, often through subcommittees of the Council such as the Technical Steering Committee (the “TSC”) and the Association Board. 
 
 Each member designates a Node Operator to run a Validator Node that participates in operating the blockchain. The Validator Set defines the current set of Validator Nodes that run consensus protocol. Validator Nodes that are currently part of the Validator Set process transactions and interact with each other to reach consensus on the state of the blockchain. The Validator Set may change from time to time and not all members may have Validator Nodes the Validator Set at any given time. Reasons for changing the Validator Set include joining or departure of members from the Association and actions needed for compliance reasons or to comply with LN’s obligations under its payment system license from FINMA to guarantee the secure and performant operation of the platform.
@@ -33,9 +35,9 @@ If a transaction causes an epoch change, that transaction is the last transactio
 in the current epoch — any subsequent transactions in that block or future blocks from that epoch
 will be ignored. Once the transaction has been committed, the new validator set can start the next epoch of the consensus protocol.
 
-Only the LibraRoot may add/remove validators owner accounts to/from the validator set. Each validator operator may update its validator's config in this set which will also trigger the LibraConfig::NewEpochEvent.
+Only LibraRoot may add/remove validators owner accounts to/from the validator set. Each validator operator may update its validator's config in this set which will also trigger the LibraConfig::NewEpochEvent.
 
-Each validator owner is obliged to notify the Association about the decision to change the validator operator, the Association may disallow the switch if the new operator is deemed not trustworthy or the distribution of consensus power becomes skewed towards this operator or operators with similar architectures. The Association makes sure there is enough diversity between the consensus nodes of the Libra Blockchain.
+Each validator owner is obliged to notify LN about the decision to change the validator operator, LN may disallow the switch if the new operator is deemed not trustworthy or the distribution of consensus power becomes skewed towards this operator or operators with similar architectures. LN makes sure there is enough diversity between the consensus nodes of the Libra Blockchain.
 
 # Transaction Scripts
 The following transaction scripts can be run by the LibraRoot:
@@ -55,8 +57,8 @@ The following transaction scripts can be run by the validator operator:
 * `rotate_authentication_key`
 
 # Notes
-Note that in first version of Libra Protocol, the validator owners will not maintain the ownership of their Libra accounts, the LibraRoot account will run validator owners' operations on their behalf. On the other hand validator operators will maintain full ownership of their Libra accounts.
-Gradually, the validator owners will start managing their accounts themselves. They will send their new account key to the Association and the Association will rotate their account key to this new key. Right after this rotation transaction gets executed, the validator owner stars to maintain its Libra account.
+Note that in first version of Libra Protocol, validator owners will not maintain ownership of their Libra accounts, the LibraRoot account will run validator owners' operations on their behalf. Validator operators will maintain full ownership of their Libra accounts.
+Gradually, the validator owners will start managing their accounts themselves. They will send their new account key to the Association and the Association will rotate their account key to this new key. Right after this rotation transaction gets executed, the validator owner starts to maintain its Libra account.
 
 Both the validator owner account and the validator operator account store a human_name which refers to the name of the company behind the account written in snake case (lowercase, where spaces are replaced with underscores), it is initialized at account creation and never changes. Most validator-related transaction scripts get the address and the names of the account and check that the human_name under the account matches the name passed into the transaction script. This prevents accounts from accidentally mix up the addresses, which are hex strings, and adds a second level of protection against human errors.
 
