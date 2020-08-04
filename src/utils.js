@@ -8,7 +8,7 @@ export const parseAuthors = authors =>
 
       if (author.match(authorRegex)) {
         username = author.match(authorRegex)[0].substring(1);
-      } else if (!author.includes(' ')) {
+      } else if (!author.trim().includes(' ')) {
         username = author;
       }
 
