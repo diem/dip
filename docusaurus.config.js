@@ -28,6 +28,7 @@ module.exports = {
     require.resolve('./plugins/alias/src'),
     require.resolve('./plugins/lip-metadata/src'),
     require.resolve('./plugins/react-axe-ada-monitoring'),
+    require.resolve('libra-docusaurus-components/src/plugin-segment'),
   ],
   presets: [
     [
@@ -46,4 +47,11 @@ module.exports = {
       },
     ],
   ],
+  customFields: {
+    segmentPermissionCookie: 'libra-lips-cookies-allowed',
+    segment: {
+      productionKey: 'g7EJ7IBwqVHMlcE7LsibZgNyMVyZHRXU',
+      stagingKey: 'qPd2q0d8dRMVcZFIK6ocHjDX8QMT19UW',
+    },
+  },
 };
