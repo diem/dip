@@ -14,7 +14,7 @@
     "@docusaurus/preset-classic": "^2.0.0-alpha.53",
     "@svgr/webpack": "^5.4.0",
     "classnames": "^2.2.6",
-    "libra-docusaurus-components": "^0.2.12",
+    "libra-docusaurus-components": "^0.2.13",
     "react": "^16.8.4",
     "react-cookie-consent": "^5.1.3",
     "react-dom": "^16.8.4",
