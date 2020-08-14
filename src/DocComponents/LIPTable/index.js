@@ -1,9 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import useBaseUrl from '@docusaurus/useBaseUrl';
+
+import Author from 'src/DocComponents/Author';
 import filesByType from '../../../LIPMetadata.json';
 import {LIP_TYPE, LIP_STATUS} from '../../enums';
+import {parseAuthors} from 'src/utils';
+
 import styles from './styles.module.css';
 
 const getLips = (status, types) =>
@@ -11,8 +16,9 @@ const getLips = (status, types) =>
     return lips.concat(filesByType[type][status]);
   }, []).sort((a, b) => a.lip < b.lip ? 1 : -1);
 
-const LIPRow = ({ author, num, title }) => {
+const LIPRow = ({ authors, num, title }) => {
   const {siteConfig: {themeConfig}} = useDocusaurusContext();
+  const parsedAuthors = parseAuthors(authors);
 
   return (
     <tr>
@@ -23,12 +29,9 @@ const LIPRow = ({ author, num, title }) => {
       </td>
       <td>{title}</td>
       <td>
-        <a
-          href={`https://github.com/${author}`}
-          target="_blank"
-        >
-          {author}
-        </a>
+        {parsedAuthors.map(({title, username}, i) =>
+          <Author index={i} title={title} username={username} />
+        )}
       </td>
     </tr>
   );
@@ -47,9 +50,9 @@ const LIPTable = ({status, title, types}) => {
         </tr>
       </thead>
       <tbody>
-        {lips.map(({lip: num, author, title}) =>
+        {lips.map(({lip: num, authors, title}) =>
           <LIPRow
-            author={author}
+            authors={authors}
             key={num}
             num={num}
             title={title}
