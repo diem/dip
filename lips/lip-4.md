@@ -197,19 +197,15 @@ metadata = TravelRuleMetadatav0 {
 lcs_metadata = lcs(MetadataType::TravelRuleMetadataType(
         TravelRuleMetadata::TravelRuleMetadataVersion0(metadata))),
 
-// The receiver side will have signed this as part of the off-chain APIs
-// and will have sent it to the sender side.
-// The following was done by the receiver VASP and given to the sender VASP
-// via the off-chain protocol:
-    // receiver_lcs_data = lcs(metadata, sender_address, amount, "@@$$LIBRA_ATTEST$$@@" /*ASCII-encoded string*/);
-    // receiver_metadata_signature = sign(receiver_lcs_data, receiver_compliance_public_key /* key used to sign */);
+// receiver_signature is passed to the sender via the off-chain APIs as per
+// https://github.com/libra/lip/blob/master/lips/lip-1.mdx#recipient-signature
 
 program = encode_peer_to_peer_with_metadata_script(
     "LBR" /*currency*/,
     0x1234 /*recipient*/,
     100 /*amount*/,
-    metadata,
-    receiver_metadata_signature);
+    lcs_metadata,
+    receiver_signature);
 
 RawTransaction {
     sender_account: 0x7777,
