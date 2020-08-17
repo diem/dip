@@ -201,7 +201,7 @@ lcs_metadata = lcs(MetadataType::TravelRuleMetadataType(
 // and will have sent it to the sender side.
 // The following was done by the receiver VASP and given to the sender VASP
 // via the off-chain protocol:
-    // receiver_lcs_data = lcs(metadata, sender_address, amount, "@@$$LIBRA_ATTEST$$@@");
+    // receiver_lcs_data = lcs(metadata, sender_address, amount, "@@$$LIBRA_ATTEST$$@@" /*ASCII-encoded string*/);
     // receiver_metadata_signature = sign(receiver_lcs_data, receiver_key /* key used to sign */);
 
 program = encode_peer_to_peer_with_metadata_script(
