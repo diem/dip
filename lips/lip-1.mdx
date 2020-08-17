@@ -75,13 +75,28 @@ The off-chain protocol ensures eventual consistency of shared objects.
 
 # Basic Off-Chain Building Blocks
 
-The basic building blocks provide the methodology for [Channel Establishment](#channel-establishment).
+### On-Chain Account Setup
+A VASPs on-chain account must be created and setup as per the standard VASP account creation process.
 
-* **HTTP end-points**: Each VASP exposes an HTTPS POST end point at
-`https://<hostname>:<port>/<protocol_version>/<LocalVASPAddress>/<RemoteVASPAddress>/command`. `protocol_version` is initially 0 for this iteration of the off-chain APIs.  `LocalVASPAddress` and `RemoteVASPAddress` are the bech32 VASP addresses of the respective VASPs - with the subaddress set to 0's as per LIP 5. An example URL: http://127.0.0.1:7091/v1/lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m/lbr1pgfpyysjzgfpyysjzgfpyysjzggqqqqqqqqqqqqqxjt54z/command/
-	* The endpoint receives `CommandRequestObject`s in the POST body, and responds with `CommandResponseObject`s in the HTTP response (See [Request/Response Payload](#requestresponse-payload) for more details. Single command requests-responses are supported (HTTP1.0) but also pipelined request-responses are supported (HTTP1.1). The content type of the HTTP request/response is ignored. The version for the Off-chain protocol is the string `v1`. All HTTP requests and responses contain a header `X-Request-ID` with a unique ID for the request, used for tracking requests and debugging. Responses must have the same string in the `X-Request-ID` header value as the requests they correspond to.
-* **JWS Signatures**: All transmitted requests/responses are signed by the sending party using the JWS Signature standard (with the Ed25519 / EdDSA ciphersuite, and `compact` encoding).  The party's compliance key shall be used to sign these messages. This ensures all information and meta-data about payments is authenticated and cannot be repudiated.
-* **Serialization to JSON**: All structures transmitted, nested within `CommandRequestObject` and `CommandResponseObject` are valid JSON serialized objects and can be parsed and serialized using standard JSON libraries.
+Of particular note for off-chain APIs is the compliance key value.  This is the Ed25519 key with which a VASP signs travel rule statements on-chain and the KYC exchanged data off-chain.  During account creation, a VASP will set their compliance key which will be stored under the primary VASP account.
+
+### HTTP end-point
+
+Each VASP exposes an HTTPS POST end point at `https://<hostname>:<port>/<protocol_version>/<LocalVASPAddress>/<RemoteVASPAddress>/command`.
+
+* `protocol_version` is initially 0 for this iteration of the off-chain APIs.  
+* `LocalVASPAddress` and `RemoteVASPAddress` are the bech32 VASP addresses of the respective VASPs - with the subaddress set to 0's as per [LIP 5](https://lip.libra.org/lip-5/). 
+    * An example URL: http://127.0.0.1:7091/v1/lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m/lbr1pgfpyysjzgfpyysjzgfpyysjzggqqqqqqqqqqqqqxjt54z/command/
+
+
+### HTTP Headers
+All HTTP requests and responses must contain a header `X-Request-ID` with a unique ID for the request, used for tracking requests and debugging. Responses must have the same string in the `X-Request-ID` header value as the requests they correspond to.
+
+### Payloads
+The exposed endpoint receives `CommandRequestObject`s in the POST body, and responds with `CommandResponseObject`s in the HTTP response (See [Request/Response Payload](#requestresponse-payload) for more details. Single command requests-responses are supported (HTTP1.0) but also pipelined request-responses are supported (HTTP1.1). The content type of the HTTP request/response is ignored. The version for the Off-chain protocol is the string `v1`.  All structures transmitted, nested within `CommandRequestObject` and `CommandResponseObject` are valid JSON serialized objects and can be parsed and serialized using standard JSON libraries.
+
+All transmitted requests/responses are signed by the sending party using the JWS Signature standard (with the Ed25519 / EdDSA ciphersuite, and `compact` encoding).  The party's on-chain compliance key shall be used to sign these messages. This ensures all information and meta-data about payments is authenticated and cannot be repudiated.
+
 
 ## Basic Protocol Interaction
 Assume two VASPs A and B.  The basic protocol interaction consists of:
@@ -315,7 +330,7 @@ The structure in this object can be a full payment or just the fields of an exis
 | sender/receiver | [`PaymentActorObject`](#paymentactorobject) | Required for payment creation | Information about the sender/receiver in this payment |
 | reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment object). This value should be unique, and formatted as “<creator_vasp_onchain_address_bech32>_<unique_id>”.  For example, ”lbr1x23456abcd_seqABCD“. This field is mandatory on payment creation and immutable after that. |
 | original_payment_reference_id | str | N | Used for updates to a payment after it has been committed on chain. For example, used for refunds. The reference ID of the original payment will be placed into this field. This value is optional on payment creation and invalid on updates. |
-| recipient_signature | str | N | Signature of the recipient of this transaction. The signature is over the LCS serialized representation of `reference_id`, `sender_address`, `amount` and is signed with the compliance key of the recipient VASP.  This is used for on-chain attestation from the recipient party.  This may be omitted on blockchains which do not require on-chain attestation |
+| recipient_signature | str | N | Signature of the recipient of this transaction. The is signed with the compliance key of the recipient VASP and is used for on-chain attestation from the recipient party.  This may be omitted on blockchains which do not require on-chain attestation. Generated via [Recipient Signature](#recipientsignature) |
 | action | [`PaymentActionObject`](#paymentactionobject) | Y | Number of cryptocurrency + currency type (USD, LBR, EUR, BTC, etc.) + type of action to take. This field is mandatory and immutable |
 | description | str | N | Description of the payment. To be displayed to the user. Unicode utf-8 encoded max length of 255 characters. This field is optional but can only be written once.
 
@@ -480,6 +495,45 @@ A status of `ready_for_settlement` on _both_ sides is also terminal, and indicat
 A state of `pending_review` may be set to indicate a manual review is taking place. This status is informational and the other VASP is not expected to take any action. The `pending_review` status may result in any of `soft_match`, `ready_for_settlement`, or `abort`.
 
 A state of `soft_match` requires that the VASP associated with this actor must send all available KYC data via `additional_kyc_data`.  After human review of this data, this state may result in any of `ready_for_settlement` or `abort` (`abort` if the soft-match was unable to be cleared).  If data is not received within a reasonable SLA (suggested to be 24 hours), this state will result in `abort`.  The party who needs to provide KYC data is also allowed to `abort` the transaction at any point if they do not have additional KYC data or do not wish to supply it.
+
+# Recipient Signature
+Once the recipient side is comfortable with the KYC evaluation and is ready for the transaction to go on-chain, the recipient side will provide their signature in order to support dual attestation.  The receiver VASP will sign with the receiver compliance public key:
+
+```
+metadata = TravelRuleMetadatav0 {
+  off_chain_reference_id: "123abc", /* The off-chain reference ID specified by `reference_id` in the Off-chain APIs */
+};
+receiver_lcs_data = lcs(metadata, sender_address, amount, "@@$$LIBRA_ATTEST$$@@" /*ASCII-encoded string*/);
+recipient_signature = sign(receiver_lcs_data, receiver_compliance_public_key /* key used to sign */);
+```
+
+The `receiver_metadata_signature` will then be placed into the `recipient_signature` field of the PaymentObject in the off-chain API, thus providing it to the sender so that the sender VASP may submit the transaction on-chain.
+
+# On-chain Transaction Submission
+Once both sender and receiver have a status of 'ready_for_settlement', the transaction may then be submitted on-chain by the sender VASP. This submission will utilize the `recipient_signature` which was provided by the receiver VASP (generated via [Recipient Signature](#recipientsignature).  The sender VASP will now generate a transaction via the following and then submit the transaction on-chain:
+
+```
+metadata = TravelRuleMetadatav0 {
+  off_chain_reference_id: "123abc", /* The off-chain reference ID specified by `reference_id` in the Off-chain APIs */
+};
+
+lcs_metadata = lcs(MetadataType::TravelRuleMetadataType(
+        TravelRuleMetadata::TravelRuleMetadataVersion0(metadata))),
+
+program = encode_peer_to_peer_with_metadata_script(
+    "LBR" /*currency*/,
+    0x1234 /*recipient*/,
+    100 /*amount*/,
+    lcs_metadata,
+    recipient_signature /* from off-chain API exchange */);
+
+RawTransaction {
+    sender_account: 0x7777,
+    program: program,
+}
+```
+
+For additional details, see https://lip.libra.org/lip-4/#c-to-c-transaction-flow
 
 # Disclaimers
 
