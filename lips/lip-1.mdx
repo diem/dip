@@ -497,14 +497,14 @@ A state of `pending_review` may be set to indicate a manual review is taking pla
 A state of `soft_match` requires that the VASP associated with this actor must send all available KYC data via `additional_kyc_data`.  After human review of this data, this state may result in any of `ready_for_settlement` or `abort` (`abort` if the soft-match was unable to be cleared).  If data is not received within a reasonable SLA (suggested to be 24 hours), this state will result in `abort`.  The party who needs to provide KYC data is also allowed to `abort` the transaction at any point if they do not have additional KYC data or do not wish to supply it.
 
 # Recipient Signature
-Once the recipient side is comfortable with the KYC evaluation and is ready for the transaction to go on-chain, the recipient side will provide their signature in order to support dual attestation.  The receiver VASP will sign with the receiver compliance public key:
+Once the recipient side is comfortable with the KYC evaluation and is ready for the transaction to go on-chain, the recipient side will provide their signature in order to support dual attestation.  The receiver VASP will sign with the receiver compliance private key:
 
 ```
 metadata = TravelRuleMetadatav0 {
   off_chain_reference_id: "123abc", /* The off-chain reference ID specified by `reference_id` in the Off-chain APIs */
 };
 receiver_lcs_data = lcs(metadata, sender_address, amount, "@@$$LIBRA_ATTEST$$@@" /*ASCII-encoded string*/);
-recipient_signature = sign(receiver_lcs_data, receiver_compliance_public_key /* key used to sign */);
+recipient_signature = sign(receiver_lcs_data, receiver_compliance_private_key /* key used to sign */);
 ```
 
 The `receiver_metadata_signature` will then be placed into the `recipient_signature` field of the PaymentObject in the off-chain API, thus providing it to the sender so that the sender VASP may submit the transaction on-chain.
