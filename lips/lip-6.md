@@ -1,7 +1,7 @@
 ---
 lip: 6
 title: Libra Validator Configuration Management
-author: Valeria Nikolaenko, David Wolinsky, Sam Blackshear, David Dill
+authors: Valeria Nikolaenko, David Wolinsky, Sam Blackshear, David Dill
 status: Draft
 type: Informational
 created: 07/30/2020
