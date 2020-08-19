@@ -27,7 +27,7 @@ A common pattern to a cross-wallet transaction would be:
 2) The recipient shares this information with a would-be sender over some communication channel (e.g., SMS, Email, QR code)
 3) The sender's wallet deserializes this information and populates a transaction for the sending user to authorize
 4) The sending user authorizes the request and their wallet submits the transaction to the Libra blockchain
-5) The recipient wallet monitors on-chain events for its accounts. Upon seeing relevant events, the recipient wallet can filter by the sender information and whether a unique recipient subaddress was passed in the transaction's metadata fields. Upon observing such a transaction, they can confirm funds have been received and route the funds accordingly.
+5) The recipient wallet monitors on-chain events for its accounts. Upon seeing relevant events, the recipient wallet can filter by the sender information and whether a unique recipient subaddress was passed in the transaction's metadata fields. When such an event is detected, both parties can confirm the funds have been transferred successfully. 
 
 Examples of cross-wallet payment scenarios include:
 
