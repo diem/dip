@@ -1,7 +1,7 @@
 ---
 lip: 0
 title: Libra Improvement Proposals
-author: libra
+authors: libra
 status: final
 type: Informational
 created: 2/26/20
@@ -12,9 +12,9 @@ Libra Improvement Proposals (LIP) describe standards for the Libra Payment Netwo
 
 Soon after a Libra full-spec is posted as the root standard LIP to libra.org, any change that could be considered major or a breaking change — one that affects a public API, protocol, virtual machine (VM), underlying code execution, or standard — should be addressed with a LIP. Because LIPs are maintained as text files in a versioned repository, their revision history is the historical record of the proposal.
 
-For Libra implementers, LIPs are a convenient way to track the progress of their implementation. 
+For Libra implementers, LIPs are a convenient way to track the progress of their implementation.
 
-## Maintainership of Libra Standards 
+## Maintainership of Libra Standards
 
 The Libra project operates under the governance of the Libra Association. Technical decisions in the Libra project are driven by the governance defined by the Technical Steering Committee, in consultation with other parts of the Association when relevant and pursuant to relevant regulations.
 
@@ -41,8 +41,8 @@ The formal LIP process will typically (and advisably) begin after the champion o
 
   * **Idea** – Authors will socialize their idea with the developer community and Maintainers, possibly by writing a GitHub Issue and getting feedback. If possible (and relevant), authors should include in discussions an implementation to support their proposal.
 
-    Once the discussion reaches a mature point, the formal LIP process starts with a pull-request to the libra/lips folder. The status field of the document should be “Draft” at this point. A LIP Manager will review/comment/approve/deny the pull-request. 
-    
+    Once the discussion reaches a mature point, the formal LIP process starts with a pull-request to the libra/lips folder. The status field of the document should be “Draft” at this point. A LIP Manager will review/comment/approve/deny the pull-request.
+
     * ✅ Draft – If agreeable, LIP Manager will assign the LIP a number (generally the issue or PR number related to the LIP, and ask to rename or move to a folder/file with that number) and approve the pull request. The LIP Manager will not unreasonably deny a LIP.
     * 🛑 Draft – Reasons for denying Draft status include misalignment with Libra mission or Association policy, being too unfocused, too broad, duplication of effort, being technically unjustified, not providing proper motivation, or not addressing backwards compatibility. The Authors can work to refine and resubmit their LIP Idea for review again.
 
@@ -71,13 +71,13 @@ A LIP may refer to related/dependent LIPs. Every LIP will be assigned a status t
 
 Each LIP shall maintain its current status in a Status: field in a LIP document header (see below discussion of header fields). Statuses include:
 
-`Idea` ->  
-`Draft` ->  
-`Last Call` (posted on Libra public Discourse) ->  
-`Accepted/Rejected` ->  
-`Final`  
-`(Deprecated)` 
- 
+`Idea` ->
+`Draft` ->
+`Last Call` (posted on Libra public Discourse) ->
+`Accepted/Rejected` ->
+`Final`
+`(Deprecated)`
+
 Each status change -- except deprecating -- is requested by the LIP Author by changing the Status line inside the LIP document (see below  the Status: field in a LIP document) and submitting a pull-request. The change will be reviewed by the LIP Manager for comments/approval.
 
 The process of implementing the technical components embodied in a LIP and merging them into the master branch is logically separate from the process of handling the LIP design document. Normally, we expect code explorations to occur in parallel to the LIP proposal.
@@ -120,18 +120,18 @@ Preamble - [RFC 822](https://tools.ietf.org/html/rfc822) style headers containin
 
 Each LIP must begin with an [RFC 822](https://www.ietf.org/rfc/rfc822.txt) style header preamble, preceded and followed by three hyphens (---). This header is also termed ["front matter" by Jekyll](https://jekyllrb.com/docs/front-matter/). The headers must appear in the following order. Headers marked with "*" are optional and are described below. All other headers are required.
 
-`lip:` (this is determined by the LIP Manager).  
-`title`:  
-`author:` a list of the author's or authors' name(s) and/or username(s), or name(s) and email(s). Details are below.  
-`* discussions-to:` a url pointing to the official discussion thread  
-`Status:` <Draft | Last Call | Accepted | Final | Rejected>  
-`* last-call-end-date:`  
-`type:` <Standards Track (Core, Networking, Interface, Application) | Informational | Meta>  
-`created:`  
-`* updated:`  
-`* requires:` <LIP number(s)>  
-`* replaces:` <LIP number(s)>  
-`* superseded-by:` <LIP number(s)>  
+`lip:` (this is determined by the LIP Manager).
+`title`:
+`author:` a list of the author's or authors' name(s) and/or username(s), or name(s) and email(s). Details are below.
+`* discussions-to:` a url pointing to the official discussion thread
+`Status:` <Draft | Last Call | Accepted | Final | Rejected>
+`* last-call-end-date:`
+`type:` <Standards Track (Core, Networking, Interface, Application) | Informational | Meta>
+`created:`
+`* updated:`
+`* requires:` <LIP number(s)>
+`* replaces:` <LIP number(s)>
+`* superseded-by:` <LIP number(s)>
 
 Headers that permit lists must separate elements with commas.
 
@@ -181,13 +181,13 @@ LIPs may have a `requires` header, indicating the LIP numbers that this LIP depe
 LIPs may also have a `superseded-by` header indicating that a LIP has been rendered obsolete by a later document; the value is the number of the LIP that replaces the current document. The newer LIP must have a `replaces` header containing the number of the LIP that it rendered obsolete.
 
 ## Example
-lip: 0  
-title: Introducing Libra Improvement Proposals  
-author: @libradev  
-discussions-to: https://community.libra.org/t/introducing-libra-improvements-proposals  
-Status: Draft  
-type: Informational  
-created: 2019-06-29  
+lip: 0
+title: Introducing Libra Improvement Proposals
+author: @libradev
+discussions-to: https://community.libra.org/t/introducing-libra-improvements-proposals
+Status: Draft
+type: Informational
+created: 2019-06-29
 
 ## Auxiliary Files
 LIPs may include auxiliary files such as diagrams. Such files must be named LIP-XXXX-Y.ext, where “XXXX” is the LIP number, “Y” is a serial number (starting at 1), and “ext” is replaced by the actual file extension (e.g. “png”).
