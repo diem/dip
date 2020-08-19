@@ -7,12 +7,12 @@ type: Informational
 created: 07/08/2020
 ---
 # Summary
-Libra wallets benefit from consistent standards for serializing addresses and transaction requests. Such standards will enable an evolving set of interoperable payments scenarios across digital wallet clients. This proposal outlines an initial set of address formats.
+Libra Payment Network wallets benefit from consistent standards for serializing addresses and transaction requests. Such standards will enable an evolving set of interoperable payments scenarios across digital wallet clients. This proposal outlines an initial set of address formats.
 
 # Terminology
 * **on-chain account address**: Account addresses on the Libra blockchain are 16 bytes in length. The on-chain accounts corresponding to these blockchain addresses are containers that can hold Move resources including coin balances. We expect that many custodial wallets will choose to use a single or small set of on-chain accounts to act as an omnibus for their users. An example of an on-chain account address is `0xf72589b71ff4f8d139674a3f7369c69b`.
 
-* **subaddress**: Accounts on-chain are represented by an address.  To allow multiplexing of a single address into multiple wallets, custodial wallets may use “subaddresses” under the on-chain address for each underlying user.  While custodians can keep an internal ledger for mapping subaddresses, these virtual identifiers are not stored as resources on the Libra blockchain. A best practice is to use subaddresses as a single-use address to remove linkability.  In this way, subaddresses serve as a many-to-one mapping between subaddresses and a user - where ideally subaddresses are not re-used for more than one payment.
+* **subaddress**: Accounts on-chain are represented by an address.  To allow multiplexing of a single address into multiple wallets, custodial wallets may use “subaddresses” under the on-chain address for each underlying user.  While custodians can keep an internal ledger for mapping subaddresses, these mapping ledgers are not stored as resources on the Libra blockchain. A best practice is to use subaddresses as a single-use address to remove linkability.  In this way, subaddresses serve as a many-to-one mapping between subaddresses and a user - where ideally subaddresses are not re-used for more than one payment.
 
 * **account identifier**:  An account identifier is a base-32 encoded string that captures 1) the network version the address is intended for, 2) the address type (with or without subaddress) and 3) the underlying address components. This identifier uses the bech32 encoding which consists of a human readable prefix, delimiter, serialized payload (account address, subaddress) and checksum. An example of an account identifier is `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`.
 
@@ -24,14 +24,14 @@ For a range of peer-to-peer and peer-to-merchant use cases, merchants and wallet
 A common pattern to a cross-wallet transaction would be:
 
 1) The recipient generates a *intent identifier* consisting of their account identifier, and payment metadata
-2) The recipient shares this information with a would-be sender over some communication channel (eg. SMS, Email, QR code)
+2) The recipient shares this information with a would-be sender over some communication channel (e.g., SMS, Email, QR code)
 3) The sender's wallet deserializes this information and populates a transaction for the sending user to authorize
 4) The sending user authorizes the request and their wallet submits the transaction to the Libra blockchain
-5) The recipient wallet monitors on-chain events for its accounts and identifies a specific transaction by the unique subaddress passed in the transaction's metadata fields. Upon observing such a transaction, they can confirm funds have been received.
+5) The recipient wallet monitors on-chain events for its accounts. Upon seeing relevant events, the recipient wallet can filter by the sender information and whether a unique recipient subaddress was passed in the transaction's metadata fields. Upon observing such a transaction, they can confirm funds have been received and route the funds accordingly.
 
 Examples of cross-wallet payment scenarios include:
 
-* A user may want to share a compact identifier over traditional communication channels (eg. SMS) and receive a payment from a user of a different wallet
+* A user may want to share a compact identifier over traditional communication channels (e.g., SMS) and receive a payment from a user of a different wallet
     * The recipient user may want to specify a currency preference
     * The recipient user may want to specify a concrete amount they'd like to receive
 * A merchant may want to present a predefined payment request via QR code so that a customer would only need to authorize the funds
@@ -45,12 +45,12 @@ For communicating account identity, we propose using a compact, versioned and ca
 ### Desired attributes
 - Consistent - Users can build a muscle memory for identifying and using these account addresses
 - Atomic - The string identifier feels like a single unit. Users shouldn’t try to separate or truncate the string
-- Versioned - The format contains human readable information about how to interpret the payload, preventing subtle errors and reducing risk of linkability for human readable addresses
+- Versioned - The format contains human readable information about how to interpret the payload, preventing subtle errors and reserving space for future identifier schemes
 - Error detecting - Bech32 checksums help clients validate input and reduce risk of bad transactions due to mistypings and truncations
 
 ### Constraints for subaddresses
 - Fixed length at 8 bytes (we don’t accept other sizes, strictly 8 bytes).
-- Unique to their custodian/on-chain account: subaddresses must be non-ambiguous (ie. Recipient VASPs should not issue the same subaddress to multiple users).
+- Unique to their custodial wallet/on-chain account: subaddresses must be non-ambiguous (i.e., Recipient VASPs should not issue the same subaddress to multiple users).
 - By convention, 8 zero bytes (`0x0000000000000000`) is reserved to denote the root (VASP owned) account.
 
 ### Format
@@ -93,7 +93,7 @@ Identifier information
 **Result**: `lbr1p7ujcndcl7nudzwt8fglhx6wxnvqqqqqqqqqqqqqflf8ma`
 
 ### Looking ahead
-In the future, we plan to define additional Account Identifier versions to support other forms of identity, such as a more human-readable subaddress format. These would leverage a similar overall structure but would have a different version identifier, preventing naming collisions.  
+In the future, we plan to define additional Account Identifier versions to support other forms of identity, such as more compact subaddress formats. These would leverage a similar overall structure but would have a different version identifier, preventing naming collisions.  
 
 ## Intent identifiers
 In addition to the Account Identifier standard, we propose a common serialization format for denoting specific actions involving an on-chain account. This format is intended to evolve and support a broad range of user-to-user and user-to-merchant scenarios. 
