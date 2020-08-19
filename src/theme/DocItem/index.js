@@ -8,7 +8,9 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import DocPaginator from '@theme/DocPaginator';
 import useTOCHighlight from '@theme/hooks/useTOCHighlight';
-import {toTitleCase} from '../../utils';
+
+import Author from 'src/DocComponents/Author';
+import {parseAuthors, toTitleCase} from '../../utils';
 
 import classnames from 'classnames';
 import styles from './styles.module.css';
@@ -79,7 +81,7 @@ function DocItem(props) {
   } = metadata;
   const {
     frontMatter: {
-      author,
+      authors,
       created,
       'discussions-to': discussionsTo,
       image: metaImage,
@@ -110,6 +112,12 @@ function DocItem(props) {
   const githubEditURL = getEditUrl(editUrl, lip !== undefined);
 
   const Title = Heading('h2');
+
+  const Authors = displayLipTable
+    ? parseAuthors(authors).map(({title, username}, i) =>
+        <Author title={title} username={username} index={i} />
+      )
+    : [];
 
   return (
     <>
@@ -157,7 +165,7 @@ function DocItem(props) {
                       rows={[
                         ["LIP", lip],
                         ["Title", title],
-                        ["Author", `@${author}`, `https://github.com/${author}`],
+                        ["Author", Authors],
                         ["Discussions-to", discussionsTo, discussionsTo],
                         ["Status", toTitleCase(status)],
                         ["Type", toTitleCase(type)],
