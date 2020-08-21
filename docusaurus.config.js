@@ -1,3 +1,6 @@
+const darkCodeTheme = require("prism-react-renderer/themes/palenight");
+const lightCodeTheme = require("prism-react-renderer/themes/github");
+
 module.exports = {
   title: 'Libra Improvement Proposals',
   tagline: 'Libra Improvement Proposals',
@@ -11,6 +14,10 @@ module.exports = {
       apiKey: '410fb6151a3f329a286b9cb0fad63330',
       indexName: 'libra-lips',
     },
+    prism: {
+      darkTheme: darkCodeTheme,
+      theme: lightCodeTheme,
+    },
     sidebarCollapsible: false,
     siteID: 'lips',
     navbar: {
@@ -20,7 +27,7 @@ module.exports = {
   plugins: [
     require.resolve('./plugins/alias/src'),
     require.resolve('./plugins/lip-metadata/src'),
-    require.resolve('./plugins/react-axe-ada-monitoring'), 
+    require.resolve('./plugins/react-axe-ada-monitoring'),
   ],
   presets: [
     [
