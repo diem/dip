@@ -122,7 +122,11 @@ The low-level Off-Chain protocol allows two VASPs to sequence request-responses 
 
 ## Command Sequencing: Object Versioning
 
-To ensure a consistent view of object states, every object is [versioned](#object-versioning). A command can create or modify one or more objects. Mutations may only occur upon the latest version of an object. When either VASP creates a request, they must denote which objects are read and which are written during this command. These are specified in the `_reads` and `_writes` fields of the command. As mentioned in [Terminology](#terminology), every object type contains a `reference_id` field which is a unique reference ID for the object.  The `_reads` field is specified as a JSON mapping of object `"reference_id"`: `"cid"`, where `cid` (command ID) is a random 16 byte string encoded in hex.  The `cid` is originally set on the command object during any mutation. By specifying which object versions are read, the off-chain APIs maintain relative ordering of commands on objects and ensure a consistent view of the current state of objects.  Each version may only be mutated a single time - because once it has been mutated, a new version is created to represent the latest state of the object and the old version can be garbage-collected. This results in what is essentially a per-object sequencing.
+To ensure a consistent view of object states, every object is [versioned](#object-versioning). A command can create or modify one or more objects. Mutations may only occur upon the latest version of an object. When either VASP creates a request, they must denote which objects are read and which are written during this command. These are specified in the `_reads` and `_writes` fields of the command.
+
+As mentioned in [Terminology](#terminology), every object type contains a `reference_id` field which is a unique reference ID for the object.  The `_reads` field is specified as a JSON mapping of object `"reference_id"`: `"cid"`, where `cid` (command ID) is a random 16 byte string encoded in hex. The `_writes` field represents the new mapping of objects to to their new version numbers upon command success. By convention the version of new objects created by a command is the `cid` of the request containing the command that created or mutated this object.
+
+By specifying which object versions are read, the off-chain APIs maintain relative ordering of commands on objects and ensure a consistent view of the current state of objects.  Each version may only be mutated a single time, when a command succeeds. Once it has been mutated, a new version is created to represent the latest state of the object, the old version can be garbage-collected. This results in what is essentially a per-object sequencing.
 
 Both `_reads` and `_writes` must be exact - meaning that if unused dependencies are specified or insufficient dependencies are specified, the command will be rejected.
 
@@ -247,14 +251,18 @@ All requests between VASPs are structured as [`CommandRequestObject`s](basic_bui
 {
     "_ObjectType": "CommandRequestObject",
     "command_type": "PaymentCommand",
-    "cid": "12ce83f66d180d6e08b6c00fdbbf085a",
+    "cid": "88b282d6181129f682be0421d0ee9887",
     "command": {
 	    "_ObjectType": "PaymentCommand",
-	    "_reads": { "lbr1qg9q5zs2pg9q5zs2pg9q5zs2pgy7gvd9u_ref1001": "ef123" },
-	    "_writes": ["lbr1qg9q5zs2pg9q5zs2pg9q5zs2pgy7gvd9u_ref1001"],
+        "_reads": {
+            "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_5b8403c986f53fe072301fe950d030cb": "fd52e9c2a7ccc96be564d67199774fbc"
+        },
+        "_writes": {
+            "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_5b8403c986f53fe072301fe950d030cb": "88b282d6181129f682be0421d0ee9887"
+        },
 	    "payment": {
 		    "sender": {
-			    "address": "lbr1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
+			    "address": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pg9skzctpv9skzcg9kmwta",
 			    "kyc_data": {
 				    "payload_type": "KYC_DATA"
 				    "payload_version": 1,
@@ -282,9 +290,9 @@ All requests between VASPs are structured as [`CommandRequestObject`s](basic_bui
 			    	}
 			},
 		    "receiver": {
-			    "address": "lbr1pgfpnegv9gfpyysjzgfpyysjzgf3xycnzvf3xycsmxycyy",
+			    "address": "lbr1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
 			},
-		    "reference_id": "lbr1qg9q5zs2pg9q5zs2pg9q5zs2pgy7gvd9u_ref1001",
+		    "reference_id": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_5b8403c986f53fe072301fe950d030cb",
 		    "action": {
 			    "amount": 100,
 			    "currency": "USD",
@@ -350,7 +358,7 @@ The structure in this object can be a full payment or just the fields of an exis
     "sender": payment_actor_object(),
     "receiver": payment_actor_object(),
     "reference_id": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_d4115900aad65d8141236b464f1315f5",
-    "original_payment_reference_id": "lbr1qg9q5zs2pg9q5zs2pg9q5zs2pgy7gvd9u_ref0987",
+    "original_payment_reference_id": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_5b8403c986f53fe072301fe950d030cb",
     "recipient_signature": "...",
     "action": payment_action_object(),
     "description": "A free form or structured description of the payment.",
