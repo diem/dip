@@ -84,8 +84,8 @@ Of particular note for off-chain APIs is the compliance key value.  This is the 
 
 Each VASP exposes an HTTPS POST end point at `https://<hostname>:<port>/<protocol_version>/<LocalVASPAddress>/<RemoteVASPAddress>/command`.
 
-* `protocol_version` is initially 0 for this iteration of the off-chain APIs.  
-* `LocalVASPAddress` and `RemoteVASPAddress` are the bech32 VASP addresses of the respective VASPs - with the subaddress set to 0's as per [LIP 5](https://lip.libra.org/lip-5/). 
+* `protocol_version` is initially 0 for this iteration of the off-chain APIs.
+* `LocalVASPAddress` and `RemoteVASPAddress` are the bech32 VASP addresses of the respective VASPs - with the subaddress set to 0's as per [LIP 5](https://lip.libra.org/lip-5/).
     * An example URL: http://127.0.0.1:7091/v1/lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m/lbr1pgfpyysjzgfpyysjzgfpyysjzggqqqqqqqqqqqqqxjt54z/command/
 
 
@@ -157,8 +157,9 @@ All requests between VASPs are structured as [`CommandRequestObject`s](#commandr
 {
     "_ObjectType": "CommandRequestObject",
     "command_type": "PaymentCommand", // Command type
-    "cid": "abc123", // version of the objects to create
     "command": CommandObject(), // Object of type as specified by command_type
+    "cid": "12ce83f66d180d6e08b6c00fdbbf085a",
+
 }
 ```
 
@@ -167,23 +168,28 @@ A response would look like the following:
 {
     "_ObjectType": "CommandResponseObject",
     "status": "success",
+    "cid": "12ce83f66d180d6e08b6c00fdbbf085a"
 }
 ```
+
 
 ### CommandRequestObject
 All requests between VASPs are structured as `CommandRequestObject`s.
 
-| Field 	| Type 	| Required? 	| Description 	|
-|-------	|------	|-----------	|-------------	|
-| _ObjectType| str| Y | Fixed value: `CommandRequestObject`|
-|command_type | str| Y |A string representing the type of command contained in the request. |
-| command | Command object | Y | The command to sequence. |
+| Field 	   | Type 	| Required? 	| Description 	|
+|-------	   |------	|-----------	|-------------	|
+| _ObjectType  | str    | Y | Fixed value: `CommandRequestObject`|
+|c ommand_type | str| Y | A string representing the type of command contained in the request. |
+| command      | Command object | Y | The command to sequence. |
+| cid | str    | Y     | A unique identifier for the command. |
+
 
 ```
 {
     "_ObjectType": "CommandRequestObject",
     "command_type": CommandType,
     "command": CommandObject(),
+    "cid": str,
 }
 ```
 
@@ -194,17 +200,20 @@ All responses to a CommandRequestObject are in the form of a CommandResponseObje
 |-------	     |------	|-----------	|-------------	|
 | _ObjectType    | str      | Y             | The fixed string `CommandResponseObject`. |
 | status         | str      | Y             | Either `success` or `failure`. |
-| error          | List of [OffChainErrorObject](#offchainerrorobject) | N | Details on errors when status == "failure"
+| error          | List of [OffChainErrorObject](#offchainerrorobject) | N | Details on errors when status == "failure" |
+| cid            | str      | N | The command identifier to which this is a response. |
+
 
 ```
 {
     "_ObjectType": "CommandResponseObject",
     "error": [OffChainErrorObject()],
     "status": "failure"
+    "cid": str,
 }
 ```
 
-When the `CommandResponseObject` status field is `failure`, the `error` field is included in the response to indicate the nature of the failure. The `error` field (type `OffChainError`) is a list of OffChainError objects.
+When the `CommandResponseObject` status field is `failure`, the `error` field is included in the response to indicate the nature of the failure. The `error` field (type `OffChainError`) is a list of OffChainError objects. In case of failure to recover the request (such as a parsing failure or a signature failure) `cid` may be omitted.
 
 ### OffChainErrorObject
 Represents an error that occurred in response to a command.
@@ -238,7 +247,7 @@ All requests between VASPs are structured as [`CommandRequestObject`s](basic_bui
 {
     "_ObjectType": "CommandRequestObject",
     "command_type": "PaymentCommand",
-    "cid": "abc123",
+    "cid": "12ce83f66d180d6e08b6c00fdbbf085a",
     "command": {
 	    "_ObjectType": "PaymentCommand",
 	    "_reads": { "lbr1qg9q5zs2pg9q5zs2pg9q5zs2pgy7gvd9u_ref1001": "ef123" },
@@ -306,15 +315,17 @@ For a travel rule data exchange, the [command_type](basic_building_blocks.md#com
 | payment| [`PaymentObject`](#paymentobject) | Y | contains a `PaymentObject` that either creates a new payment or updates an existing payment. Note that strict validity check apply when updating payments, that are listed in the section below describing these objects. An invalid update or initial payment object results in a command error
 | _reads | JSON object map |  Y | Must be an object containing mappings of `reference_id` to latest version as represented by the `cid` of the latest command which successfully mutated the object referenced by the `reference_id`. The value in this field must match a `cid` previously specified by a command by the `_writes` parameter on a prior command for this payment object.  For a payment command, only zero or one `_reads` values should be specified since payments are only dependent upon at most prior version of an object. A list with any other number of items results in a command error.  If the list is empty this payment command defines a new payment. If the list contains one item, then this command updates the shared `PaymentObject`. |
 
-| _writes | list of str | Y | For a payment command, the `_writes` field may only be a single value since a payment command only operates upon one object.  This field specifies the `reference_id` of the object bring written. |
+| _writes | JSON object map | Y | For a payment command, the `_writes` field may only be a single key-value pair since a payment command only operates upon one object.  This field maps the `reference_id` of the object bring written to its new version. |
 
 ```
 {
     "_ObjectType": "PaymentCommand",
-    "_writes": [
-        "08697804e12212fa1c979283963d5c71"
-    ],
-    "_reads": {},
+    "_reads": {
+            "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_d4115900aad65d8141236b464f1315f5": "35713c723c4d2516c515aa34b3ba9232"
+        },
+    "_writes": {
+            "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_d4115900aad65d8141236b464f1315f5": "12ce83f66d180d6e08b6c00fdbbf085a"
+    },
     "payment": {
         PaymentObject(),
     }
@@ -338,7 +349,7 @@ The structure in this object can be a full payment or just the fields of an exis
 {
     "sender": payment_actor_object(),
     "receiver": payment_actor_object(),
-    "reference_id": "lbr1qg9q5zs2pg9q5zs2pg9q5zs2pgy7gvd9u_ref1001",
+    "reference_id": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_d4115900aad65d8141236b464f1315f5",
     "original_payment_reference_id": "lbr1qg9q5zs2pg9q5zs2pg9q5zs2pgy7gvd9u_ref0987",
     "recipient_signature": "...",
     "action": payment_action_object(),
