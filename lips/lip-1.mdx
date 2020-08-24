@@ -503,7 +503,7 @@ Once the recipient side is comfortable with the KYC evaluation and is ready for 
 metadata = TravelRuleMetadatav0 {
   off_chain_reference_id: "123abc", /* The off-chain reference ID specified by `reference_id` in the Off-chain APIs */
 };
-receiver_lcs_data = lcs(metadata, sender_address, amount, "@@$$LIBRA_ATTEST$$@@" /*ASCII-encoded string*/);
+receiver_lcs_data = lcs(metadata, sender_address /*raw binary address*/, amount, "@@$$LIBRA_ATTEST$$@@" /*ASCII-encoded string*/);
 recipient_signature = sign(receiver_lcs_data, receiver_compliance_private_key /* key used to sign */);
 ```
 
