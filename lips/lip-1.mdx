@@ -494,7 +494,7 @@ A state of `pending_review` may be set to indicate a manual review is taking pla
 In the event of a soft match, the VASP associated with this actor will need to determine what next steps are required, and if it decides to send additional KYC information to clear the soft-match does so via the KYCObject field of additional_kyc_data. After human review of this data, this state may result in any of ready_for_settlement or abort (abort if the soft-match was unable to be cleared). If data is not received within a reasonable SLA (suggested to be 24 hours), this state will result in abort. The VASP providing the additional KYC data is also allowed to abort the transaction at any point if they do not have additional KYC data or do not wish to supply it.
 
 # Recipient Signature
-Once the recipient side is comfortable that it has received appropriate information and is ready for the transaction to go on-chain, the recipient side will provide their signature in order to support dual attestation. The receiver VASP will sign with the receiver compliance private key, here is a concrete example of how to generate the Travel Rule dual attestation signable and recipient signature using Libra Python Client SDK:
+Once the recipient side is comfortable that it has received appropriate information and is ready for the transaction to go on-chain, the recipient side will provide their signature in order to support dual attestation. The receiver VASP will sign with the receiver compliance private key. The following is a concrete example of how to generate the Travel Rule dual attestation signable and the recipient signature using Libra Python Client SDK:
 ```
 from pylibra import lcs
 from pylibra import libra_types as libra
@@ -567,4 +567,3 @@ The compliance processes described in this LIP are for informational purposes on
  
 # Copyright Notice
 This documentation is made available under the Creative Commons Attribution 4.0 International (CC BY 4.0) license (available at https://creativecommons.org/licenses/by/4.0/).
-
