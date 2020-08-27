@@ -30,14 +30,14 @@ Custodial wallets may want to identify specific users, such as merchants or indi
 
 # The Lifetime of a Transaction Containing Metadata
 
-The first step to submitting a transaction is producing the metadata. The sender first produces a *Libra Canonically Serialized (LCS)* metadata_wrapper consisting of an LCS-serialized MetadataType object:
+The first step to submitting a transaction is producing the metadata. The sender first produces a *Libra Canonically Serialized (LCS)* metadata_wrapper consisting of an LCS-serialized Metadata object:
 
 ```
-enum MetadataType {
+enum Metadata {
   Undefined,
-  GeneralMetadataType(GeneralMetadata),
-  TravelRuleMetadataType(TravelRuleMetadata),
-  UnstructuredBytesMetadataType(UnstructuredBytesMetadata),
+  GeneralMetadata(GeneralMetadata),
+  TravelRuleMetadata(TravelRuleMetadata),
+  UnstructuredBytesMetadata(UnstructuredBytesMetadata),
 }
 
 // Used for versioning of general metadata
@@ -58,10 +58,10 @@ struct GeneralMetadatav0 {
 
 // Used for versioning of travel rule metadata
 enum TravelRuleMetadata {
-    TravelRuleMetadataVersion0(TravelRuleMetadatav0),
+    TravelRuleMetadataVersion0(TravelRuleMetadataV0),
 }
 
-struct TravelRuleMetadatav0 {
+struct TravelRuleMetadataV0 {
     // Off-chain reference_id.  Used when off-chain APIs are used.
     // Specifies the off-chain reference ID that was agreed upon in off-chain APIs.
     Option<String> off_chain_reference_id,
@@ -78,7 +78,7 @@ Using the initial example described in the motivation, the merchant whose wallet
 
 ```
 0x01, 0x00, 01, "merch_a", 00, 00, 00
-/* general_metadata_type, general_metadata_v0,
+/* general_metadata, general_metadata_v0,
       to_subaddress_present, to_subaddress,
       from_subaddress_not_present,
       referenced_event_not_present */
@@ -107,16 +107,17 @@ For NC to NC transactions, there is no usage of subaddressing/metadata.
 User A (address 0x1234) on a NC wallet wishes to send 100 microlibra to merchant B who is on a private custodial wallet (where the custodial wallet has a public address of 0x7777 and the merchant has a sub-account of 'bob').  User A's client now composes a raw transaction with the following relevant fields:
 
 ```
-metadata = GeneralMetadatav0 {
-  to_subaddress: 'bob',
-};
+metadata = Metadata::GeneralMetadata(
+  GeneralMetadata::GeneralMetadaVersion0(
+    GeneralMetadataV0 {
+      to_subaddress: 'bob',
+})));
 
 program = encode_peer_to_peer_with_metadata_script(
     "LBR" /*currency*/,
     0x7777 /*recipient*/,
     100 /*amount*/,
-    lcs(MetadataType::GeneralMetadataType(
-        GeneralMetadata::GeneralMetadataVersion0(metadata))),
+    lcs.serialize(metadata, Metadata),
     None /*metadata_signature*/);
 
 RawTransaction {
@@ -130,16 +131,17 @@ RawTransaction {
 User A who is on a custodial wallet (where the C wallet has a public address of 0x7777 and user A has a sub-account of 'alice') wishes to send 100 microlibra to merchant B who is on a NC wallet (with an address of 0x1234).  User A's wallet then composes a transaction via:
 
 ```
-metadata = GeneralMetadatav0 {
-  from_subaddress: 'alice',
-};
+metadata = Metadata::GeneralMetadata(
+  GeneralMetadata::GeneralMetadaVersion0(
+    GeneralMetadataV0 {
+      from_subaddress: 'alice',
+})));
 
 program = encode_peer_to_peer_with_metadata_script(
     "LBR" /*currency*/,
     0x1234 /*recipient*/,
     100 /*amount*/,
-    lcs(MetadataType::GeneralMetadataType(
-        GeneralMetadata::GeneralMetadataVersion0(metadata))),
+    lcs.serialize(metadata, Metadata),
     None /*metadata_signature*/);
 
 RawTransaction {
@@ -154,17 +156,19 @@ RawTransaction {
 Merchant B now wishes to refund user A. But user A was sending from a custodial account so merchant B must send the funds back to the custodial account and include subaddress information so that the funds are directed back to user A.  Merchant B’s client now constructs a transaction via the following where referenced_event is the committed event sequence number under the sending account of the original sent payment event:
 
 ```
-metadata = GeneralMetadatav0 {
-  to_subaddress: 'alice',
-  referenced_event: 123,
-};
+metadata = Metadata::GeneralMetadata(
+  GeneralMetadata::GeneralMetadaVersion0(
+    GeneralMetadataV0 {
+      to_subaddress: 'alice',
+      referenced_event: 123,
+})));
+
 
 program = encode_peer_to_peer_with_metadata_script(
     "LBR" /*currency*/,
     0x7777 /*recipient*/,
     100 /*amount*/,
-    lcs(MetadataType::GeneralMetadataType(
-        GeneralMetadata::GeneralMetadataVersion0(metadata))),
+    lcs.serialize(metadata, Metadata),
     None /*metadata_signature*/);
 
 RawTransaction {
@@ -182,12 +186,14 @@ For transactions over the travel rule limit, custodial to custodial transactions
 User A who is on a custodial wallet (where the C wallet has a public address of 0x7777 and user A has a sub-account of 'alice') wishes to send 100 microlibra to merchant B who is on a C wallet (where the C wallet has a public address of 0x1234 and merchant B has a sub-account of 'bob').  User A's wallet then composes a transaction via (note that the to/from subaddresses are not included since they were shared via the off-chain API):
 
 ```
-metadata = TravelRuleMetadatav0 {
-  off_chain_reference_id: "123abc",
-};
+metadata = Metadata::TravelRuleMetadata(
+  TravelRuleMetadata::TravelRuleMetadataVersion0(
+    TravelRuleMetadataV0 {
+      off_chain_reference_id: "123abc",
+}));
 
-lcs_metadata = lcs(MetadataType::TravelRuleMetadataType(
-        TravelRuleMetadata::TravelRuleMetadataVersion0(metadata))),
+lcs_metadata = lcs.serialize(metadata, Metadata);
+
 
 // receiver_signature is passed to the sender via the off-chain APIs as per
 // https://github.com/libra/lip/blob/master/lips/lip-1.mdx#recipient-signature
@@ -204,5 +210,4 @@ RawTransaction {
     program: program,
 }
 ```
-
 

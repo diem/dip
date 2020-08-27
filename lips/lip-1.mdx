@@ -494,14 +494,35 @@ A state of `pending_review` may be set to indicate a manual review is taking pla
 In the event of a soft match, the VASP associated with this actor will need to determine what next steps are required, and if it decides to send additional KYC information to clear the soft-match does so via the KYCObject field of additional_kyc_data. After human review of this data, this state may result in any of ready_for_settlement or abort (abort if the soft-match was unable to be cleared). If data is not received within a reasonable SLA (suggested to be 24 hours), this state will result in abort. The VASP providing the additional KYC data is also allowed to abort the transaction at any point if they do not have additional KYC data or do not wish to supply it.
 
 # Recipient Signature
-Once the recipient side is comfortable that it has received appropriate information and is ready for the transaction to go on-chain, the recipient side will provide their signature in order to support dual attestation. The receiver VASP will sign with the receiver compliance private key:
-
+Once the recipient side is comfortable that it has received appropriate information and is ready for the transaction to go on-chain, the recipient side will provide their signature in order to support dual attestation. The receiver VASP will sign with the receiver compliance private key. The following is a concrete example of how to generate the Travel Rule dual attestation signable and the recipient signature using Libra Python Client SDK:
 ```
-metadata = TravelRuleMetadatav0 {
-  off_chain_reference_id: "123abc", /* The off-chain reference ID specified by `reference_id` in the Off-chain APIs */
-};
-receiver_lcs_data = lcs(metadata, sender_address /* raw on-chain address (https://github.com/libra/lip/blob/master/lips/lip-5.md#terminology) */, amount, "@@$$LIBRA_ATTEST$$@@" /*ASCII-encoded string*/);
-recipient_signature = sign(receiver_lcs_data, receiver_compliance_private_key /* key used to sign */);
+from pylibra import lcs
+from pylibra import libra_types as libra
+from pylibra import serde_types as st
+...
+
+metadata: Metadata = libra.Metadata__TravelRuleMetadata(
+  libra.TravelRuleMetadata__TravelRuleMetadataVersion0(
+    libra.TravelRuleMetadataV0(
+      off_chain_reference_id="reference_id",
+    )
+  )
+)
+// `lcs_metadata` will be used as the `metadata` parameter in encode_peer_to_peer_with_metadata_script()
+lcs_metadata = lcs.serialize(metadata, libra.Metadata)
+
+dual_attest_msg_bytes: bytearray = bytearray()
+dual_attest_msg_bytes.extend(lcs_metadata)  # Travel Rule metadata
+dual_attest_msg_bytes.extend(lcs.serialize(bytes.fromhex("793251de1a61e9b4d1a17d13aa015e45"), bytes))  # Raw on-chain address (https://github.com/libra/lip/blob/master/lips/lip-5.md#terminology)
+dual_attest_msg_bytes.extend(lcs.serialize(st.uint64(1000000), st.uint64))  # Amount
+dual_attest_msg_bytes.extend(lcs.serialize(b"@@$$LIBRA_ATTEST$$@@", bytes))  # ASCII-encoded Libra Domain Separator string
+
+dual_attest_msg = libra.TransactionArgument__U8Vector(bytes(dual_attest_msg_bytes))
+dual_attest_msg_lcs = lcs.serialize(dual_attest_msg, libra.TransactionArgument__U8Vector)
+
+// We sign the bytes LCS bytes directly with the compliance private key
+// `receiver_metadata_signature` will be used as the `metadata_signature` parameter in  encode_peer_to_peer_with_metadata_script()
+receiver_metadata_signature = compliance_private_key.sign(dual_attest_msg_lcs)
 ```
 
 The `receiver_metadata_signature` will then be placed into the `recipient_signature` field of the PaymentObject in the off-chain API, thus providing it to the sender so that the sender VASP may submit the transaction on-chain.
@@ -510,12 +531,19 @@ The `receiver_metadata_signature` will then be placed into the `recipient_signat
 Once both sender and receiver have a status of 'ready_for_settlement', the transaction may then be submitted on-chain by the sender VASP. This submission will utilize the `recipient_signature` which was provided by the receiver VASP (generated via [Recipient Signature](#recipient-signature).  The sender VASP will now generate a transaction via the following and then submit the transaction on-chain:
 
 ```
-metadata = TravelRuleMetadatav0 {
-  off_chain_reference_id: "123abc", /* The off-chain reference ID specified by `reference_id` in the Off-chain APIs */
+use libra_types::transaction::{
+    RawTransaction,
+    metadata::{Metadata, TravelRuleMetadata, TravelRuleMetadataV0}
 };
 
-lcs_metadata = lcs(MetadataType::TravelRuleMetadataType(
-        TravelRuleMetadata::TravelRuleMetadataVersion0(metadata))),
+metadata = Metadata::TravelRuleMetadata(
+  TravelRuleMetadata::TravelRuleMetadataVersion0(
+    TravelRuleMetadataV0 {
+      off_chain_reference_id: "123abc", /* The off-chain reference ID specified by `reference_id` in the Off-chain APIs */
+}));
+
+
+lcs_metadata = lcs.serialize(metadata, Metadata);
 
 program = encode_peer_to_peer_with_metadata_script(
     "LBR" /*currency*/,
@@ -544,4 +572,3 @@ The compliance processes described in this LIP are for informational purposes on
  
 # Copyright Notice
 This documentation is made available under the Creative Commons Attribution 4.0 International (CC BY 4.0) license (available at https://creativecommons.org/licenses/by/4.0/).
-
