@@ -508,7 +508,7 @@ metadata: Metadata = libra.Metadata__TravelRuleMetadata(
     )
   )
 )
-// This is encode_peer_to_peer_with_metadata_script() 'metadata' parameter
+// `lcs_metadata` will be used as the `metadata` parameter in encode_peer_to_peer_with_metadata_script()
 lcs_metadata = lcs.serialize(metadata, libra.Metadata)
 
 dual_attest_msg_bytes: bytearray = bytearray()
