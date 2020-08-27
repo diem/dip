@@ -521,7 +521,7 @@ dual_attest_msg = libra.TransactionArgument__U8Vector(bytes(dual_attest_msg_byte
 dual_attest_msg_lcs = lcs.serialize(dual_attest_msg, libra.TransactionArgument__U8Vector)
 
 // We sign the bytes LCS bytes directly with the compliance private key
-// This is encode_peer_to_peer_with_metadata_script() 'metadata_signature' parameter
+// `receiver_metadata_signature` will be used as the `metadata_signature` parameter in  encode_peer_to_peer_with_metadata_script()
 receiver_metadata_signature = compliance_private_key.sign(dual_attest_msg_lcs)
 ```
 
