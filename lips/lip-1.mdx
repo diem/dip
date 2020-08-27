@@ -531,9 +531,14 @@ The `receiver_metadata_signature` will then be placed into the `recipient_signat
 Once both sender and receiver have a status of 'ready_for_settlement', the transaction may then be submitted on-chain by the sender VASP. This submission will utilize the `recipient_signature` which was provided by the receiver VASP (generated via [Recipient Signature](#recipient-signature).  The sender VASP will now generate a transaction via the following and then submit the transaction on-chain:
 
 ```
+use libra_types::transaction::{
+    RawTransaction,
+    metadata::{Metadata, TravelRuleMetadata, TravelRuleMetadataV0}
+};
+
 metadata = Metadata::TravelRuleMetadata(
   TravelRuleMetadata::TravelRuleMetadataVersion0(
-    TravelRuleMetadatav0 {
+    TravelRuleMetadataV0 {
       off_chain_reference_id: "123abc", /* The off-chain reference ID specified by `reference_id` in the Off-chain APIs */
 }));
 

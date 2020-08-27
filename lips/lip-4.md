@@ -58,10 +58,10 @@ struct GeneralMetadatav0 {
 
 // Used for versioning of travel rule metadata
 enum TravelRuleMetadata {
-    TravelRuleMetadataVersion0(TravelRuleMetadatav0),
+    TravelRuleMetadataVersion0(TravelRuleMetadataV0),
 }
 
-struct TravelRuleMetadatav0 {
+struct TravelRuleMetadataV0 {
     // Off-chain reference_id.  Used when off-chain APIs are used.
     // Specifies the off-chain reference ID that was agreed upon in off-chain APIs.
     Option<String> off_chain_reference_id,
@@ -188,7 +188,7 @@ User A who is on a custodial wallet (where the C wallet has a public address of 
 ```
 metadata = Metadata::TravelRuleMetadata(
   TravelRuleMetadata::TravelRuleMetadataVersion0(
-    TravelRuleMetadatav0 {
+    TravelRuleMetadataV0 {
       off_chain_reference_id: "123abc",
 }));
 
