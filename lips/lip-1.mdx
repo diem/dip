@@ -31,7 +31,8 @@ In the future, the Off-Chain Protocol may be further extended to include functio
 
 # Off-Chain Protocol Design Principles
 
-**Scalability**. Pursuant to the design of the initial version of the Off-Chain Protocol, all off-chain PaymentObjects that are ready for settlement, would be settled individually (gross) through a separate Blockchain transaction. However, the architecture of the Off-Chain Protocol allows in the future the introduction of netting batches of transactions and settling all of them through a single Blockchain transaction. This allows costs associated with multiple on-chain transactions to be kept low for VASPs, and allows for a number of user transactions or payment between VASPs that exceed the capacity of the underlying Blockchain. Additionally, batches enhance privacy via grouping together the number of transactions between VASPs and by only placing a single on-chain transaction which hides the individual transaction amounts.
+**Scalability**. Pursuant to the design of the initial version of the Off-Chain Protocol, all off-chain PaymentObjects that are ready for settlement, would be settled individually (gross) through a separate Blockchain transaction. However, the architecture of the Off-Chain Protocol allows in the future the introduction of netting batches of transactions and settling all of them through a single Blockchain transaction. This allows costs associated with multiple on-chain transactions to be kept low for VASPs, and allows for a number of user transactions or payment between VASPs that exceed the capacity of the underlying Blockchain. Additionally, batches enhance privacy via grouping together the number of transactions between VASPs and by only placing a single on-chain transaction which hides the individual transaction amounts. 
+> Note that every transaction within a batch would first be agreed upon between the VASPs involved, and the VASPs would have full insight into the transactions and any travel rule information about those transactions.
 
 **Extensibility**. This initial version of the Off-Chain Protocol accommodates simple payments where a customer of a VASP sends funds to the customer of another VASP over a limit, requiring some additional compliance-related information. However, in the future the blockchains may support more complex flows of funds between customers of VASPs as well as merchants. The Off-Chain Protocol can be augmented to support the transfer of rich meta-data relating to those flows between VASPs in a compliant, secure, private, scalable and extensible manner.
 
@@ -346,7 +347,7 @@ The structure in this Object can be a full payment or just the fields of an exis
 | reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value should be unique, and formatted as “<creator_vasp_onchain_address_bech32>_<unique_id>”.  For example, ”lbr1x23456abcd_seqABCD“. This field is mandatory on payment creation and immutable after that. |
 | original_payment_reference_id | str | N | Used for updates to a payment after it has been committed on chain. For example, used for refunds. The reference ID of the original payment will be placed into this field. This value is optional on payment creation and invalid on updates. |
 | recipient_signature | str | N | Signature of the recipient of this transaction. The is signed with the compliance key of the recipient VASP and is used for on-chain attestation from the recipient party.  This may be omitted on blockchains which do not require on-chain attestation. Generated via [Recipient Signature](#recipient-signature) |
-| action | [`PaymentActionObject`](#paymentactionobject) | Y | Number of cryptocurrency + currency type (USD, LBR, EUR, BTC, etc.) + type of action to take. This field is mandatory and immutable |
+| action | [`PaymentActionObject`](#paymentactionobject) | Y | Number of cryptocurrency + currency type (LBR, etc.)<a href="#note1" id="note1ref"><sup>1</sup></a> + type of action to take. This field is mandatory and immutable |
 | description | str | N | Description of the payment. To be displayed to the user. Unicode utf-8 encoded max length of 255 characters. This field is optional but can only be written once.
 
 ```
@@ -464,7 +465,7 @@ Represents a national ID.
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
 | amount | uint | Y | Amount of the transfer.  Base units are the same as for on-chain transactions for this currency.  For example, if LibraUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. |
-| currency | enum | Y | One of the supported on-chain currency types - ex. LBR, BTC, USD, EUR, etc. |
+| currency | enum | Y | One of the supported on-chain currency types - ex. LBR, etc. <a href="#note1" id="note1ref"><sup>1</sup></a> |
 | action | enum | Y | Populated in the request.  This value indicates the requested action to perform, and the only valid value is `charge`. |
 | timestamp | uint | Y | Unix timestamp indicating the time that the payment Command was created.
 
@@ -578,15 +579,20 @@ RawTransaction {
 
 For additional details, see https://lip.libra.org/lip-4/#c-to-c-transaction-flow
 
+# Reference Implementation
+A reference implementation of the Off-Chain Protocol is located at https://github.com/libra/off-chain-reference.
+
 # Disclaimers
 
-THIS API IS PROVIDED "AS IS" WITH NO EXPRESS OR IMPLIED WARRANTIES WHATSOEVER, INCLUDING ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, COMPLIANCE WITH LAW, ACCURACY, COMPLETENESS, OR NONINFRINGEMENT OF INTELLECTUAL PROPERTY RIGHTS.
+THIS API AND REFERENCE IMPLEMENTATION IS PROVIDED "AS IS" WITH NO EXPRESS OR IMPLIED WARRANTIES WHATSOEVER, INCLUDING ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, COMPLIANCE WITH LAW, ACCURACY, COMPLETENESS, OR NONINFRINGEMENT OF INTELLECTUAL PROPERTY RIGHTS.
 
-The Libra Association disclaims all liability relating to this API and to the
-implementation of this API, and disclaims all liability for cost of procurement of substitute services, lost profits, loss of use, loss of data or any incidental, consequential, direct,
-indirect, or special damages, whether under contract, tort, warranty or otherwise, arising in any way out of use or reliance upon this API or any information herein.
+The Libra Association disclaims all liability relating to this API and to the implementation of this API, including the reference implementation, and disclaims all liability for cost of procurement of substitute services, lost profits, loss of use, loss of data or any incidental, consequential, direct,
+indirect, or special damages, whether under contract, tort, warranty or otherwise, arising in any way out of use or reliance upon this API, the reference implementation, or any information herein.
 
 The compliance processes described in this LIP are for informational purposes only and do not reflect the specific compliance obligations of VASPs under applicable regulatory frameworks, their compliance programs, and/or standards imposed by Libra Networks.
 
 # Copyright Notice
 This documentation is made available under the Creative Commons Attribution 4.0 International (CC BY 4.0) license (available at https://creativecommons.org/licenses/by/4.0/).
+
+# Footnotes
+<a id="note1" href="#note1ref"><sup>1</sup></a>The Off-Chain Protocol is a generic protocol which is available for broader use among any blockchain - meaning currencies such as BTC could also utilize this same protocol if desired.
