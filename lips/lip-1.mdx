@@ -48,7 +48,7 @@ We describe a number of additional lower-level requirements throughout the remai
 
 **Shared Object**: All Objects contained within a Command - for example `PaymentObject`s, are considered as "Shared Objects" - meaning that either VASP may create a new Command to modify the Object, and will do so during the typical life-cycle of an Object - an example being the addition of required data within the KycDataObject from both VASPs to a payment Object. Both VASPs in a Channel can asynchronously attempt to initiate and execute Commands on Shared Objects.
 
-**Version**: The state of an Object at a specific point in time.  Every creation or mutation creates a new version of the Object which was created/mutated.  VASPs operate upon the latest version of Shared Objects.  Once a version is mutated, it is no longer a valid version upon which a new Command may depend - the newly updated value of the version is the latest version for that Object and must be acted upon.
+**Version**: The state of an Object at a specific point in time.  Every creation or mutation creates a new Version of the Object which was created/mutated.  VASPs operate upon the latest Version of Shared Objects.  Once a Version is mutated, it is no longer a valid Version upon which a new Command may depend - the newly updated value of the Version is the latest Version for that Object and must be acted upon.
 
 **reference_id**: Every Object type contains a `reference_id` field which is a unique reference ID for the Object.  The reference ID is used as a unique identifier of the Object. The reference ID is always specified by the payment initiator VASP (the VASP which originally created the Object). This value should be unique, and formatted as “<creator_vasp_onchain_address_bech32>_<unique_id>”. For example, ”lbr1x23456abcd_seqABCD“. As an example, see the reference_id field on the [PaymentObject](#paymentobject). Unicode utf-8 encoded.
 
@@ -62,7 +62,7 @@ The Off-Chain Protocol allows two entities A and B to form a communication Chann
 Both ends of the Channel can issue Commands upon Shared Objects.
 
 ### Object Versioning
-To ensure a consistent view of Object states, every Object is versioned. Mutations may only occur upon the latest version of an Object.
+To ensure a consistent view of Object states, every Object is versioned. Mutations may only occur upon the latest Version of an Object.
 
 ### Concurrency Control
 The Off-Chain Protocol manages concurrent requests on Objects and ensures that Object states will not become out of sync.
@@ -121,9 +121,9 @@ The low-level Off-Chain Protocol allows two VASPs to sequence request-responses 
 
 To ensure a consistent view of Object states, every Object is [Versioned](#object-versioning). A Command can create or modify one or more Objects. Mutations may only occur upon the latest Version of an Object. When either VASP creates a request, they must denote which Objects are read and which are written during this Command. These are specified in the `_reads` and `_writes` fields of the Command.
 
-As mentioned in [Terminology](#terminology), every Object type contains a `reference_id` field which is a unique reference ID for the Object.  The `_reads` field is specified as a JSON mapping of Object `"reference_id"`: `"cid"`, where `cid` (command ID) is a random 16 byte string encoded in hex. The `_writes` field represents the new mapping of Objects to a new `cid` value. The new `cid` value for an Object created or mutated by a Command is the `cid` of the Request containing the Command that created or mutated this Object.
+As mentioned in [Terminology](#terminology), every Object type contains a `reference_id` field which is a unique reference ID for the Object.  The `_reads` field is specified as a JSON mapping of Object `"reference_id"`: `"cid"`, where `cid` (Command ID) is a random 16 byte string encoded in hex. The `_writes` field represents the new mapping of Objects to a new `cid` value. The new `cid` value for an Object created or mutated by a Command is the `cid` of the Request containing the Command that created or mutated this Object.
 
-By specifying which object versions are read, the off-chain API maintains relative ordering of Commands on Objects and ensures a consistent view of the current state of Objects between parties.  Each Object version may only be mutated a single time, when a Command succeeds. Once it has been mutated, a new version is created to represent the latest state of the Object, the old version can be garbage-collected. This results in what is essentially a per-object sequencing.
+By specifying which Object Versions are read, the off-chain API maintains relative ordering of Commands on Objects and ensures a consistent view of the current state of Objects between parties.  Each Object Version may only be mutated a single time, when a Command succeeds. Once it has been mutated, a new Version is created to represent the latest state of the Object, the old Version can be garbage-collected. This results in what is essentially a per-object sequencing.
 
 Both `_reads` and `_writes` must be exact - meaning that if unused dependencies are specified or insufficient dependencies are specified, the Command will be rejected.
 
@@ -180,9 +180,9 @@ All requests between VASPs are structured as `CommandRequestObject`s.
 | Field 	   | Type 	| Required? 	| Description 	|
 |-------	   |------	|-----------	|-------------	|
 | _ObjectType  | str    | Y | Fixed value: `CommandRequestObject`|
-| command_type | str| Y | A string representing the type of command contained in the request. |
-| command      | Command object | Y | The command to sequence. |
-| cid | str    | Y     | A unique identifier for the command. |
+| command_type | str    | Y | A string representing the type of Command contained in the request. |
+| command      | Command object | Y | The Command to sequence. |
+| cid | str    | Y     | A unique identifier for the Command. |
 
 
 ```
@@ -202,7 +202,7 @@ All responses to a CommandRequestObject are in the form of a CommandResponseObje
 | _ObjectType    | str      | Y             | The fixed string `CommandResponseObject`. |
 | status         | str      | Y             | Either `success` or `failure`. |
 | error          | List of [OffChainErrorObject](#offchainerrorobject) | N | Details on errors when status == "failure" |
-| cid            | str      | N | The command identifier to which this is a response. |
+| cid            | str      | N | The Command identifier to which this is a response. |
 
 
 ```
@@ -318,8 +318,8 @@ For a travel rule data exchange, the [command_type](basic_building_blocks.md#com
 |-------	    |------	|-----------	|-------------	|
 | _ObjectType   | str  | Y             | The fixed string `PaymentCommand` |
 | payment| [`PaymentObject`](#paymentobject) | Y | contains a `PaymentObject` that either creates a new payment or updates an existing payment. Note that strict validity check apply when updating payments, that are listed in the section below describing these Objects. An invalid update or initial payment Object results in a Command error
-| _reads | JSON Object map |  Y | Must be an Object containing mappings of `reference_id` to latest version as represented by the `cid` of the latest Command which successfully mutated the Object referenced by the `reference_id`. The value in this field must match a `cid` previously specified by a Command by the `_writes` parameter on a prior Command for this payment Object.  For a payment Command, only zero or one `_reads` values should be specified since payments are only dependent upon at most prior version of an Object. A list with any other number of items results in a Command error.  If the list is empty this payment Command defines a new payment. If the list contains one item, then this Command updates the shared `PaymentObject`. |
-| _writes | JSON object map | Y | For a payment command, the `_writes` field may only be a single key-value pair since a payment command only operates upon one object.  This field maps the `reference_id` of the object being written to its new version. |
+| _reads | JSON Object map |  Y | Must be an Object containing mappings of `reference_id` to latest Version as represented by the `cid` of the latest Command which successfully mutated the Object referenced by the `reference_id`. The value in this field must match a `cid` previously specified by a Command by the `_writes` parameter on a prior Command for this payment Object.  For a payment Command, only zero or one `_reads` values should be specified since payments are only dependent upon at most prior Version of an Object. A list with any other number of items results in a Command error.  If the list is empty this payment Command defines a new payment. If the list contains one item, then this Command updates the shared `PaymentObject`. |
+| _writes | JSON object map | Y | For a payment Command, the `_writes` field may only be a single key-value pair since a payment Command only operates upon one Object.  This field maps the `reference_id` of the Object being written to its new Version. |
 
 ```
 {
