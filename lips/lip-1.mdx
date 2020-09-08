@@ -17,7 +17,7 @@ The Off-Chain Protocol is an API and payload specification that could be used to
 # Abstract / Motivation
 ---
 
-The Off-Chain Protocol is an API and payload specification to support compliance, privacy and scalability on blockchains. It is executed between a pair of entities and allows them to privately exchange payment information before, while, or after settling it on a Blockchain.  The entities can be inclusive of designated dealers (DDs) and _Virtual Asset Service Providers_ (VASPs), such as wallets or exchanges. 
+The Off-Chain Protocol is an API and payload specification to support compliance, privacy and scalability on blockchains. It is executed between a pair of entities and allows them to privately exchange payment information before, while, or after settling it on a Blockchain.  The entities can be inclusive of designated dealers (DDs) and _Virtual Asset Service Providers_ (VASPs), such as wallets or exchanges.
 
 The initial use-case for the Off-Chain Protocol relates to _supporting compliance_, and in particular supporting the implementation of the _Travel Rule_ requirements that VASPs may be required to follow. Those requirements generally specify that when money transfers above a certain amount are executed by VASPs, some information about the sender and recipient of funds must become available to both VASPs. The Off-Chain Protocols allows VASPs to exchange this information privately.
 
@@ -49,7 +49,7 @@ We describe a number of additional lower-level requirements throughout the remai
 
 **Shared Object**: All Objects contained within a Command - for example `PaymentObject`s, are considered as "Shared Objects" - meaning that either VASP may create a new Command to modify the Object, and will do so during the typical life-cycle of an Object - an example being the addition of required data within the KycDataObject from both VASPs to a payment Object. Both VASPs in a Channel can asynchronously attempt to initiate and execute Commands on Shared Objects.
 
-**Version**: The state of an Object at a specific point in time.  Every creation or mutation creates a new version of the Object which was created/mutated.  VASPs operate upon the latest version of Shared Objects.  Once a version is mutated, it is no longer a valid version upon which a new Command may depend - the newly updated value of the version is the latest version for that Object and must be acted upon.
+**Version**: The state of an Object at a specific point in time.  Every creation or mutation creates a new Version of the Object which was created/mutated.  VASPs operate upon the latest Version of Shared Objects.  Once a Version is mutated, it is no longer a valid Version upon which a new Command may depend - the newly updated value of the Version is the latest Version for that Object and must be acted upon.
 
 **reference_id**: Every Object type contains a `reference_id` field which is a unique reference ID for the Object.  The reference ID is used as a unique identifier of the Object. The reference ID is always specified by the payment initiator VASP (the VASP which originally created the Object). This value should be unique, and formatted as “<creator_vasp_onchain_address_bech32>_<unique_id>”. For example, ”lbr1x23456abcd_seqABCD“. As an example, see the reference_id field on the [PaymentObject](#paymentobject). Unicode utf-8 encoded.
 
@@ -63,7 +63,7 @@ The Off-Chain Protocol allows two entities A and B to form a communication Chann
 Both ends of the Channel can issue Commands upon Shared Objects.
 
 ### Object Versioning
-To ensure a consistent view of Object states, every Object is versioned. Mutations may only occur upon the latest version of an Object.
+To ensure a consistent view of Object states, every Object is versioned. Mutations may only occur upon the latest Version of an Object.
 
 ### Concurrency Control
 The Off-Chain Protocol manages concurrent requests on Objects and ensures that Object states will not become out of sync.
@@ -82,8 +82,8 @@ Of particular note for off-chain APIs is the compliance key value.  This is the 
 
 Each VASP exposes an HTTPS POST end point at `https://<hostname>:<port>/<protocol_version>/<LocalVASPAddress>/<RemoteVASPAddress>/command`.
 
-* `protocol_version` is initially 0 for this iteration of the off-chain APIs.  
-* `LocalVASPAddress` and `RemoteVASPAddress` are the bech32 VASP addresses of the respective VASPs - with the subaddress set to 0's as per [LIP 5](https://lip.libra.org/lip-5/). 
+* `protocol_version` is initially 0 for this iteration of the off-chain APIs.
+* `LocalVASPAddress` and `RemoteVASPAddress` are the bech32 VASP addresses of the respective VASPs - with the subaddress set to 0's as per [LIP 5](https://lip.libra.org/lip-5/).
     * An example URL: http://127.0.0.1:7091/v1/lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m/lbr1pgfpyysjzgfpyysjzgfpyysjzggqqqqqqqqqqqqqxjt54z/command/
 
 
@@ -120,7 +120,11 @@ The low-level Off-Chain Protocol allows two VASPs to sequence request-responses 
 
 ## Command Sequencing: Object Versioning
 
-To ensure a consistent view of Object states, every Object is [Versioned](#object-versioning). A Command can create or modify one or more Objects. Mutations may only occur upon the latest Version of an Object. When either VASP creates a request, they must denote which Objects are read and which are written during this Command. These are specified in the `_reads` and `_writes` fields of the Command. As mentioned in [Terminology](#terminology), every Object type contains a `reference_id` field which is a unique reference ID for the Object.  The `_reads` field is specified as a JSON mapping of Object `"reference_id"`: `"cid"`, where `cid` (Command ID) is a random 16 byte string encoded in hex.  The `cid` is originally set on the Command Object during any mutation. By specifying which Object Versions are read, the off-chain APIs maintain relative ordering of Commands on Objects and ensure a consistent view of the current state of Objects.  Each Version may only be mutated a single time - because once it has been mutated, a new Version is created to represent the latest state of the Object and the old Version can be garbage-collected. This results in what is essentially a per-Object sequencing.
+To ensure a consistent view of Object states, every Object is [Versioned](#object-versioning). A Command can create or modify one or more Objects. Mutations may only occur upon the latest Version of an Object. When either VASP creates a request, they must denote which Objects are read and which are written during this Command. These are specified in the `_reads` and `_writes` fields of the Command.
+
+As mentioned in [Terminology](#terminology), every Object type contains a `reference_id` field which is a unique reference ID for the Object.  The `_reads` field is specified as a JSON mapping of Object `"reference_id"`: `"cid"`, where `cid` (Command ID) is a random 16 byte string encoded in hex. The `_writes` field represents the new mapping of Objects to a new `cid` value. The new `cid` value for an Object created or mutated by a Command is the `cid` of the Request containing the Command that created or mutated this Object.
+
+By specifying which Object Versions are read, the off-chain API maintains relative ordering of Commands on Objects and ensures a consistent view of the current state of Objects between parties.  Each Object Version may only be mutated a single time, when a Command succeeds. Once it has been mutated, a new Version is created to represent the latest state of the Object, the old Version can be garbage-collected. This results in what is essentially a per-object sequencing.
 
 Both `_reads` and `_writes` must be exact - meaning that if unused dependencies are specified or insufficient dependencies are specified, the Command will be rejected.
 
@@ -155,8 +159,9 @@ All requests between VASPs are structured as [`CommandRequestObject`s](#commandr
 {
     "_ObjectType": "CommandRequestObject",
     "command_type": "PaymentCommand", // Command type
-    "cid": "abc123", // Version of the Objects to create
     "command": CommandObject(), // Object of type as specified by command_type
+    "cid": "12ce83f66d180d6e08b6c00fdbbf085a",
+
 }
 ```
 
@@ -165,23 +170,28 @@ A response would look like the following:
 {
     "_ObjectType": "CommandResponseObject",
     "status": "success",
+    "cid": "12ce83f66d180d6e08b6c00fdbbf085a"
 }
 ```
+
 
 ### CommandRequestObject
 All requests between VASPs are structured as `CommandRequestObject`s.
 
-| Field 	| Type 	| Required? 	| Description 	|
-|-------	|------	|-----------	|-------------	|
-| _ObjectType| str| Y | Fixed value: `CommandRequestObject`|
-|command_type | str| Y |A string representing the type of Command contained in the request. |
-| command | Command Object | Y | The Command to sequence. |
+| Field 	   | Type 	| Required? 	| Description 	|
+|-------	   |------	|-----------	|-------------	|
+| _ObjectType  | str    | Y | Fixed value: `CommandRequestObject`|
+| command_type | str    | Y | A string representing the type of Command contained in the request. |
+| command      | Command object | Y | The Command to sequence. |
+| cid | str    | Y     | A unique identifier for the Command. |
+
 
 ```
 {
     "_ObjectType": "CommandRequestObject",
     "command_type": CommandType,
     "command": CommandObject(),
+    "cid": str,
 }
 ```
 
@@ -192,17 +202,20 @@ All responses to a CommandRequestObject are in the form of a CommandResponseObje
 |-------	     |------	|-----------	|-------------	|
 | _ObjectType    | str      | Y             | The fixed string `CommandResponseObject`. |
 | status         | str      | Y             | Either `success` or `failure`. |
-| error          | List of [OffChainErrorObject](#offchainerrorobject) | N | Details on errors when status == "failure"
+| error          | List of [OffChainErrorObject](#offchainerrorobject) | N | Details on errors when status == "failure" |
+| cid            | str      | N | The Command identifier to which this is a response. |
+
 
 ```
 {
     "_ObjectType": "CommandResponseObject",
     "error": [OffChainErrorObject()],
     "status": "failure"
+    "cid": str,
 }
 ```
 
-When the `CommandResponseObject` status field is `failure`, the `error` field is included in the response to indicate the nature of the failure. The `error` field (type `OffChainError`) is a list of OffChainError Objects.
+When the `CommandResponseObject` status field is `failure`, the `error` field is included in the response to indicate the nature of the failure. The `error` field (type `OffChainError`) is a list of OffChainError objects. In case of failure to recover the request (such as a parsing failure or a signature failure) `cid` may be omitted.
 
 ### OffChainErrorObject
 Represents an error that occurred in response to a Command.
@@ -236,14 +249,18 @@ All requests between VASPs are structured as [`CommandRequestObject`s](basic_bui
 {
     "_ObjectType": "CommandRequestObject",
     "command_type": "PaymentCommand",
-    "cid": "abc123",
+    "cid": "88b282d6181129f682be0421d0ee9887",
     "command": {
 	    "_ObjectType": "PaymentCommand",
-	    "_reads": { "lbr1qg9q5zs2pg9q5zs2pg9q5zs2pgy7gvd9u_ref1001": "ef123" },
-	    "_writes": ["lbr1qg9q5zs2pg9q5zs2pg9q5zs2pgy7gvd9u_ref1001"],
+        "_reads": {
+            "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_5b8403c986f53fe072301fe950d030cb": "fd52e9c2a7ccc96be564d67199774fbc"
+        },
+        "_writes": {
+            "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_5b8403c986f53fe072301fe950d030cb": "88b282d6181129f682be0421d0ee9887"
+        },
 	    "payment": {
 		    "sender": {
-			    "address": "lbr1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
+			    "address": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pg9skzctpv9skzcg9kmwta",
 			    "kyc_data": {
 				    "payload_type": "KYC_DATA"
 				    "payload_version": 1,
@@ -271,9 +288,9 @@ All requests between VASPs are structured as [`CommandRequestObject`s](basic_bui
 			    	}
 			},
 		    "receiver": {
-			    "address": "lbr1pgfpnegv9gfpyysjzgfpyysjzgf3xycnzvf3xycsmxycyy",
+			    "address": "lbr1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
 			},
-		    "reference_id": "lbr1qg9q5zs2pg9q5zs2pg9q5zs2pgy7gvd9u_ref1001",
+		    "reference_id": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_5b8403c986f53fe072301fe950d030cb",
 		    "action": {
 			    "amount": 100,
 			    "currency": "USD",
@@ -302,17 +319,18 @@ For a travel rule data exchange, the [command_type](basic_building_blocks.md#com
 |-------	    |------	|-----------	|-------------	|
 | _ObjectType   | str  | Y             | The fixed string `PaymentCommand` |
 | payment| [`PaymentObject`](#paymentobject) | Y | contains a `PaymentObject` that either creates a new payment or updates an existing payment. Note that strict validity check apply when updating payments, that are listed in the section below describing these Objects. An invalid update or initial payment Object results in a Command error
-| _reads | JSON Object map |  Y | Must be an Object containing mappings of `reference_id` to latest version as represented by the `cid` of the latest Command which successfully mutated the Object referenced by the `reference_id`. The value in this field must match a `cid` previously specified by a Command by the `_writes` parameter on a prior Command for this payment Object.  For a payment Command, only zero or one `_reads` values should be specified since payments are only dependent upon at most prior version of an Object. A list with any other number of items results in a Command error.  If the list is empty this payment Command defines a new payment. If the list contains one item, then this Command updates the shared `PaymentObject`. |
-
-| _writes | list of str | Y | For a payment Command, the `_writes` field may only be a single value since a payment Command only operates upon one Object.  This field specifies the `reference_id` of the Object bring written. |
+| _reads | JSON Object map |  Y | Must be an Object containing mappings of `reference_id` to latest Version as represented by the `cid` of the latest Command which successfully mutated the Object referenced by the `reference_id`. The value in this field must match a `cid` previously specified by a Command by the `_writes` parameter on a prior Command for this payment Object.  For a payment Command, only zero or one `_reads` values should be specified since payments are only dependent upon at most prior Version of an Object. A list with any other number of items results in a Command error.  If the list is empty this payment Command defines a new payment. If the list contains one item, then this Command updates the shared `PaymentObject`. |
+| _writes | JSON object map | Y | For a payment Command, the `_writes` field may only be a single key-value pair since a payment Command only operates upon one Object.  This field maps the `reference_id` of the Object being written to its new Version. |
 
 ```
 {
     "_ObjectType": "PaymentCommand",
-    "_writes": [
-        "08697804e12212fa1c979283963d5c71"
-    ],
-    "_reads": {},
+    "_reads": {
+            "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_d4115900aad65d8141236b464f1315f5": "35713c723c4d2516c515aa34b3ba9232"
+        },
+    "_writes": {
+            "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_d4115900aad65d8141236b464f1315f5": "12ce83f66d180d6e08b6c00fdbbf085a"
+    },
     "payment": {
         PaymentObject(),
     }
@@ -336,8 +354,8 @@ The structure in this Object can be a full payment or just the fields of an exis
 {
     "sender": payment_actor_object(),
     "receiver": payment_actor_object(),
-    "reference_id": "lbr1qg9q5zs2pg9q5zs2pg9q5zs2pgy7gvd9u_ref1001",
-    "original_payment_reference_id": "lbr1qg9q5zs2pg9q5zs2pg9q5zs2pgy7gvd9u_ref0987",
+    "reference_id": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_d4115900aad65d8141236b464f1315f5",
+    "original_payment_reference_id": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_5b8403c986f53fe072301fe950d030cb",
     "recipient_signature": "...",
     "action": payment_action_object(),
     "description": "A free form or structured description of the payment.",
@@ -572,7 +590,7 @@ The Libra Association disclaims all liability relating to this API and to the im
 indirect, or special damages, whether under contract, tort, warranty or otherwise, arising in any way out of use or reliance upon this API, the reference implementation, or any information herein.
 
 The compliance processes described in this LIP are for informational purposes only and do not reflect the specific compliance obligations of VASPs under applicable regulatory frameworks, their compliance programs, and/or standards imposed by Libra Networks.
- 
+
 # Copyright Notice
 This documentation is made available under the Creative Commons Attribution 4.0 International (CC BY 4.0) license (available at https://creativecommons.org/licenses/by/4.0/).
 
