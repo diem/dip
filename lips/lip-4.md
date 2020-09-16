@@ -2,7 +2,7 @@
 lip: 4
 title: Transaction Metadata Specification
 authors: Kevin Hurley (@kphfb)
-status: Draft
+status: Last Call
 type: Informational
 created: 06/26/2020
 ---
