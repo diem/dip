@@ -52,6 +52,7 @@ For communicating account identity, we propose using a compact, versioned and ca
 - Fixed length at 8 bytes (we don’t accept other sizes, strictly 8 bytes).
 - Unique to their custodial wallet/on-chain account: subaddresses must be non-ambiguous (i.e., Recipient VASPs should not issue the same subaddress to multiple users).
 - By convention, 8 zero bytes (`0x0000000000000000`) is reserved to denote the root (VASP owned) account.
+- Subaddresses should be single-use and should not use private information to generate - the single-use subaddresses should be randomly generated.
 
 ### Format
 The Libra Account Identifier consists of
