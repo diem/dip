@@ -1,5 +1,5 @@
 ---
-lip: 10
+lip: 8
 title: Off-chain API Version 1 Extensions
 authors: Kevin Hurley (@kphfb)
 status: Draft
