@@ -1,7 +1,7 @@
 ---
 lip: 5
 title: Address formatting
-authors: Dmitry Pimenov (@dpim)
+authors: Dmitry Pimenov (@dpim), Kevin Hurley (@kphfb)
 status: Draft
 type: Informational
 created: 07/08/2020
@@ -12,7 +12,7 @@ Libra Payment Network wallets benefit from consistent standards for serializing 
 # Terminology
 * **on-chain account address**: Account addresses on the Libra blockchain are 16 bytes in length. The on-chain accounts corresponding to these blockchain addresses are containers that can hold Move resources including coin balances. We expect that many custodial wallets will choose to use a single or small set of on-chain accounts to act as an omnibus for their users. An example of an on-chain account address is `0xf72589b71ff4f8d139674a3f7369c69b`.
 
-* **subaddress**: Accounts on-chain are represented by an address.  To allow multiplexing of a single address into multiple wallets, custodial wallets may use “subaddresses” under the on-chain address for each underlying user.  While custodians can keep an internal ledger for mapping subaddresses, these mapping ledgers are not stored as resources on the Libra blockchain. A best practice is to use subaddresses as a single-use address to remove linkability.  In this way, subaddresses serve as a many-to-one mapping between subaddresses and a user - where ideally subaddresses are not re-used for more than one payment.
+* **subaddress**: Accounts on-chain are represented by an address.  To allow multiplexing of a single address into multiple wallets, custodial wallets should use “subaddresses” under the on-chain address for each underlying user.  While custodians can keep an internal ledger for mapping subaddresses, these mapping ledgers are not stored as resources on the Libra blockchain. VASPs on Libra are required to use subaddresses as a single-use address to remove linkability.  In this way, subaddresses serve as a many-to-one mapping between subaddresses and a user - where subaddresses are not re-used for more than one payment.
 
 * **account identifier**:  An account identifier is a base-32 encoded string that captures 1) the network version the address is intended for, 2) the address type (with or without subaddress) and 3) the underlying address components. This identifier uses the bech32 encoding which consists of a human readable prefix, delimiter, serialized payload (account address, subaddress) and checksum. An example of an account identifier is `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`.
 
