@@ -12,7 +12,7 @@ Libra Payment Network wallets benefit from consistent standards for serializing 
 # Terminology
 * **on-chain account address**: Account addresses on the Libra blockchain are 16 bytes in length. The on-chain accounts corresponding to these blockchain addresses are containers that can hold Move resources including coin balances. We expect that many custodial wallets will choose to use a single or small set of on-chain accounts to act as an omnibus for their users. An example of an on-chain account address is `0xf72589b71ff4f8d139674a3f7369c69b`.
 
-* **subaddress**: Accounts on-chain are represented by an address.  To allow multiplexing of a single address into multiple wallets, custodial wallets should use “subaddresses” under the on-chain address for each underlying user.  While custodians can keep an internal ledger for mapping subaddresses, these mapping ledgers are not stored as resources on the Libra blockchain. VASPs on Libra are required to use subaddresses as a single-use address to remove linkability.  In this way, subaddresses serve as a many-to-one mapping between subaddresses and a user - where subaddresses are not re-used for more than one payment.
+* **subaddress**: Accounts on-chain are represented by an address.  To allow multiplexing of a single address into multiple wallets, custodial wallets may use “subaddresses” under the on-chain address for each underlying user.  While custodians can keep an internal ledger for mapping subaddresses, these mapping ledgers are not stored as resources on the Libra blockchain. It is a best practice for VASPs on Libra to use subaddresses as a single-use address to remove linkability.  In this way, subaddresses serve as a many-to-one mapping between subaddresses and a user - where subaddresses are not re-used for more than one payment.
 
 * **account identifier**:  An account identifier is a base-32 encoded string that captures 1) the network version the address is intended for, 2) the address type (with or without subaddress) and 3) the underlying address components. This identifier uses the bech32 encoding which consists of a human readable prefix, delimiter, serialized payload (account address, subaddress) and checksum. An example of an account identifier is `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`.
 
@@ -52,13 +52,14 @@ For communicating account identity, we propose using a compact, versioned and ca
 - Fixed length at 8 bytes (we don’t accept other sizes, strictly 8 bytes).
 - Unique to their custodial wallet/on-chain account: subaddresses must be non-ambiguous (i.e., Recipient VASPs should not issue the same subaddress to multiple users).
 - By convention, 8 zero bytes (`0x0000000000000000`) is reserved to denote the root (VASP owned) account.
-- Subaddresses should be single-use and should not use private information to generate.
+- Subaddresses should be single-use and should not use personal information, such as name, email address, government-issued identification number, to generate.
 
 ### Format
 The Libra Account Identifier consists of
 * A prefix (also known as hrp (human readable part) which identifies the network version this address is intended for
   * “lbr” for Mainnet addresses
   * “tlb” for Testnet addresses
+  * "plb" for Pre-Mainnet addresses
 * A Bech32 delimiter
   * The character “1” (one)
 * A Bech32 version identifier
