@@ -515,29 +515,50 @@ In the event of a soft match, the VASP associated with this actor will need to d
 # Recipient Signature
 Once the recipient side is comfortable that it has received appropriate information and is ready for the transaction to go on-chain, the recipient side will provide their signature in order to support dual attestation. The receiver VASP will sign with the receiver compliance private key. The following is a concrete example of how to generate the Travel Rule dual attestation signable and the recipient signature using Libra Python Client SDK:
 ```
+from dataclasses import dataclass
 from pylibra import lcs
 from pylibra import libra_types as libra
+from pylibra import utils
 from pylibra import serde_types as st
 ...
 
-metadata: Metadata = libra.Metadata__TravelRuleMetadata(
+DOMAIN_SEP = b"@@$$LIBRA_ATTEST$$@@"
+
+@dataclass
+class Attestation:
+
+    metadata: libra.Metadata
+    sender_address: libra.AccountAddress
+    amount: st.uint64
+
+    def lcs_serialize(self) -> bytes:
+        return lcs.serialize(self, Attestation)
+
+
+
+metadata: libra.Metadata = libra.Metadata__TravelRuleMetadata(
   libra.TravelRuleMetadata__TravelRuleMetadataVersion0(
     libra.TravelRuleMetadataV0(
       off_chain_reference_id="reference_id",
     )
   )
 )
+
+sender_libra_address_hex = "793251de1a61e9b4d1a17d13aa015e45
+sender_address = utils.account_address(sender_libra_address_hex)
+
+amount = 1_000_000
+
+attest = Attestation(
+    metadata=metadata,
+    sender_address=sender_address,
+    amount=st.uint64(amount),
+)
+dual_attest_msg_lcs = attest.lcs_serialize() + DOMAIN_SEP
+    
 // `lcs_metadata` will be used as the `metadata` parameter in encode_peer_to_peer_with_metadata_script()
 lcs_metadata = lcs.serialize(metadata, libra.Metadata)
-
-dual_attest_msg_bytes: bytearray = bytearray()
-dual_attest_msg_bytes.extend(lcs_metadata)  # Travel Rule metadata
-dual_attest_msg_bytes.extend(lcs.serialize(bytes.fromhex("793251de1a61e9b4d1a17d13aa015e45"), bytes))  # Raw on-chain address (https://github.com/libra/lip/blob/master/lips/lip-5.md#terminology)
-dual_attest_msg_bytes.extend(lcs.serialize(st.uint64(1000000), st.uint64))  # Amount
-dual_attest_msg_bytes.extend(lcs.serialize(b"@@$$LIBRA_ATTEST$$@@", bytes))  # ASCII-encoded Libra Domain Separator string
-
-dual_attest_msg = libra.TransactionArgument__U8Vector(bytes(dual_attest_msg_bytes))
-dual_attest_msg_lcs = lcs.serialize(dual_attest_msg, libra.TransactionArgument__U8Vector)
+    
 
 // We sign the bytes LCS bytes directly with the compliance private key
 // `receiver_metadata_signature` will be used as the `metadata_signature` parameter in  encode_peer_to_peer_with_metadata_script()
@@ -569,7 +590,7 @@ program = encode_peer_to_peer_with_metadata_script(
     0x1234 /*recipient*/,
     100 /*amount*/,
     lcs_metadata,
-    recipient_signature /* from off-chain API exchange */);
+    receiver_metadata_signature /* from off-chain API exchange */);
 
 RawTransaction {
     sender_account: 0x7777,
