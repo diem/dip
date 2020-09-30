@@ -524,17 +524,6 @@ from pylibra import serde_types as st
 
 DOMAIN_SEP = b"@@$$LIBRA_ATTEST$$@@"
 
-@dataclass
-class Attestation:
-
-    metadata: libra.Metadata
-    sender_address: libra.AccountAddress
-    amount: st.uint64
-
-    def lcs_serialize(self) -> bytes:
-        return lcs.serialize(self, Attestation)
-
-
 
 metadata: libra.Metadata = libra.Metadata__TravelRuleMetadata(
   libra.TravelRuleMetadata__TravelRuleMetadataVersion0(
@@ -544,20 +533,40 @@ metadata: libra.Metadata = libra.Metadata__TravelRuleMetadata(
   )
 )
 
+// `lcs_metadata` will be used as the `metadata` parameter in encode_peer_to_peer_with_metadata_script()
+lcs_metadata = lcs.serialize(metadata, libra.Metadata)
+
 sender_libra_address_hex = "793251de1a61e9b4d1a17d13aa015e45
 sender_address = utils.account_address(sender_libra_address_hex)
 
 amount = 1_000_000
 
+# Method1: using a dataclass
+
+@dataclass
+class Attestation:
+    metadata: libra.Metadata
+    sender_address: libra.AccountAddress
+    amount: st.uint64
+
+    def lcs_serialize(self) -> bytes:
+        return lcs.serialize(self, Attestation)
+	
 attest = Attestation(
     metadata=metadata,
     sender_address=sender_address,
     amount=st.uint64(amount),
 )
 dual_attest_msg_lcs = attest.lcs_serialize() + DOMAIN_SEP
-    
-// `lcs_metadata` will be used as the `metadata` parameter in encode_peer_to_peer_with_metadata_script()
-lcs_metadata = lcs.serialize(metadata, libra.Metadata)
+
+# Method2: concat individually serialized bytes
+
+dual_attest_bytearray: bytearray = bytearray()
+dual_attest_bytearray.extend(lcs_metadata)
+dual_attest_bytearray.extend(utils.account_address(sender_libra_address_hex).lcs_serialize())
+dual_attest_bytearray.extend(lcs.serialize(st.uint64(amount), st.uint64))
+dual_attest_bytearray.extend(DOMAIN_SEP)
+dual_attest_msg_lcs = bytes(dual_attest_bytearray)
     
 
 // We sign the bytes LCS bytes directly with the compliance private key
