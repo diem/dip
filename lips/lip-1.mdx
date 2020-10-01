@@ -533,15 +533,10 @@ metadata: libra.Metadata = libra.Metadata__TravelRuleMetadata(
   )
 )
 
-// `lcs_metadata` will be used as the `metadata` parameter in encode_peer_to_peer_with_metadata_script()
-lcs_metadata = lcs.serialize(metadata, libra.Metadata)
-
 sender_libra_address_hex = "793251de1a61e9b4d1a17d13aa015e45
-sender_address = utils.account_address(sender_libra_address_hex)
-
 amount = 1_000_000
 
-# Method1: using a dataclass
+# Method1: use a dataclass
 
 @dataclass
 class Attestation:
@@ -552,26 +547,29 @@ class Attestation:
     def lcs_serialize(self) -> bytes:
         return lcs.serialize(self, Attestation)
 	
-attest = Attestation(
+attestation = Attestation(
     metadata=metadata,
-    sender_address=sender_address,
+    sender_address=utils.account_address(sender_libra_address_hex),
     amount=st.uint64(amount),
 )
-dual_attest_msg_lcs = attest.lcs_serialize() + DOMAIN_SEP
+dual_attest_msg = attestation.lcs_serialize() + DOMAIN_SEP
 
 # Method2: concat individually serialized bytes
+
+// `lcs_metadata` will be used as the `metadata` parameter in encode_peer_to_peer_with_metadata_script()
+lcs_metadata = lcs.serialize(metadata, libra.Metadata)
 
 dual_attest_bytearray: bytearray = bytearray()
 dual_attest_bytearray.extend(lcs_metadata)
 dual_attest_bytearray.extend(utils.account_address(sender_libra_address_hex).lcs_serialize())
 dual_attest_bytearray.extend(lcs.serialize(st.uint64(amount), st.uint64))
 dual_attest_bytearray.extend(DOMAIN_SEP)
-dual_attest_msg_lcs = bytes(dual_attest_bytearray)
+dual_attest_msg = bytes(dual_attest_bytearray)
     
 
 // We sign the bytes LCS bytes directly with the compliance private key
 // `receiver_metadata_signature` will be used as the `metadata_signature` parameter in  encode_peer_to_peer_with_metadata_script()
-receiver_metadata_signature = compliance_private_key.sign(dual_attest_msg_lcs)
+receiver_metadata_signature = compliance_private_key.sign(dual_attest_msg)
 ```
 
 The `receiver_metadata_signature` will then be placed into the `recipient_signature` field of the PaymentObject in the off-chain API, thus providing it to the sender so that the sender VASP may submit the transaction on-chain.
