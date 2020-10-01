@@ -522,7 +522,9 @@ from pylibra import utils
 from pylibra import serde_types as st
 ...
 
-DOMAIN_SEP = b"@@$$LIBRA_ATTEST$$@@"
+# Suffix of every signed dual attestation message
+# (https://github.com/libra/libra/blob/8cf7dcb14b8a9c1049cf64c1a8fa299ffa550a6c/language/stdlib/modules/DualAttestation.move#L83)
+DOMAIN_SEPARATOR = b"@@$$LIBRA_ATTEST$$@@"
 
 
 metadata: libra.Metadata = libra.Metadata__TravelRuleMetadata(
@@ -533,7 +535,8 @@ metadata: libra.Metadata = libra.Metadata__TravelRuleMetadata(
   )
 )
 
-sender_libra_address_hex = "793251de1a61e9b4d1a17d13aa015e45
+# on-chain account address in hexadecimal (https://github.com/libra/lip/blob/master/lips/lip-5.md#terminology)
+sender_libra_address_hex = "793251de1a61e9b4d1a17d13aa015e45  
 amount = 1_000_000
 
 # Method1: use a dataclass
@@ -552,7 +555,7 @@ attestation = Attestation(
     sender_address=utils.account_address(sender_libra_address_hex),
     amount=st.uint64(amount),
 )
-dual_attest_msg = attestation.lcs_serialize() + DOMAIN_SEP
+dual_attest_msg = attestation.lcs_serialize() + DOMAIN_SEPARATOR
 
 # Method2: concat individually serialized bytes
 
@@ -563,7 +566,7 @@ dual_attest_bytearray: bytearray = bytearray()
 dual_attest_bytearray.extend(lcs_metadata)
 dual_attest_bytearray.extend(utils.account_address(sender_libra_address_hex).lcs_serialize())
 dual_attest_bytearray.extend(lcs.serialize(st.uint64(amount), st.uint64))
-dual_attest_bytearray.extend(DOMAIN_SEP)
+dual_attest_bytearray.extend(DOMAIN_SEPARATOR)
 dual_attest_msg = bytes(dual_attest_bytearray)
     
 
