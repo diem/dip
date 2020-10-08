@@ -1,7 +1,7 @@
 ---
 lip: 2
 title: Libra Roles and Permissions
-authors: Sam Blackshear, Tim Zakian
+authors: Sam Blackshear, Tim Zakian, Junkil Park
 status: Draft
 type: Informational
 created: 06/26/2020
@@ -86,25 +86,27 @@ The current permissions in Libra are:
 |:--:|:---------------------------------------:|:----------------------------:|:-------------------------:|:-----------------:|
 |    |             **Permission**              |        **Granted to**        |        **Unique?**        | **Transferable?** |
 | 1  |         MintCurrency(**type**)          |      TreasuryCompliance      |   Per currency **type**   |         N         |
-| 2  |         BurnCurrency(**type**)          |      TreasuryCompliance      |   Per currency **type**   |         N         |
-| 3  |        PreburnCurrency(**type**)        |       DesignatedDealer       |             N             |         N         |
-| 4  |      UpdateExchangeRate(**type**)       |      TreasuryCompliance      |   Per currency **type**   |         N         |
-| 5  |       UpdateDualAttestationLimit        |      TreasuryCompliance      |             Y             |         N         |
-| 6  |        {Freeze,Unfreeze}Account         |      TreasuryCompliance      |             Y             |         N         |
-| 7  |           RegisterNewCurrency           |          LibraRoot           |             Y             |         N         |
-| 8  |       ProcessWriteSetTransaction        |          LibraRoot           |             Y             |         N         |
-| 9  |       UpdateLibraProtocolVersion        |          LibraRoot           |             Y             |         N         |
-| 10 |             UpdateVMConfig              |          LibraRoot           |             Y             |         N         |
-| 11 |              PublishModule              |          LibraRoot           |             Y             |         N         |
-| 12 |          {Add,Remove}Validator          |          LibraRoot           |             Y             |         N         |
-| 13 |     UpdateValidatorConfig(**addr**)     |      ValidatorOperator       |       Per validator       |         N         |
-| 14 | {Set,Remove}ValidatorOperator(**addr**) |          Validator           |       Per validator       |         N         |
-| 15 |   RotateDualAttestationInfo(**addr**)   | ParentVASP, DesignatedDealer | Per VASP/DesignatedDealer |         N         |
-| 16 |    RotateAuthenticationKey(**addr**)    |     Account at **addr**      |        Per address        |         Y         |
-| 17 |     WithdrawalCapability(**addr**)      |     Account at **addr**      |        Per address        |         Y         |
+| 2  |    {Enable,Disable}Minting(**type**)    |      TreasuryCompliance      |   Per currency **type**   |         N         |
+| 3  |         BurnCurrency(**type**)          |      TreasuryCompliance      |   Per currency **type**   |         N         |
+| 4  |        PreburnCurrency(**type**)        |       DesignatedDealer       |             N             |         N         |
+| 5  |      UpdateExchangeRate(**type**)       |      TreasuryCompliance      |   Per currency **type**   |         N         |
+| 6  |       UpdateDualAttestationLimit        |      TreasuryCompliance      |             Y             |         N         |
+| 7  |        {Freeze,Unfreeze}Account         |      TreasuryCompliance      |             Y             |         N         |
+| 8  |           RegisterNewCurrency           |          LibraRoot           |             Y             |         N         |
+| 9  |       ProcessWriteSetTransaction        |          LibraRoot           |             Y             |         N         |
+| 10 |       UpdateLibraProtocolVersion        |          LibraRoot           |             Y             |         N         |
+| 11 |             UpdateVMConfig              |          LibraRoot           |             Y             |         N         |
+| 12 |              PublishModule              |          LibraRoot           |             Y             |         N         |
+| 13 |          {Add,Remove}Validator          |          LibraRoot           |             Y             |         N         |
+| 14 |     UpdateValidatorConfig(**addr**)     |      ValidatorOperator       |       Per validator       |         N         |
+| 15 | {Set,Remove}ValidatorOperator(**addr**) |          Validator           |       Per validator       |         N         |
+| 16 |   RotateDualAttestationInfo(**addr**)   | ParentVASP, DesignatedDealer | Per VASP/DesignatedDealer |         N         |
+| 17 |    RotateAuthenticationKey(**addr**)    |     Account at **addr**      |        Per address        |         Y         |
+| 18 |     WithdrawalCapability(**addr**)      |     Account at **addr**      |        Per address        |         Y         |
 
 
 * MintCurrency(**type**): Create currency of the given **type**
+* {Enable,Disable}Minting(**type**): Enable and disable minting the currency of the given **type**
 * BurnCurrency(**type**): Destroy currency of the given **type**
 * PreburnCurrency(**type**): Create a burn request for the currency of the given **type** to be fulfilled or canceled by the holder of BurnCurrency
 * UpdateExchangeRate(**type**): Update the exchange rate from each non-LBR currency **type** to LBR
@@ -131,7 +133,7 @@ The current permissions in Libra are:
 ### Move Implementation
 Conceptually, each permission encodes the authority to mutate some piece of on-chain state. Each permission check is implemented inside the module that performs this mutation.
 
-* [`Libra`](https://github.com/libra/libra/blob/master/language/stdlib/modules/doc/Libra.md): MintCurrency, BurnCurrency, PreburnCurrency, UpdateExchangeRate, RegisterNewCurrency.
+* [`Libra`](https://github.com/libra/libra/blob/master/language/stdlib/modules/doc/Libra.md): MintCurrency, {Enable,Disable}Minting, BurnCurrency, PreburnCurrency, UpdateExchangeRate, RegisterNewCurrency.
 * [`DualAttestation`](https://github.com/libra/libra/blob/master/language/stdlib/modules/doc/DualAttestation.md): UpdateDualAttestationLimit, RotateDualAttestationInfo
 * [`AccountFreezing`](https://github.com/libra/libra/blob/master/language/stdlib/modules/doc/AccountFreezing.md): {Freeze, Unfreeze}Account
 * [`WriteSetManager`](https://github.com/libra/libra/blob/master/language/stdlib/modules/doc/LibraWriteSetManager.md): ProcessWriteSetTransaction
