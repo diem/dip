@@ -497,7 +497,6 @@ Valid values are:
 * `needs_kyc_data` - KYC data about the subaddresses is required by this actor.
 * `needs_recipient_signature` - Can only be associated with the sender actor.  Means that the sender still requires that the recipient VASP provide the signature so that the transaction can be put on-chain.
 * `ready_for_settlement` - Transaction is ready for settlement according to this actor (i.e. the required signatures/KYC data have been provided)
-* `settled` - Payment has been settled on chain and funds delivered to the subaddress
 * `abort` - Indicates the actor wishes to abort this payment, instead of settling it.
 * `pending_review` - Payment is pending review.
 * `soft_match` - Actor's KYC data resulted in a soft-match. The VASP associated with this actor will need to determine what next steps are required, and if it decides to send additional KYC information to clear the soft-match does so via the KYCObject field of additional_kyc_data. If not sent within SLA window, this transaction will be aborted.
