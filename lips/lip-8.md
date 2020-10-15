@@ -56,6 +56,7 @@ All requests between VASPs are structured as [`CommandRequestObject`s](https://l
             "biller_address": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pg9skzctpv9skzcg9kmwta",
             "funds_pre_approval_id": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_7b8404c986f53fe072301fe950d030de",
             "scope": {
+                "type": "consent",
                 "expiration_timestamp": 72322, 
                 "max_cumulative_amount": {
                     "unit": "week",
@@ -161,6 +162,14 @@ Also, the scope limits the FundPullPreApprovalObject to certain parameters of ti
     "scope": {
         "type": "consent",
         "expiration_timestamp": 72322,
+        "max_cumulative_amount": {
+            "unit": "year",
+            "value": 1,
+            "max_amount": {
+                "amount": 100000,
+                "currency": "LBR",
+            }
+        },        
         "max_transaction_amount": {
             "amount": 100,
             "currency": "LBR",
@@ -175,7 +184,7 @@ This object describes the scope of an amount
 
 | Field         | Type       | Required?    | Description   |
 |-------        |--------    |-----------   |-------------  |
-| unit          | str enum   | N            | One of: "week", "month", "year" |
+| unit          | str enum   | N            | One of: "day", "week", "month", "year" |
 | value         | int        | N            | Number of "unit"(s)   |
 | max_amount | [CurrencyObject](#currencyobject) | N | Max cumulative amount that is approved for funds pre-approval.  This is the sum across all transactions that occur in the scope of the unit value. |
 
