@@ -143,7 +143,7 @@ The structure in this object can be a full pre-approval or just the fields of an
 
 ### ScopeObject
 
-In this object the initiator VASP declares its intent for the pre-approval, this can by one of two options:
+In this object the initiator VASP declares its intent for the pre-approval, this can be one of two options:
   1. Save the consumer sub-account for future transactions (save_sub_account)- this will enable the initiator VASP (merchant) to charge the sub-account in the future but will require the owner to approve the transaction. When using this option, amount limits are not required
   2. Save the consumer sub-account and get a consent for future payments (consent) - this enables the initiator VASP (merchant) to charge the sub-account without any interaction with the owner. 
 Also, the scope limits the FundPullPreApprovalObject to certain parameters of time and amount. this object can be changed by the initiator VASP if needed, but any change requires the target VASP to approve the scope change.
