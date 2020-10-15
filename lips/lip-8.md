@@ -176,7 +176,7 @@ This object describes the scope of an amount
 | Field         | Type       | Required?    | Description   |
 |-------        |--------    |-----------   |-------------  |
 | unit          | str enum   | N            | One of: "week", "month", "year" |
-| value         | int        | N            | "Unit" value  |
+| value         | int        | N            | Number of "unit"(s)   |
 | max_amount | [CurrencyObject](#currencyobject) | N | Max cumulative amount that is approved for funds pre-approval.  This is the sum across all transactions that occur in the scope of the unit value. |
 
 ```
