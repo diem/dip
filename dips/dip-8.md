@@ -277,4 +277,4 @@ This LIP describes two independent phases of a payment - pre-approval and auth/c
 
 The first one (pre-approval) may be canceled by each side (buyer or seller). a reasonable scenario is when a consumer wishes to cancel a subscription (buyer cancel) or asks a merchant app to remove the user wallet from the list of payment methods (seller cancel). 
 
-The second (authorization) could be canceled only by the biller (merchant) as it holds a guarantee to get funds if requested. This has no reason to be canceled by the buyer. a request for such cancellation from the buyer should be rejected. 
+The second (authorization) could be canceled only by the biller (merchant) as it holds a guarantee of funds availability if requested. This has no reason to be canceled by the buyer. a request for such cancellation from the buyer should be rejected. 
