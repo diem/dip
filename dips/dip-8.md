@@ -142,7 +142,7 @@ Also, the scope limits the FundPullPreApprovalObject to certain parameters of ti
 
 | Field         | Type  | Required?     | Description   |
 |-------        |------ |-----------    |-------------  |
-| Type | str enum | Y | This can be either save_sub_account or consent |
+| type | str enum | Y | This can be either save_sub_account or consent |
 | expiration_timestamp | uint | Y | Unix timestamp indicating the time at which this pre-approval will expire - after which no funds pull can occur.  To expire an existing pre-approval early, this field can be updated with the current Unix timestamp. |
 | max_cumulative_amount | [ScopedCumulativeAmountObject](#scopedcumulativeamountobject) | N | Max cumulative amount that is approved for funds pre-approval.  This is the sum across all transactions that occur while utilizing this pre-approval. |
 | max_transaction_amount | [CurrencyObject](#currencyobject) | N | Max transaction amount that is approved for funds pre-approval.  This is the maximum transaction that occurs while utilizing this funds pre-approval. |
