@@ -51,7 +51,7 @@ We describe a number of additional lower-level requirements throughout the remai
 
 **Version**: The state of an Object at a specific point in time.  Every creation or mutation creates a new Version of the Object which was created/mutated.  VASPs operate upon the latest Version of Shared Objects.  Once a Version is mutated, it is no longer a valid Version upon which a new Command may depend - the newly updated value of the Version is the latest Version for that Object and must be acted upon.
 
-**reference_id**: Every Object type contains a `reference_id` field which is a unique reference ID for the Object.  The reference ID is used as a unique identifier of the Object. The reference ID is always specified by the payment initiator VASP (the VASP which originally created the Object). This value should be unique, and formatted as “<creator_vasp_onchain_address_bech32>_<unique_id>”. For example, ”lbr1x23456abcd_seqABCD“. As an example, see the reference_id field on the [PaymentObject](#paymentobject). Unicode utf-8 encoded.
+**reference_id**: Every Object type contains a `reference_id` field which is a unique reference ID for the Object.  The reference ID is used as a unique identifier of the Object. The reference ID is always specified by the payment initiator VASP (the VASP which originally created the Object). This value should be unique, and formatted as “<creator_vasp_onchain_address_bech32>_<unique_id>”. For example, ”lbr1x23456abcd_seqABCD“. As an example, see the reference_id field on the [PaymentObject](#paymentobject). Unicode utf-8 encoded. "unique_id" should be 64 or fewer characters.
 
 # Overall Off-Chain Properties
 The Off-Chain Protocol formulates methodologies to provide the following high-level properties:
@@ -344,9 +344,9 @@ The structure in this Object can be a full payment or just the fields of an exis
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
 | sender/receiver | [`PaymentActorObject`](#paymentactorobject) | Required for payment creation | Information about the sender/receiver in this payment |
-| reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value should be unique, and formatted as “<creator_vasp_onchain_address_bech32>_<unique_id>”.  For example, ”lbr1x23456abcd_seqABCD“. This field is mandatory on payment creation and immutable after that. |
+| reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value should be unique, and formatted as “<creator_vasp_onchain_address_bech32>_<unique_id>”.  For example, ”lbr1x23456abcd_seqABCD“. This field is mandatory on payment creation and immutable after that. "unique_id" should be 64 or fewer characters. |
 | original_payment_reference_id | str | N | Used for updates to a payment after it has been committed on chain. For example, used for refunds. The reference ID of the original payment will be placed into this field. This value is optional on payment creation and invalid on updates. |
-| recipient_signature | str | N | Signature of the recipient of this transaction. The is signed with the compliance key of the recipient VASP and is used for on-chain attestation from the recipient party.  This may be omitted on blockchains which do not require on-chain attestation. Generated via [Recipient Signature](#recipient-signature) |
+| recipient_signature | str | N | Signature of the recipient of this transaction encoded in hex. The is signed with the compliance key of the recipient VASP and is used for on-chain attestation from the recipient party.  This may be omitted on blockchains which do not require on-chain attestation. Generated via [Recipient Signature](#recipient-signature) |
 | action | [`PaymentActionObject`](#paymentactionobject) | Y | Number of cryptocurrency + currency type (LBR, etc.)<a href="#note1" id="note1ref"><sup>1</sup></a> + type of action to take. This field is mandatory and immutable |
 | description | str | N | Description of the payment. To be displayed to the user. Unicode utf-8 encoded max length of 255 characters. This field is optional but can only be written once.
 
@@ -371,7 +371,6 @@ A `PaymentActorObject` represents a participant in a payment - either sender or 
 | address | str | Y | Address of the sender/receiver account. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Libra addresses, refer to "account identifier" section in LIP-5 for format. |
 | kyc_data | [KycDataObject](#kycdataobject) | N | The KYC data for this account. This field is optional but immutable once it is set. |
 | status | [StatusObject](#statusobject) | Y | Status of the payment from the perspective of this actor. This field can only be set by the respective sender/receiver VASP and represents the status on the sender/receiver VASP side. This field is mandatory by this respective actor (either sender or receiver side) and mutable. |
-| metadata | list of str | Y | Can be specified by the respective VASP to hold metadata that the sender/receiver VASP wishes to associate with this payment. This is a mandatory field but can be set to an empty list (i.e. `[]`). New string-typed entries can be appended at the end of the list, but not deleted.
 | metadata | list of str | Y | Can be specified by the respective VASP to hold metadata that the sender/receiver VASP wishes to associate with this payment. This is a mandatory field but can be set to an empty list (i.e. `[]`). New string-typed entries can be appended at the end of the list, but not deleted.
 
 ```
@@ -498,7 +497,6 @@ Valid values are:
 * `needs_kyc_data` - KYC data about the subaddresses is required by this actor.
 * `needs_recipient_signature` - Can only be associated with the sender actor.  Means that the sender still requires that the recipient VASP provide the signature so that the transaction can be put on-chain.
 * `ready_for_settlement` - Transaction is ready for settlement according to this actor (i.e. the required signatures/KYC data have been provided)
-* `settled` - Payment has been settled on chain and funds delivered to the subaddress
 * `abort` - Indicates the actor wishes to abort this payment, instead of settling it.
 * `pending_review` - Payment is pending review.
 * `soft_match` - Actor's KYC data resulted in a soft-match. The VASP associated with this actor will need to determine what next steps are required, and if it decides to send additional KYC information to clear the soft-match does so via the KYCObject field of additional_kyc_data. If not sent within SLA window, this transaction will be aborted.
@@ -575,7 +573,7 @@ dual_attest_msg = bytes(dual_attest_bytearray)
 receiver_metadata_signature = compliance_private_key.sign(dual_attest_msg)
 ```
 
-The `receiver_metadata_signature` will then be placed into the `recipient_signature` field of the PaymentObject in the off-chain API, thus providing it to the sender so that the sender VASP may submit the transaction on-chain.
+The `receiver_metadata_signature` will then be encoded in hex and placed into the `recipient_signature` field of the PaymentObject in the off-chain API, thus providing it to the sender so that the sender VASP may submit the transaction on-chain.
 
 # On-chain Transaction Submission
 Once both sender and receiver have a status of 'ready_for_settlement', the transaction may then be submitted on-chain by the sender VASP. This submission will utilize the `recipient_signature` which was provided by the receiver VASP (generated via [Recipient Signature](#recipient-signature).  The sender VASP will now generate a transaction via the following and then submit the transaction on-chain:

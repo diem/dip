@@ -2,7 +2,7 @@
 lip: 5
 title: Address formatting
 authors: Dmitry Pimenov (@dpim), Kevin Hurley (@kphfb)
-status: Draft
+status: Last Call
 type: Informational
 created: 07/08/2020
 ---
