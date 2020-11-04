@@ -3,7 +3,7 @@ dip: 8
 title: Off-chain API Version 2 Extensions
 authors: Kevin Hurley (@kphfb)
 status: Draft
-type: Informational
+type: Standard
 created: 09/18/2020
 ---
 
@@ -23,10 +23,7 @@ Versions 1/2 of the Off-Chain Protocol are described in [DIP 1](https://dip.diem
 
 This LIP does not contain the initial phase of a sub-account discovery that is required to start negotiating merchant scenarios.
 The process described below starts at the phase that both sides (particularly the biller side) have the relevant subaddresses. 
-For the discovery phase, there are currently two leading methods:
-  1. The buyer VASP triggers a process with pre-knowledge of the merchant subaddress. e.g., QR/deep links - where the consumers while acting in their wallet provides their VASP the merchant's relevant details (embedded in the QR/link in the checkout page)
-  2. The merchant gets the user identifier (like Pay ID) and query the buyer side for a new subaddress for this process
-For now, we will assume that one of these methods took place and the merchant have the buyer subaddress at hand.
+For now, we will assume that such a discovery process took place and the merchant have the buyer subaddress at hand.
   
 ---
 # Specification
@@ -217,7 +214,7 @@ Valid values are:
 * `rejected` - User/VASP did not approve the pre-approval request.
 * `closed` - Approval has been closed by the user/VASP and can no longer be used.
 
-**Valid Status Transitions**. Either party in the pre-approval agreement can mutate the status. The status always initially begins as `pending` at which time a user must agree to the pre-approval request.  Once the user has reviewed the request, the biller VASP will update the pre-approval status to `valid` (if the user agreed) or `rejected` (if the user rejected the pre-approval).
+**Valid Status Transitions**. Either party in the pre-approval agreement can mutate the status. The status always initially begins as `pending` at which time a user must agree to the pre-approval request.  Once the user has reviewed the request, the sender VASP (of the buyer) will update the pre-approval status to `valid` (if the user agreed) or `rejected` (if the user rejected the pre-approval).
 
 At any point, the user can withdraw permission at which point the status will be updated to `closed`.
 
