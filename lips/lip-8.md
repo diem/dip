@@ -119,7 +119,7 @@ For a fund pre-approval request, the [command_type](https://lip.libra.org/lip-1/
 
 ### FundPullPreApprovalObject
 
-The structure in this object can be a full pre-approval or just the fields of an existing pre-approval object that need to be changed. Some fields are immutable after they are defined once (see below). Others can be updated multiple times. Updating immutable fields with different values results in a command error, but it is acceptable to re-send the same value.
+The structure in this object can be a full pre-approval or just the fields of an existing pre-approval object that need to be changed. Some fields are immutable after they are defined once (see below). Others can be updated multiple times. Updating immutable fields with different values results in a command error, but it is acceptable to re-send the same value. It should be noted that initial creation of the FundPullPreApprovalObject can be created or updated by the VASP on either side (buyer or seller).
 
 | Field         | Type  | Required?     | Description   |
 |-------        |------ |-----------    |-------------  |
@@ -253,7 +253,7 @@ In addition, the "_reads" field of the PaymentObject must contain the latest ver
 
 Authorization allows the placing of holds on funds with the assurance that an amount up to the held amount can be captured at a later time.  An example of this is for delayed fulfillment or pre-authorizing an expected amount to ensure that an amount can be charged after services are rendered.
 
-When an authorization happens, the sender VASP (buyer) agrees to the authorization request must lock the funds for the specified period. That is - the buyer VASP guarantees that the funds will be available if later captured.
+When an authorization happens, the sender VASP (buyer) who agrees to the authorization request must lock the funds for the specified period. That is - the buyer VASP guarantees that the funds will be available if later captured.
 
 Auth/capture is an extension of [PaymentCommand](https://lip.libra.org/lip-1/#paymentcommand-object).  The extension happens primarily within the [PaymentActionObject](https://lip.libra.org/lip-1/#paymentactionobject) and the status changes within the [PaymentActor](https://lip.libra.org/lip-1/#paymentactorobject).
 
@@ -295,6 +295,6 @@ The auth/capture flow now adds the following to the status enum of [PaymentActor
 
 This LIP describes two independent phases of a payment - pre-approval and auth/capture.
 
-The first one (pre-approval) may be canceled by each side (buyer or seller). a reasonable scenario is when a consumer wishes to cancel a subscription (buyer cancel) or asks a merchant app to remove the user wallet from the list of payment methods (seller cancel). 
+The first one (pre-approval) may be canceled by either side (buyer or seller). A reasonable scenario is when a consumer wishes to cancel a subscription (buyer cancel) or asks a merchant app to remove the user wallet from the list of payment methods (seller cancel). 
 
-The second (authorization) could be canceled only by the biller (merchant) as it holds a guarantee of funds availability if requested. This has no reason to be canceled by the buyer. a request for such cancellation from the buyer should be rejected. 
+The second (authorization) could be canceled only by the biller (merchant) as it holds a guarantee of funds availability if requested. This has no reason to be canceled by the buyer. A request for such cancellation from the buyer should be rejected. 
