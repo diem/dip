@@ -11,7 +11,7 @@ This LIP describes the conceptual model and implementation of a private, on-chai
 
 # Abstract / Overview
 The Libra blockchain can carry informational metadata with every transaction made. This data could vary and usually used for validating both sides of the transaction could "understand" its mean. While this metadata deals with the functioning of the sender and receiver VASPs, and/or with the FATF travel rule regulatory constraints, the transaction info itself remains opaque to the end-users. This property is missing from the current payment experience of any traditional network.
-This LIP goal is to propose a standard way of describing any transaction while keeping the following principals:
+This LIP's goal is to propose a standard way of describing any transaction while keeping the following principles:
 1. Indisputable data
 2. Privacy of the end-user (sender)
 3. Ownership of the data by the end-user 
@@ -91,5 +91,4 @@ All in all, 92 bytes + description length. To limit the storage implications of 
 
 ## Extended scenarios
 This proposal is focused on a very basic buyer/merchant scenario. more potential applications might be utilizing such a feature to store private data attached to a transaction *owned by the users* and not by their VASPs. 
-
 
