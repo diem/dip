@@ -67,7 +67,7 @@ encrypted_product_description = client_aes.encrypt(signed_product.serialize())
 ```
 
 ## End-user private key security
-As with every secret private key, usual end users tend to be afraid of having such solely. In most cases, the end-user chooses to store it in a secure location and retrieve it with a more conventual method of identification such as a username/password or biometric. this feature doesn't deny such service to securely store an end user keys. it is expected to be a service supplied by the end-user wallet. it is distinguished from the wallet blockchain account private key, as it is a different one for each customer and not only one for the custodial account as a whole. this way the end-users would be able to ask their wallet to get this secret key and import it to a 3rd party software for analysis purposes. In case of end-users chooses to use their private keys, on their own risk of losing it, it should be supported, and the consequence of such a loss shouldn't be significant in terms of funds locked in an account or being lost.  
+As with every secret private key, usual end users tend to be afraid of having such solely. In most cases, the end-user chooses to store it in a secure location and retrieve it with a more conventual method of identification such as a username/password or biometric. This feature doesn't deny such service to securely store an end user keys. It is expected to be a service supplied by the end-user wallet. It is distinguished from the wallet blockchain account private key, as it is a different one for each customer and not only one for the custodial account as a whole. this way the end-users would be able to ask their wallet to get this secret key and import it to a 3rd party software for analysis purposes. In case of end-users chooses to use their private keys, on their own risk of losing it, it should be supported, and the consequence of such a loss shouldn't be significant in terms of funds locked in an account or being lost.  
 
 ## Blockchain consequences
 There are two major discussions to make regarding the blockchain involvement in this feature: 
@@ -91,4 +91,3 @@ All in all, 92 bytes + description length. To limit the storage implications of 
 
 ## Extended scenarios
 This proposal is focused on a very basic buyer/merchant scenario. more potential applications might be utilizing such a feature to store private data attached to a transaction *owned by the users* and not by their VASPs. 
-
