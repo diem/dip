@@ -29,8 +29,10 @@ The LibraRoot account determines the composition of the Validator Set at any giv
 * *Validator Operator* is an owner of an on-chain Libra account, it may operate none, one or several Validator Nodes: a Validator Owner may designate a Validator Operator to run a Validator Node on Validator Owner's behalf. A Validator Operator may run multiple Validator Nodes. The Validator Operator for a Validator Owner has permission to modify the Validator Config stored in the Validator Owner account and update its copy in the Validator Set.
 * *Validator Set* is an on-chain Move resource represented by a vector containing the active set of Validator Nodes. There exists a one-to-one relationship between a Validator Owner in the Validator Set and a Validator Node. The entries within the Validator Set consist of the Validator Owner's address as well as a copy of its Validator Config. Each Validator Owner address must appear only once in the Validator Set. Validator Nodes run according to the configuration defined in the Validator Set. Validator Set changes come in two ways: a change in the set of Validator Owners or a change in the configuration of some Owner. Both cases result in a Reconfiguration.
 * *Reconfiguration* is a on-chain configuration change. Reconfigurations are separated by epochs signified by a `LibraConfig::NewEpochEvent`.  If a transaction causes an Reconfiguration, that transaction is the last transaction before the next epoch. Any subsequent transactions will be executed in the new configuration defined by the Reconfiguration.
-* *LibraRoot*. as defined in (LIP2)[useBaseUrl('lip-2')], is the sole entity capable of adding or removing Validator Owner and Validator Operator accounts and specifying the current Validator Owners in the  Validator Set. It may also submit an AdminScript.
+* *LibraRoot* is the sole entity capable of adding or removing Validator Owner and Validator Operator accounts and specifying the current Validator Owners in the  Validator Set. It may also submit an AdminScript.
 * *AdminScript* is a transaction script that can be sent by the LibraRoot on behalf of any other account.
+
+For the aforementioned roles, Libra uses a variant of role-based access control as defined in [LIP2: Libra Roles and Permissions](useBaseUrl('lip-2')).
 
 <img alt="Validator Set" src={useBaseUrl('img/validators_set.png')} />
 
@@ -43,7 +45,7 @@ Four move modules are involved in the validator configuration management
 
 ## Move resources
 
-For Validator Owner the Libra Account has a *Validator Role* (see [lip-2: Libra Roles and Permissions](https://github.com/libra/lip/blob/master/lips/lip-2.md)) and stores a `ValidatorConfig` resource managed by `ValidatorConfig` module:
+For Validator Owner the Libra Account has a *Validator Role* and stores a `ValidatorConfig` resource managed by `ValidatorConfig` module:
 
 ```
 resource struct ValidatorConfig {
