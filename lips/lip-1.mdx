@@ -11,72 +11,47 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Summary
 ---
-The Off-Chain Protocol is an API and payload specification that could be used to support compliance, privacy and scalability on blockchains. Note that this API is being published by the Libra Association on an “as is” basis.  Publication of this API by the Libra Association does not mean that the Association is taking any position on whether the API addresses issues of compliance, privacy and scalability.  Users of this API must make such determinations on their own.
+The Off-Chain Protocol allows two services to define payments off-chain and privately exchange information required for compliance purposes before settling a Libra payment on-chain. Note that this API is being published by the Libra Association on an “as is” basis.  Publication of this API by the Libra Association does not mean that the Association is taking any position on whether the API addresses issues of compliance, privacy and scalability.  Users of this API must make such determinations on their own.
 
 ---
 # Abstract / Motivation
 ---
 
-The Off-Chain Protocol is an API and payload specification to support compliance, privacy and scalability on blockchains. It is executed between a pair of entities and allows them to privately exchange payment information before, while, or after settling it on a Blockchain.  The entities can be inclusive of designated dealers (DDs) and _Virtual Asset Service Providers_ (VASPs), such as wallets or exchanges.
+The Off-Chain Protocol is an API and payload specification to support compliance, privacy and scalability on blockchains. It is executed between a pair of entities and allows them to privately exchange payment information before they settle it on a Blockchain.  The entities can be inclusive of designated dealers (DDs) and _Virtual Asset Service Providers_ (VASPs), such as wallets or exchanges.
 
-The initial use-case for the Off-Chain Protocol relates to _supporting compliance_, and in particular supporting the implementation of the _Travel Rule_ requirements that VASPs may be required to follow. Those requirements generally specify that when money transfers above a certain amount are executed by VASPs, some information about the sender and recipient of funds must become available to both VASPs. The Off-Chain Protocols allows VASPs to exchange this information privately.
+The Off-Chain Protocol relates to _supporting compliance_, and in particular supporting the implementation of the _Travel Rule_ requirements that VASPs may be required to follow. Those requirements generally specify that when money transfers above a certain amount are executed by VASPs, some information about the sender and recipient of funds must become available to both VASPs. The Off-Chain Protocols allows VASPs to exchange this information privately.
 
-A secondary use-case for the Off-Chain Protocol is to provide higher levels of privacy than those that can be achieved directly on a Blockchain. The exact details of the customer accounts involved in a payment, as well as personal information that may need to be exchanged to support compliance, remain off-chain. The information is exchanged within a secure, authenticated and encrypted, Channel and would only be made available to the parties that strictly require them.
+The Off-Chain Protocol provides higher levels of privacy than those that can be achieved directly on a Blockchain. The exact details of the customer accounts involved in a payment, as well as personal information that may need to be exchanged to support compliance, remain off-chain. The information is exchanged within a secure, authenticated and encrypted, Channel and would only be made available to the parties that strictly require them.
 
-In the future, the Off-Chain Protocol may be further extended to include functionality such as batching of transactions and additional payments functionality.
+## Overview
+
+Two VASPs participate in the off-chain protocol. They communicate through HTTP request and responses protected with TLS, and exchange messages that are signed to ensure authenticity and integrity. A VASP can define a `PaymentCommand` that creates or updates a single `PaymentObject`. Each `PaymentCommand` is sent to the other VASP in a `CommandRequestObject` and responded to by a `CommandResponseObject`. A success status in the response signals that the command was a success and the payment is updated by both VASPs (a command failure indicates the command is invalid, and a protocol failure indicates the command should be resubmitted at a later time).
+
+A VASP initially creates a `PaymentObject`, and then VASPs take turns updating it, through successful `PaymentCommands`, until it is  ready to be settled or aborted. In a typical protocol flow the VASP representing the sender would define the `PaymentObject` and include the senders KYC information. The receiver VASP would check this information and either request more (see `soft-match` flows), abort or signal that it is ready to settle the payment, by updating sending the receiver's KYC information. The sender's VASP would check the receiver's KYC, and request more, abort or settle the payment on-chain.
+
+The remaining of this document details the specifications for Commands, Objects and the typical and exceptional flows to define Payments and their Commands.
 
 ---
 # Specification
 ---
 
-# Off-Chain Protocol Design Principles
-
-**Scalability**. Pursuant to the design of the initial version of the Off-Chain Protocol, all off-chain PaymentObjects that are ready for settlement, would be settled individually (gross) through a separate Blockchain transaction. However, the architecture of the Off-Chain Protocol allows in the future the introduction of netting batches of transactions and settling all of them through a single Blockchain transaction. This allows costs associated with multiple on-chain transactions to be kept low for VASPs, and allows for a number of user transactions or payment between VASPs that exceed the capacity of the underlying Blockchain. Additionally, batches enhance privacy via grouping together the number of transactions between VASPs and by only placing a single on-chain transaction which hides the individual transaction amounts. 
-> Note that every transaction within a batch would first be agreed upon between the VASPs involved, and the VASPs would have full insight into the transactions and any travel rule information about those transactions.
-
-**Extensibility**. This initial version of the Off-Chain Protocol accommodates simple payments where a customer of a VASP sends funds to the customer of another VASP over a limit, requiring some additional compliance-related information. However, in the future the blockchains may support more complex flows of funds between customers of VASPs as well as merchants. The Off-Chain Protocol can be augmented to support the transfer of rich meta-data relating to those flows between VASPs in a compliant, secure, private, scalable and extensible manner.
-
-**Generic Communication Framework**. The Off-Chain Protocol is designed as a generic communication framework which can be utilized by any Blockchain and requires no ties to any specific blockchain. While the first potential usage of the Off-Chain Protocol is presented as within the Libra Blockchain, the Off-Chain Protocol makes few and well defined assumptions about the underlying Blockchain environment, which can be fulfilled by other Blockchains. The Off-Chain Protocol can therefore be re-purposed to support compliance, privacy and scalability use-cases between VASPs in other Blockchains, as well as in multiple blockchains simultaneously.
-
-We describe a number of additional lower-level requirements throughout the remaining of the documents, such as ease of deployment through the use of established web technologies (like HTTP and JSON), tolerance to delays and crash-recovery failures of either VASPs, and compatibility with common cryptography and serialization schemes.
-
 # Terminology
-**Object**: Equivalent to a record in a database.  A payment is an example of an Object.
+**Object**: Equivalent to a record in a database.  A PaymentObject is an example of an Object representing a payment.
 
 **Command**: An instruction sent over a Channel to mutate/create one or more Objects.  In the case of a mutation, this Command will depend upon the current value of one of more existing Shared Objects.
 
 **Channel**: The communication path between a pair of entities who execute Commands and track the evolution of a set of Shared Objects.
 
-**Shared Object**: All Objects contained within a Command - for example `PaymentObject`s, are considered as "Shared Objects" - meaning that either VASP may create a new Command to modify the Object, and will do so during the typical life-cycle of an Object - an example being the addition of required data within the KycDataObject from both VASPs to a payment Object. Both VASPs in a Channel can asynchronously attempt to initiate and execute Commands on Shared Objects.
+**Shared Object**: All Objects contained within a Command - for example `PaymentObject`s, are considered as "Shared Objects" - meaning that either VASP may create a new Command to modify the Object, and will do so during the typical life-cycle of an Object - an example being the addition of required data within the `KycDataObject` from both VASPs to a payment Object. Only one VASPs in a Channel can may at any time attempt to initiate and execute a Commands on Shared Objects, defined by the state of the Object.
 
 **Version**: The state of an Object at a specific point in time.  Every creation or mutation creates a new Version of the Object which was created/mutated.  VASPs operate upon the latest Version of Shared Objects.  Once a Version is mutated, it is no longer a valid Version upon which a new Command may depend - the newly updated value of the Version is the latest Version for that Object and must be acted upon.
 
-**reference_id**: Every Object type contains a `reference_id` field which is a unique reference ID for the Object.  The reference ID is used as a unique identifier of the Object. The reference ID is always specified by the payment initiator VASP (the VASP which originally created the Object). This value should be unique, and formatted as “<creator_vasp_onchain_address_bech32>_<unique_id>”. For example, ”lbr1x23456abcd_seqABCD“. As an example, see the reference_id field on the [PaymentObject](#paymentobject). Unicode utf-8 encoded.
-
-# Overall Off-Chain Properties
-The Off-Chain Protocol formulates methodologies to provide the following high-level properties:
-
-### Channel Establishment
-The Off-Chain Protocol allows two entities A and B to form a communication Channel for manipulating a consistent database of Objects and agreeing on Commands that manipulate those Objects.
-
-### Command Issuance By Either Party
-Both ends of the Channel can issue Commands upon Shared Objects.
-
-### Object Versioning
-To ensure a consistent view of Object states, every Object is versioned. Mutations may only occur upon the latest Version of an Object.
-
-### Concurrency Control
-The Off-Chain Protocol manages concurrent requests on Objects and ensures that Object states will not become out of sync.
-
-### Eventual Consistency
-The Off-Chain Protocol ensures eventual consistency of Shared Objects.
-
-# Basic Off-Chain Building Blocks
+**reference_id**: Every Object type contains a `reference_id` field which is a unique reference ID for the Object.  The reference ID is used as a unique identifier of the Object. The reference ID is always specified by the payment initiator VASP (the VASP which originally created the Object). This value should be unique, and formatted as `<creator_vasp_onchain_address_bech32>_<unique_id>`. For example, `lbr1x23456abcd_seqABCD`. As an example, see the `reference_id` field on the [PaymentObject](#paymentobject). Unicode utf-8 encoded.
 
 ### On-Chain Account Setup
 A VASP's on-chain account must be created and set up in accordance with the standard VASP account creation process.
 
-Of particular note for off-chain APIs is the compliance key value.  This is the Ed25519 key with which a VASP signs travel rule statements on-chain and the required information within the KycDataObject exchanged via the Off-Chain Protocol.  During account creation, a VASP will set their compliance key which will be stored under the primary VASP account.
+Of particular note for off-chain APIs is the compliance key value.  This is the Ed25519 key with which a VASP signs travel rule statements on-chain and all off-chain requests and responses. During account creation, a VASP will set their compliance key which will be stored under the primary VASP account.
 
 ### HTTP end-point
 
@@ -84,19 +59,19 @@ Each VASP exposes an HTTPS POST end point at `https://<hostname>:<port>/<protoco
 
 * `protocol_version` is initially 0 for this iteration of the off-chain APIs.
 * `LocalVASPAddress` and `RemoteVASPAddress` are the bech32 VASP addresses of the respective VASPs - with the subaddress set to 0's as per [LIP 5](https://lip.libra.org/lip-5/).
-    * An example URL: http://127.0.0.1:7091/v1/lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m/lbr1pgfpyysjzgfpyysjzgfpyysjzggqqqqqqqqqqqqqxjt54z/command/
+    * An example URL: http://127.0.0.1:7091/0/lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m/lbr1pgfpyysjzgfpyysjzgfpyysjzggqqqqqqqqqqqqqxjt54z/command
 
 
 ### HTTP Headers
 All HTTP requests and responses must contain a header `X-Request-ID` with a unique ID for the request, used for tracking requests and debugging. Responses must have the same string in the `X-Request-ID` header value as the requests they correspond to.
 
 ### Payloads
-The exposed endpoint receives `CommandRequestObject`s in the POST body, and responds with `CommandResponseObject`s in the HTTP response (See [Request/Response Payload](#requestresponse-payload) for more details. Single Command requests-responses are supported (HTTP1.0) but also pipelined request-responses are supported (HTTP1.1). The content type of the HTTP request/response is ignored. The version for the Off-Chain Protocol is the string `v1`.  All structures transmitted, nested within `CommandRequestObject` and `CommandResponseObject` are valid JSON serialized Objects and can be parsed and serialized using standard JSON libraries.
+The exposed endpoint receives JWS signed `CommandRequestObject`s in the POST body, and responds with a JWS signed `CommandResponseObject`s in the HTTP response (See [Request/Response Payload](#requestresponse-payload) for more details. Single Command requests-responses are supported (HTTP1.0) but also pipelined request-responses are supported (HTTP1.1). The content type of the HTTP request/response is ignored. The version for the Off-Chain Protocol is the string `0`.  All structures transmitted, nested within `CommandRequestObject` and `CommandResponseObject` are valid JSON serialized Objects and can be parsed and serialized using standard JSON libraries.
 
-All transmitted requests/responses are signed by the sending party using the JWS Signature standard (with the Ed25519 / EdDSA ciphersuite, and `compact` encoding).  The party's on-chain compliance key shall be used to sign these messages. This ensures all information and meta-data about payments is authenticated and cannot be repudiated.
+All transmitted requests/responses are signed by the sending party using the JWS Signature standard (with the Ed25519 / EdDSA cipher suite, and `compact` encoding).  The party's on-chain compliance key shall be used to sign these messages. This ensures all information and meta-data about payments is authenticated and cannot be repudiated.
 
 
-## Basic Protocol Interaction
+## Basic Protocol CommandRequest / CommandResponse Interaction
 Assume two VASPs A and B.  The basic protocol interaction consists of:
 
 * An initiating VASP A creates a `CommandRequestObject` containing a Command of the desired type.  Commands inform the other VASP what to create or mutate.  Every Command includes one or more Objects to create or update.  For each of those Objects, the Version of that Object is updated by the Command and the old Version becomes obsolete once the Command is applied successfully.
@@ -107,53 +82,32 @@ Assume two VASPs A and B.  The basic protocol interaction consists of:
 
 If VASP A fails to receive a response from VASP B, or in the case of specific protocol failure codes, it must re-send the request at some cadence until a response is received to ensure eventual consistency.
 
-Commands may flow in both directions - VASP A to VASP B or VASP B to VASP A - and may happen simultaneously in an asynchronous manner, providing [Multi-Party Command Issuance](#multi-party-command-issuance).  By only allowing Commands to build upon the latest agreed-upon Version of an Object, concurrent requests are possible with minimal contention - contention only occurs if simultaneous Commands operate upon the same Object(s) and contention in that case is resolved by nature of [Client/Server Roles](#protocol-server-and-client-roles).
-
 <img alt="Command Exchange" src={useBaseUrl('img/command_exchange.png')} />
 
 <img alt="Command State Flow" src={useBaseUrl('img/command_state_flow.png')} />
 
-# Command Sequencing
 
-The low-level Off-Chain Protocol allows two VASPs to sequence request-responses for Commands originating from either VASP, in order to maintain a consistent database of Shared Objects. Sequencing a Command requires both VASPs to confirm it is valid, as well as its sequence in relation to other Commands operating upon the same Objects.  Since Commands may operate upon multiple Objects, a Command only succeeds if the Command is able to be applied to every dependent Object - ensuring atomicity of the Command and consistency of the Objects, providing for [Concurrency Control](#concurrency-control). Both VASPs in a Channel can asynchronously attempt to initiate and execute Commands on Shared Objects. All Commands upon Shared Objects which are exchanged between pairs of VASPs are sequenced relative to the prior state of each Shared Object in the Command. For example, a Command might depend on Object X having Version Y. If there has been a concurrent update to Object X and it has Version Z at the time the Command is processed, the Command will be rejected.
+# Command Sequencing: Object Versioning and Next Writer
 
+As mentioned in [Terminology](#terminology), every Object type contains a `reference_id` field which is a unique reference ID for the Object.
 
-## Command Sequencing: Object Versioning
-
-To ensure a consistent view of Object states, every Object is [Versioned](#object-versioning). A Command can create or modify one or more Objects. Mutations may only occur upon the latest Version of an Object. When either VASP creates a request, they must denote which Objects are read and which are written during this Command. These are specified in the `_reads` and `_writes` fields of the Command.
-
-As mentioned in [Terminology](#terminology), every Object type contains a `reference_id` field which is a unique reference ID for the Object.  The `_reads` field is specified as a JSON mapping of Object `"reference_id"`: `"cid"`, where `cid` (Command ID) is a random 16 byte string encoded in hex. The `_writes` field represents the new mapping of Objects to a new `cid` value. The new `cid` value for an Object created or mutated by a Command is the `cid` of the Request containing the Command that created or mutated this Object.
-
-By specifying which Object Versions are read, the off-chain API maintains relative ordering of Commands on Objects and ensures a consistent view of the current state of Objects between parties.  Each Object Version may only be mutated a single time, when a Command succeeds. Once it has been mutated, a new Version is created to represent the latest state of the Object, the old Version can be garbage-collected. This results in what is essentially a per-object sequencing.
-
-Both `_reads` and `_writes` must be exact - meaning that if unused dependencies are specified or insufficient dependencies are specified, the Command will be rejected.
-
-Sample generation of the `cid` can be done with something similar to (in `python3` syntax):
+Each VASP also associates with an object its **latest version**, as the last command ID (`cid`) that created or updated it. Commands specify the list of objects and versions they expect to operate on (the `_reads` field), and the list of objects and versions they create if the command is a success (the `_writes` field). Sample generation of the `cid` can be done with something similar to (in `python3` syntax):
 ```
 urandom(16).hex()
 ```
 
+Given the state of an object there is an unambigious way to define who the **next writer** to the object should be (unless the object is in a terminal state and no more commands should be issued on it). Only this VASP is allowed to issue a command to update this Object, and a command from the other VASP will be rejected as a command failure. This prevents concurrent attempts to update Objects that could lead to inconsistencies.
+
 <img alt="Object Versioning" src={useBaseUrl('img/object_versioning.png')} />
-
-
-## Protocol Server and Client Roles
-
-In each Channel, one VASP takes the role of a _protocol server_ and the other the role of a _protocol client_ for the purposes of simplifying Shared Object locking / state management. Note that these roles are distinct to the HTTP client/server -- and both VASPs act as an HTTP server and client to listen and respond to requests. To avoid excessive locking and intermediate state management during API requests, by convention the _server_ acts as the source of truth for the state of an Object.  In practice, this means that in the case of lock contention on a Shared Object, the _server_ Command is prioritized.
-
-<img alt="Object Contention" src={useBaseUrl('img/object_contention.png')} />
-
-The protocol server/client role is determined by comparing their binary on-chain Address strings (we call those the _binary address_. The following rules are used to determine which entity serves as which party: The last bit of VASP A’s parent binary address _w_ (where `w = addr[15] & 0x1`) is XOR’d with the last bit in VASP B’s parent binary address _x_.  This results in either 0 or 1. (Refer to https://github.com/libra/libra/tree/master/client/libra-dev#vasp-account-roles for additional information on parent/child VASP accounts).
-If the result is 0, the lexicographically lower parent address is used as the server side.
-If the result is 1, the lexicographically higher parent address is used as the server side. Lexicographic ordering determines which binary address is higher by comparing byte positions one by one, and returning the address with the first higher byte.
 
 # Network Error Handling
 
-In the case of network failure, the sending party for this Command is required to re-send the Command until it gets a response from the counterparty VASP.  An exponential backoff is suggested for Command re-sends.  This retransmission strategy allows the Off-Chain Protocol to achieve [eventual consistency](#eventual-consistency) of the Shared Objects.  Retransmission must be done regardless of the role of the VASP (protocol client or protocol server).
+In the case of network failure, the sending party for this Command is required to re-send the Command until it gets a response from the counterparty VASP.  An exponential backoff is suggested for Command re-sends.  This retransmission strategy allows the Off-Chain Protocol to achieve [eventual consistency](#eventual-consistency) of the Shared Objects.
 
-Upon receipt of a Command that has already been processed (resulting in a success response or a Command error), the receiving side must reply with the same response as was previously issued. Requests that resulted in protocol errors (such as `wait`) may result in different responses. For example if VASP A sends a Requests to VASP B, and VASP B responds with a `wait` protocol error, later VASP A may re-send the same request, and VASP B may respond with a `success` or a different error.
+Upon receipt of a Command that has already been processed (resulting in a success response or a Command error), the receiving side must reply with the same response as was previously issued (successful commands, or commands that fail with a command error, are _idempotent_). Requests that resulted in protocol errors (such as `wait`) may result in different responses. For example if VASP A sends a Requests to VASP B, and VASP B responds with a `wait` protocol error, later VASP A may re-send the same request, and VASP B may respond with a `success` or a different error.
 
 # Request/Response Payload
-All requests between VASPs are structured as [`CommandRequestObject`s](#commandrequestobject) and all responses are structured as [`CommandResponseObject`s](#commandresponseobject).  The resulting request takes a form of the following (prior to JWS):
+All requests between VASPs are structured as [`CommandRequestObject`s](#commandrequestobject) and all responses are structured as [`CommandResponseObject`s](#commandresponseobject).  The resulting request takes a form of the following (prior to JWS signing):
 
 ```
 {
@@ -498,19 +452,106 @@ Valid values are:
 * `needs_kyc_data` - KYC data about the subaddresses is required by this actor.
 * `needs_recipient_signature` - Can only be associated with the sender actor.  Means that the sender still requires that the recipient VASP provide the signature so that the transaction can be put on-chain.
 * `ready_for_settlement` - Transaction is ready for settlement according to this actor (i.e. the required signatures/KYC data have been provided)
-* `settled` - Payment has been settled on chain and funds delivered to the subaddress
 * `abort` - Indicates the actor wishes to abort this payment, instead of settling it.
-* `pending_review` - Payment is pending review.
 * `soft_match` - Actor's KYC data resulted in a soft-match. The VASP associated with this actor will need to determine what next steps are required, and if it decides to send additional KYC information to clear the soft-match does so via the KYCObject field of additional_kyc_data. If not sent within SLA window, this transaction will be aborted.
 
-**Valid Status Transitions**. Each side of the transaction is only allowed to mutate their own status (sender or receiver), and upon payment creation may only set the status of the other party to `none`. Subsequently, each party may only modify their own status to a higher or equal status in the order `none`, (`needs_kyc_data`, `needs_recipient_signature`, `pending_review`, `soft_match`), (`ready_for_settlement`, `abort`).
 
-A status of `abort` on _either_ side is terminal and the payment must not be changed subsequently.
-A status of `ready_for_settlement` on _both_ sides is also terminal, and indicates that the payment should be settled on-chain and not modified further. It is therefore safe for a VASP sending funds to initiate an On-Chain payment to settle an Off-chain payment after it observed the other party setting their status to `ready_for_settlement` and it is also willing to go past this state.
+# PaymentObject Protocol Command Sequence
 
-A state of `pending_review` may be set to indicate a manual review is taking place. This status is informational and the other VASP is not expected to take any action. The `pending_review` status may result in any of `soft_match`, `ready_for_settlement`, or `abort`.
+**PaymentObject State.** The state of a `PaymentObject` is used to determine which VASP is expected to issue a command next, and what information is expected to be included in the command to progress the payment. The state is determined by the tuple of the status of the Sender and Receiver Actors and two flags `Sx` and `Rx`. The exact fields in the payment object for Sender and Receiver actor status are `sender.status.status` and `receiver.status.status`. The flag `Sx` and `Rx` are set when the Sender or the Receiver has included `additional_kyc_data` in the actor field (`Sender.kyc_data.additional_kyc_data` and `Receiver.kyc_data.additional_kyc_data` respectively).
 
-In the event of a soft match, the VASP associated with this actor will need to determine what next steps are required, and if it decides to send additional KYC information to clear the soft-match does so via the KYCObject field of additional_kyc_data. After human review of this data, this state may result in any of ready_for_settlement or abort (abort if the soft-match was unable to be cleared). If data is not received within a reasonable SLA (suggested to be 24 hours), this state will result in abort. The VASP providing the additional KYC data is also allowed to abort the transaction at any point if they do not have additional KYC data or do not wish to supply it.
+The states (Sender Status, Receiver Status, Sx Flag, Rx Flag) are:
+
+Basic KYC exchange flow
+
+* SINIT: (`need_kyc_data`, `none`, `*`, `*`)
+* RSEND: (`need_kyc_data`, `ready_for_settlement`, `*`, `*`)
+* RABORT: (`need_kyc_data`, `abort`)
+* SABORT: (`abort`, `ready_for_settlement`, `*`, `*`)
+* READY: (`ready_for_settlement`, `ready_for_settlement`, `*`, `*`)
+
+Soft-match disambiguation states:
+
+* RSOFT (`need_kyc`, `soft_match`, `_`, `_`)
+* SSOFTSEND (`need_kyc`, `soft_match`, `Sx`, `_`)
+* SSOFT (`soft_match`, `ready_for_settlement`, `*`, `_`)
+* RSOFTSEND (`soft_match`, `ready_for_settlement`, `*`, `Rx`)
+
+A star (`*`) denotes _any_ value, while an underscore (`_`) for a flag denotes _not set_.
+
+**Final States and next Writer.** The sender and receiver of the payment take turns issuing `PaymentCommand` Objects, until the object they create or mutate is in one of the final states, namely SABORT, RABORT or READY. The VASP that is the sender of the Payment always creates the Payment Object, and then the receiver and sender take turns to issue commands updating it.
+
+**Protocol Flow Illustration & VASP logic**. The state machine of the protocol is illustrated in the figure below. (TODO: Add figure) An implicit abort state for the sender is available (SABORT) when the sender is expected to provide a command; similarly an implicit receiver abort state (RABORT) can be reached when the receiver is expected to provide a command. The full state transition diagram, including abort states, is available in the appendix. In the diagram below the Sender or Receiver labels on state transition arcs indicate the originator of the command that triggers the transition. Some abort codes may allow a new payment to follow from an aborted payment.
+
+![picture](state_machine_complex_noabort.png)
+
+## Steps of the protocol: The KYC Exchange Flow
+
+The basic KYC exchange flow starts with the Sender including KYC information and requesting KYC information by the receiver. In the straight-forward case the Receiver is satisfied with this information and responds with a command providing the receiver KYC information, and recipient signature. The Sender can then finalize the payment and also settle it on-chain (status sequence SINIT -> RSEND -> READY). At each step Sender or Receiver may also abort the payment.
+
+### Start -> SINIT
+The Sender issues `PaymentCommand` to create initial payment.
+
+The sender creates a payment object, that they believe requires KYC information exchange. The payment command includes a full payment object including all mandatory fields and the following optional fields populated as:
+
+* `Sender.Status.Status` = `need_kyc_data`.
+* `Sender.kyc_data` = The `KycDataObject` representing the sender.
+* `Receiver.Status.Status` = `none`
+
+### SINIT -> RSEND
+The Receiver issues `PaymentCommand` to update an existing payment.
+
+The receiver VASP examines the `Sender.kyc_data` object, and is satisfied that given the sender information the payment can proceed. It responds with a Payment Command that includes:
+
+* `Receiver.Status.Status` = `ready_for_settlement`
+* `Receiver.kyc_data` = The `KycDataObject` representing the receiver.
+* `recipient_signature` = a valid recipient signature.
+
+### SINIT -> RABORT
+The Receiver issues `PaymentCommand` to update an existing payment.
+
+The receiver VASP examines the sender KYC information and is either not satisfied the payment can proceed, needs more time to process the KYC information, or requires additional information to determine if the payment can proceed. It includes a command to abort the payment with an appropriate error code.
+
+* `Receiver.Status.Status`: `abort`
+* `Receiver.Status.abort_code`: one of `no-kyc-needed` or `rejected`.
+
+The sender can initiate a payment on-chain in case of an abort with `no-kyc-needed`.
+
+### RSEND -> READY
+
+The Sender issues `PaymentCommand` to update an existing payment.
+
+The Sender VASP examines the KYC information from the Receiver and is satisfied the payment can proceed.
+
+* `Sender.Status.Status`: `ready_for_settlement`
+
+The payment can be executed on-chain by the sender (or settled in any other way).
+
+### RSEND -> SABORT
+
+The Sender issues `PaymentCommand` to update an existing payment.
+
+The sender VASP requires more time, has a soft match for the receiver or cannot proceed with the payment. It issues an abort command:
+
+* `Sender.Status.Status`: `abort`
+* `Sender.Status.abort_code`: one of `pending`, `soft-match`, or `rejected`.
+
+## Steps of the protocol: The soft-match states and flows
+
+### Receiver soft-match (SINIT -> RSOFT -> SSOFTSEND)
+
+After the Sender initiates a payment by providing KYC information (SINIT), the Receiver may determine they require more information to disambiguate a match. In that case they commit a command to set `Receiver.Status.Status` to `soft-match` (state RSOFT) or abort. The sender may respond with a command that populates the `Sender.kyc_data.additional_kyc_data`, which sets the flag `Sx` (state SSOFTSEND) or abort (SABORT). Finally, if the Receiver is satisfied with the additional information they move to provide all information necessary to go to RSEND (See above, this includes receiver KYC information and recipient signature). Otherwise, the receiver can abort to state RABORT.
+
+### Sender soft-match (RSEND -> SSOFT -> RSOFTSEND)
+
+Similarly to the flow above, the Sender at state (RSEND) may decide they need for information about the receiver of the payment to disambiguate a soft-match. They set their status `Sender.Status.Status` to `soft-match` (state SSOFT). The receiver can abort (RABORT) or provide the additional KYC in `Receiever.kyc_data.additional_kyc` (state RSOFTSEND). The sender may then abort (SABORT) or move to READY, and settle the payment.
+
+## Abort codes and `original_payment_reference_id`
+
+The meaning of abort codes in the `Status.abort_code` field of an `PaymentActorObject` are:
+
+* `no-kyc-needed`: the recipient indicates that they are not willing to provide KYC information since they judge that it is not necessary. The payment can be directly executed on chain.
+* `rejected`: the payment is rejected. It should not be used in the `original_payment_reference_id` field of a new payment.
 
 # Recipient Signature
 Once the recipient side is comfortable that it has received appropriate information and is ready for the transaction to go on-chain, the recipient side will provide their signature in order to support dual attestation. The receiver VASP will sign with the receiver compliance private key. The following is a concrete example of how to generate the Travel Rule dual attestation signable and the recipient signature using Libra Python Client SDK:
