@@ -18,10 +18,20 @@ In addition to describing the format of the Libra ID, this LIP also describes th
 # Motivation
 Libra ID provides a convenient way to identify a user's account within a VASP. There are two main use cases for Libra ID:
 * For peer-2-peer payments, Libra ID allows a user to provide a human-readable ‘identifier’ to the sender. Basically, instead of sending a [lip-5 address](https://github.com/libra/lip/blob/master/lips/lip-5.md) (that needs to be refreshed for each payment, ideally), the receiver can just share their Libra ID once. In this case Libra ID plays the role of an email address for payments. Benefits for this use case:
-  * Libra ID is a user-friendly, human-readable identifier, unlike lip-5 addresses
   * The Libra ID resolution process can facilitate the exchange of rich information(e.g. nicknames, profile picture, etc.) about both the sender and receiver of the payment
   * Libra ID provides better privacy compared to using sub-addresses, because Libra ID is not shared on the chain and will always use a single-use identifier for the on-chain ID
-  * From a user's perspective, Libra ID is a persistent identifier.  But from the perspective of the chain, LibraIDs do not exist and instead transactions are have a single-use ID to identify them. By contrast, from the viewpoint of both a user and the chain, a sub-address is an ephemeral user identifier that should be recycled frequently to preserve privacy, but appears on-chain and could thus be used to link payments if it isn't recycled upon each usage.
+  * From a user's perspective, Libra ID is a persistent identifier.  But from the perspective of the chain, Libra IDs do not exist and instead transactions are have a single-use ID to identify them. By contrast, from the viewpoint of both a user and the chain, a sub-address is an ephemeral user identifier that should be recycled frequently to preserve privacy, but appears on-chain and could thus be used to link payments if it isn't recycled upon each usage.
+
+# User story
+Below is an example of using Libra ID domain for transferring money from one user to another. 
+
+* Receiver shares their Libra ID with the sender (outside the scope of this document)
+* Sender enters receiver's Libra ID and other relevant information into their wallet application
+* Sender's wallet attempts to fetch the receiver's profile picture and full name along with a confirmation dialog
+* Sender confirms the identity of the recipient
+* Sender presses ‘send’ button
+* Receiver's account is credited the amount in the transaction
+* Receiver's wallet displays recent transactions and their senders
 
 # Libra ID format
 Libra ID is a string in format `<user-id>$<libra-id-domain>`.
@@ -32,17 +42,16 @@ Example: `andrey$novi`
   * Case insensitive
   * Regex: `^[a-zA-Z0-9][a-zA-Z0-9-_+.]*$`
   * Maximum length: 64 characters
-  * Not published on the chain, there is no way for an external entity to list all the users within VASP.
-  * Each VASP can create the user-id however they see fit - user selected, auto-generated, etc. and these are not required to be unique across different VASPs because the domain provides disambiguation across different VASPs. This user-id is a parallel to the user ID in an email address
-* **libra-id-domain** identifies the VASP:
+  * Stored internally in the VASP. Not published on the chain, there is no way for an external entity to list all the users within VASP.
+  * Defined by the VASP - user selected, auto-generated, etc.
+* **libra-id-domain** identifies a VASP:
   * Case insensitive
   * Regex: `^[a-zA-Z0-9][a-zA-Z0-9-]+$`
   * Maximum length: 63 characters
-  * libra-id-domains are published on the chain
-  * Each libra-id-domain is uniquely associated with single VASP
+  * Association between libra id and VASP is published on the chain 
 
 ## Libra ID domains
-Each Libra ID domain is associated with a single VASP. The source of truth for this association is the blockchain - a special LibraIdDomains resource must be published into VASP for it to expose its LibraID domain.
+Each Libra ID domain is associated with a single VASP. This information is stored on the block chain in a `LibraIdDomains` resource published in a parent VASP's on-chain account.
 
 ```
 resource struct LibraIdDomains {
@@ -50,57 +59,33 @@ resource struct LibraIdDomains {
 }
 
 struct LibraIdDomain {
-    domain: vector<u8>,     // Utf-8 encoding
-    wallet_uri: vector<u8>, // ASCII encoding (use url-escape for non-ASCII characters)
+    domain: vector<u8>,  // Utf-8 encoded
 }
 ```
-
+* Fields definition:
+   * `domain` - name of a Libra ID domain 
 * The `LibraIdDomains` resource can only be published into an account with `Role == PARENT_VASP_ROLE_ID`.
-* The `LibraIdDomains` contains a list of `LibraIdDomain` structs that can be associated with a VASP. As such, it is possible to register more than one Libra ID Domain for a given VASP. We are providing this opportunity to support possible situations when two VASPs merge into one, or when a company wants to provide multiple wallet apps, while having only a single VASP parent account on the chain.
+* The `LibraIdDomains` contains a list of `LibraIdDomain` structs that are associated with a VASP. As such, it is possible to register more than one Libra ID Domain for a given VASP. We are providing this opportunity to support possible situations when two VASPs merge into one, or when a company wants to provide multiple wallet apps, while having only a single VASP parent account on the chain.
 * Only special Treasury Compliance account (address `0xB1E55ED`) can manipulate LibraIdDomains resource:
-  * Only TC account can create and publish LibraIdDomains resource
-  * Only TC account can add, remove or update an LibraIdDomain within LibraIdDomains resource
-* In order to register a Libra Id domain, VASP needs to submit a request to Libra Association. LA will perform certain checks (out of scope of this document) before they will issue an on-chain transaction to register a Libra Id Domain. The checks that LA will perform will make sure that VASPs do not claim irrelevant Libra Id Domains. LA submission will also ensure that Libra Id Domains are unique.
-* It should also be possible (and probably going to be most common) for a new VASP to submit their desired Libra ID domain(s) along with the request to create a `ParentVASP` account.
+  * Only TC account can create and publish `LibraIdDomains` resource
+  * Only TC account can add, remove or update an `LibraIdDomain` within `LibraIdDomains` resource
+* In order to register a Libra Id domain, a VASP needs to submit a request to Libra Association. LA will perform certain checks (out of scope of this document) before issuing an on-chain transaction to register a Libra Id Domain. These checks intend to mitigate irrelevant claims and enforce uniqueness
+* The Libra ID domain can be created as part of creating a `ParentVASP` account.
 * An entity (potentially the Association) may at some point choose to expose an open source application(*Indexer*) that will allow indexing available Libra IDs and could provide a convenient REST API for applications to fetch information about the domains. The API of such an indexer is out of scope of this RFC.
 
-# Utilization of LibraID during payments
-One of the main use cases for Libra ID is transferring money from one user to another across different wallets.
+# Off-chain protocol
+
+**TODO: This section may change in the future as we update LIP 1**
 
 <img alt="Payment flow" src={useBaseUrl('img/libra-id-flow.png')} />
 
-## UI flow
-* Receiver shares their Libra ID with the sender (outside the scope of this document)
-* Sender enters receiver’s Libra ID(and other txn details such as amount) in their wallet app
-* Sender’s wallet can fetch profile picture and full name of the receiver prior to sending money, and show it to sender, to improve security (if receiver VASP allows it)
-* Sender presses ‘send’ button
-* Receiver receives money and information about the sender (optionally)
-
-## Backend flow
 In order to support peer-2-peer payments, VASPs need to implement two Libra ID endpoints:
 
-
 * **Info endpoint** for querying optional information about the receiver. VASPs can provide this endpoint to improve UX and security of payment, but they are not obligated to - VASPs may choose not to share any information about the user via this endpoint, including whether the user exists or not.
-  * *For example*: VASP can have notion of 'contact list' and only share information if the sender is in receiver's contacts
+  * *For example*: VASP can define a 'contact list' and only share information if the sender is in receiver's contacts
 * **Payment endpoint** to perform actual money transfer.
 
-Common considerations:
-
-* For both endpoints, all communications are signed via the same mechanism as for other off-chain communications, see the [Payloads section of lip-1](https://github.com/libra/lip/blob/master/lips/lip-1.mdx#payloads) for details. As such, all vasp-2-vasp communications are authenticated.
-
-* All Libra ID endpoints are nested under `pay.<version>` URI path:
-
-     `https://<hostname>:<port>/pay.<protocol_version>/<endpoint>`
-
-* All Libra ID endpoints use the same `base_url` and same `compliance_public_key` for authentication as other off-chain APIs.
-
-* All Libra ID endpoints are HTTP POST endpoints, they accept JSON-encoded requests and return JSON-encoded responses. Other encoding methods can be considered in the future, `Content-Type` and `Accept` HTTP headers can be used to define request/response formats.
-
 ## Info endpoint
-
-```
-POST https://<hostname>:<port>/pay.<protocol_version>/info
-```
 
 **Info endpoint** is used by the **Sender** to request information about the **Receiver** before submitting an actual payment.
 
@@ -133,13 +118,11 @@ Info endpoint takes both sender and receiver Libra IDs as arguments. Receiver VA
 * Receiver Libra ID domain must belong to the Receiver VASP. Otherwise, Receiver VASP must return the `400` error code.
 * Sender Libra ID must have a Libra ID domain that belongs to Sender VASP. If this is not the case, the Receiver VASP should return the `400` error code 
 * Receiver VASP may optionally choose how much information to share based on the sender Libra ID. If Receiver VASP decides to not share data, it should return an empty `User Object` with only `libra_id` field set
-* If user is not found, the VASP should return error code `400`  
+* If user is not found, the VASP should return error code `404`  
 
 ## Pay endpoint
 
-```
-POST https://<hostname>:<port>/pay.<protocol_version>/pay
-```
+**TODO: This endpoint is going to be merged into LIP 1**
 
 **Pay endpoint** is used when a user is willing to make a money transfer.
 
@@ -171,7 +154,7 @@ POST https://<hostname>:<port>/pay.<protocol_version>/pay
 
 | Field 	      | Type       | Required? 	| Description 	           |
 |-------	      |------      |-----------	|-------------	           |
-|receiver_address |str         | Y            | On-chain account address for receiving the payment. This address must be encoded as a [bench 32 account identifier](https://github.com/libra/lip/blob/master/lips/lip-5.md#account-identifiers) **without** subaddress |
+|receiver_address |str         | Y            | On-chain account address for receiving the payment. This address must be encoded as a [Bech32 account identifier](https://github.com/libra/lip/blob/master/lips/lip-5.md#account-identifiers) **without** subaddress |
 |reference_id     |str         | Y            | Reference ID to be included into payment metadata |
 |receiver         |[User Object](https://github.com/libra/lip/blob/master/lips/lip-10.md#user-object) | Y            | Information about the receiver |
 
@@ -217,5 +200,3 @@ Profile picture URI is a URI that represents a profile picture of a user. Wallet
 * **Data schema.** If URI starts with data:, wallet must interpret the URI as a [Data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) that contains profile picture encoded.
   * Ex.: *data:image/gif;base64,AAAAAAAA*
 * **Unencrypted http** schema must not be used to share profile pictures.
-
-Vasps can return a user profile picture in either format. HTTPS schema is more traditional, however using data schema allows to show profile pictures faster and avoid an extra HTTP request between VASPs.
