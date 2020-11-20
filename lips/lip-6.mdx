@@ -1,8 +1,8 @@
 ---
 lip: 6
 title: Libra Validator Configuration Management
-authors: Valeria Nikolaenko, David Wolinsky, David Dill, Dahlia Malkhi
-status: Draft
+authors: Valeria Nikolaenko (valerini), David Wolinsky (@davidiw), Dahlia Malkhi (dahliamalkhi)
+status: Last Call
 type: Informational
 created: 07/30/2020
 ---
@@ -10,30 +10,31 @@ created: 07/30/2020
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Summary
-This LIP describes the conceptual governance model of the Libra blockchain, in particular, the on-chain Validator Set configuration.
-Validator Set is part of a global on-chain configuration stored as part of the blockchain state, it additionally includes the list of registered currencies, publishing policies and Libra version.
-Validator Set defines a collection of entities, called Validator Nodes, that coordinate and reach consensus on the state of the blockchain by processing transactions, they ensure correct updates to the state even if some Validator Nodes (fewer than a third) fail in arbitrary ways. The LibraRoot account governed by the Libra Payment Network and the Libra Association defines the composition of the validator set. LibraRoot may add or remove members over time.
+This LIP describes the organization of Libra's proof of authority consensus model by which the Libra blockchain agrees upon ledger state. In a proof of authority consensus model, well-known participants leverage cryptographical digital signatures to agree upon a set of transactions and their output to advance the blockchain's state. The set of potential entities participating in consensus are known as Validators, while the active participants are known as the Validator Set. Both the adding and removing of Validators and specifying the current Validator Set is left to the sole discretion of the entity managing LibraRoot.
 
-## LibraRoot account management
-The Libra Payment Network (“LPN”) is a blockchain-backed payment platform and an infrastructure for stablecoins. Libra Networks (“Libra Networks” or “LN”) is a whole subsidiary of the Libra Association (the “Association” or “LA”) which is in the process of applying for an LPN payment system license from the Swiss Financial Market Supervisory Authority (“FINMA”). Once granted, LN will be responsible for ensuring that LPN operates in compliance with the payment system license from FINMA (the "FINMA License").
+# Background
+The Libra Association ("LA") and Libra Networks ("LN") jointly manage the LibraRoot account. Libra Payment Network ("LPN") is a blockchain-backed payment platform and an infrastructure for stablecoins. LN is a whole subsidiary of the LA. The LA is in the process of applying for an LPN payment system license from the Swiss Financial Market Supervisory Authority ("FINMA"). Once granted, LN will be responsible for ensuring that LPN operates in compliance with the payment system license from FINMA.
 
-The Libra Association is an independent membership organization that is responsible for the LPN technology and the development of the Libra project. The Association is governed by the Association Council, which is comprised of one representative per Association member. The Association Council manages the technology roadmap of the platform and oversees and maintains the Libra Improvement Proposal and Libra Upgrade Process, often through subcommittees of the Council such as the Technical Steering Committee (the “TSC”) and the Association Board.
+The LA is an independent membership organization that is responsible for the LPN technology and the development of the Libra project. The LA is governed by the Association Council, which is comprised of one representative per Association member. The Association Council manages the technology roadmap of the platform and oversees and maintains the Libra Improvement Proposal and Libra Upgrade Process, often through subcommittees of the Association Council such as the Technical Steering Committee (the “TSC”) and the Association Board.
 
-The Association together with LPN, through Association Operation Services (the "AOS"), jointly manage the LibraRoot account that determines the composition of the Validator Set at any given time. Reasons for changing the Validator Set include new members joining the Association or existing members leaving it and actions needed to comply with LN’s obligations under its FINMA License designed to guarantee the secure and performant operation of the platform.
+The LibraRoot account determines the composition of the Validator Set at any given time. Reasons for changing the Validator Set include new members joining the Association or existing members leaving it and actions required for compliance.
 
 # Framework Guide
 ## Terminology
-* *Validator Node* is a replica that runs the Libra Protocol to maintain and advance the blockchain state. A Validator Node processes transactions and interacts with other Validator Nodes to reach consensus on the ordering of transactions and the resulting state of the database after transactions' executions.
-* *Validator Config* is an on-chain Move resource that contains information for running a Validator Node. It includes a *consensus public key*, which is an EdDSA public key used to authenticate consensus messages. It also includes [network addresses](https://github.com/libra/libra/blob/master/specifications/network/network-address.md) for establishing secure connections with this Validator Node from other Validator Nodes or from clients.
+* *Validator Node* also commonly referred to as a Validator. A Validator Node is a replica that runs the Libra consensus protocol to maintain and advance the blockchain state. A Validator Node processes transactions and interacts with other Validator Nodes to reach consensus on the ordering of transactions and the resulting state of the database after transaction execution.
+* *Validator Config* is an on-chain configuration or Move resource that contains configuration information of a Validator Node. This includes a *consensus public key* and [network addresses](https://github.com/libra/libra/blob/master/specifications/network/network-address.md).
+* *Consensus public key* verifies the digital signature authenticating the sender of a consensus message in the Libra consensus protocol.
+* *Network addresses* define endpoints and cryptographic credentials for establishing secure connections with other Validator Nodes as well as Full-Nodes or observers.
 * *Validator Owner* is an owner of a Libra account representing a Libra Association's member. The account stores the *Validator Config* Move resource (see [Move Tutorial](https://developers.libra.org/docs/move-paper)).
-* *Validator Operator* is an owner of an on-chain Libra account, it may operate none, one or several Validator Nodes: a Validator Owner may designate a Validator Operator to run a Validator Node on Validator Owner's behalf. A Validator Operator may run multiple Validator Nodes. The Validator Operator for a Validator Owner has permission to rotate the Validator Config for the Validator Owner locally, as well as copy it to the Validator Set.
-* *Validator Set* is an on-chain Move resource that stores a vector, where each entry contains an address of a Validator Owner and a copy of its Validator Config. Though the Validator Config in the Validator Set may be an older version of the Validator Config currently stored under Validator Owner's account, each Validator Node is run with the Validator Config from the Validator Set.
-Each address appears at most once in the vector. The LibraRoot decides which Validator Owners' addresses are in the Validator Set. There is a one-to-one correspondence between a Validator Owner in the Validator Set and a Validator Node. The Validator Set changes, either when one of the Validator Nodes updates their parameters or when a member of the set is added or removed, the Reconfiguration happens.
-* *Reconfiguration* defines a new epoch by triggering a new epoch event (`LibraConfig::NewEpochEvent`), it gets emitted if any part of the global on-chain configuration, such as the Validator Set, changes. If a transaction causes an epoch change, that transaction is the last transaction committed in the current epoch — any subsequent transactions in that block or future blocks from that epoch will be ignored. Once the transaction has been committed, the new configuration starts being valid immediately. E.g. the new Validator Set will start running the consensus protocol in the new epoch.
-* *LibraRoot* is an account that may add/remove members to/from the ValidatorSet, it may also send an AdminScript.
+* *Validator Operator* is an owner of an on-chain Libra account, it may operate none, one or several Validator Nodes: a Validator Owner may designate a Validator Operator to run a Validator Node on Validator Owner's behalf. A Validator Operator may run multiple Validator Nodes. The Validator Operator for a Validator Owner has permission to modify the Validator Config stored in the Validator Owner account and update its copy in the Validator Set.
+* *Validator Set* is an on-chain Move resource represented by a vector containing the active set of Validator Nodes. There exists a one-to-one relationship between a Validator Owner in the Validator Set and a Validator Node. The entries within the Validator Set consist of the Validator Owner's address as well as a copy of its Validator Config. Each Validator Owner address must appear only once in the Validator Set. Validator Nodes run according to the configuration defined in the Validator Set. Validator Set changes come in two ways: a change in the set of Validator Owners or a change in the configuration of some Owner. Both cases result in a Reconfiguration.
+* *Reconfiguration* is an on-chain configuration change. Reconfigurations are separated by epochs signified by a `LibraConfig::NewEpochEvent`.  If a transaction causes a Reconfiguration, that transaction is the last transaction before the next epoch. Any subsequent transactions will be executed in the new configuration defined by the Reconfiguration.
+* *LibraRoot* is the sole entity capable of adding or removing Validator Owner and Validator Operator accounts and specifying the current Validator Owners in the  Validator Set. It may also submit an AdminScript.
 * *AdminScript* is a transaction script that can be sent by the LibraRoot on behalf of any other account.
 
-<img alt="Validator Set" src={useBaseUrl('img/validator_set.png')} />
+For the aforementioned roles, Libra uses a variant of role-based access control as defined in [LIP2: Libra Roles and Permissions](useBaseUrl('lip-2')).
+
+<img alt="Validator Set" src={useBaseUrl('img/validators_set.png')} />
 
 ## Move modules
 Four move modules are involved in the validator configuration management
@@ -44,7 +45,7 @@ Four move modules are involved in the validator configuration management
 
 ## Move resources
 
-For Validator Owner the Libra Account has a *Validator Role* (see [lip-2: Libra Roles and Permissions](https://github.com/libra/lip/blob/master/lips/lip-2.md)) and stores a `ValidatorConfig` resource managed by `ValidatorConfig` module:
+For Validator Owner the Libra Account has a *Validator Role* and stores a `ValidatorConfig` resource managed by `ValidatorConfig` module:
 
 ```
 resource struct ValidatorConfig {
@@ -53,7 +54,7 @@ resource struct ValidatorConfig {
   human_name: vector<u8>,
 }
 ```
-It contains a `human_name` of the account which is set at the account creation time and cannot be changed. The `config` and `operator_account` fields are initially set to `none`. The `config` is a place holder for parameters of the Validator Node.
+It contains a `human_name` of the account, a UTF-8 encoded string, which is set at the account creation time and cannot be changed. The `config` and `operator_account` fields are initially set to `none`. The `config` is a place holder for parameters of the Validator Node.
 ```
 struct Config {
   consensus_pubkey: vector<u8>,
@@ -69,7 +70,7 @@ resource struct ValidatorOperatorConfig {
 }
 ```
 
-The Validator Set consists of a consensus signature scheme's id and the set of Validator Infos described nextn.
+The Validator Set consists of a consensus signature scheme's id and the set of Validator Infos described next.
 ```
 struct LibraSystem {
   scheme: u8,
@@ -89,7 +90,7 @@ struct ValidatorInfo {
 
 ## Transaction scripts
 The following transaction scripts can be run by the LibraRoot:
-* [`create_validator_account`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/create_validator_account.move): creates a Validator Owner account (an account with Validator role)
+* [`create_validator_account`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/create_validator_account.move) - creates a Validator Owner account (an account with Validator role)
 * [`create_validator_operator_account`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/create_validator_operator_account.move) - to create a Validator Operator account
 * [`add_validator_and_reconfigure`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/add_validator_and_reconfigure.move) - to add Validator Owner to the Validator Set with its current config and trigger reconfiguration
 * [`remove_validator_and_reconfigure`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/remove_validator_and_reconfigure.move) - to remove Validator Owner from the Validator Set and trigger reconfiguration
@@ -109,19 +110,16 @@ More on these transaction scripts (their specifications, information about error
 
 This section details the workflows or common scenarios related to Validator Set management.
 ## Validator Owner and Validator Operator accounts creation
-LibraRoot (through the Association Operation Services, "AOS") creates Validator Owner and Validator Operator accounts.
-To get an account created, each Validator Owner or Operator needs to provide an authentication key and a name of their organization to LibraRoot. The authentication key is a 32 elements byte array, derived from the public verification key of Ed25519 or MultiEd25519 signature schemes.
+LibraRoot (through the Association Operation Services, "AOS") creates Validator Owner and Validator Operator accounts. To get an account created, each Validator Owner or Operator needs to provide an authentication key and a name of their organization to LibraRoot. The authentication key is a 32 byte array, derived from the public verification key of Ed25519 or MultiEd25519 signature schemes.
 
-LibraRoot creates Validator Owner's account by sending the `create_validator_account` transaction script.
-An account address of a Validator Owner is derived from their name. An Owner may ask the LibraRoot to manage the newly created account (in which case for account creation an owner only needs to provide a name), the Owner that established custody of their own keys may later revoke this permission upon notifying the LibraRoot. In the case when LibraRoot maintains ownership of an Owner's account the auth key of that account is set to all-zeroes string and the transactions on behalf of such Owner are sent via AdminScripts.
+LibraRoot creates Validator Owner's account by sending the `create_validator_account` transaction script. An account address of a Validator Owner is derived from their name. An Owner may ask the LibraRoot to manage the newly created account in which case for account creation an owner only needs to provide a name. In the case when LibraRoot maintains ownership of an Owner's account the auth key of that account is set to an all-zeroes string and the transactions on behalf of the Owner are sent via AdminScripts.
 
-LibraRoot creates Validator Operator's account by sending the `create_validator_account` transaction script.
-An account addresses of a Validator Operator is derived from their authentication key in the usual way.
+LibraRoot creates Validator Operator's account by sending the `create_validator_account` transaction script. An account address of a Validator Operator is derived from their authentication key in the usual way.
 
 ## Validator Owner to set the Validator Operator
 Validator Owner may call a transaction script `set_validator_operator` to set the `operator_account` field of the `ValidatorConfig` resource, it will succeed only if the `operator_account` has a Validator Operator role.
 
-The script takes a human name of the Validator Operator (for extra validation) and its on-chain address. When successful this transaction changes the field `operator_account` of the `ValdiatorConfig` resource of the Validator Owner calling the transaction. When the `operator_account` is set, only the `operator_account` may change the `config` field of the `ValidatorConfig` resource. If the `operator_account` is unset (or set to `none`), then only the Validator Owner itself may change the `config` field.
+The script takes a human name of the Validator Operator (for extra validation) and its on-chain address. When successful this transaction changes the field `operator_account` of the `ValdiatorConfig` resource of the Validator Owner calling the transaction. When the `operator_account` is set, only the `operator_account` may change the `config` field of the `ValidatorConfig` resource.
 
 ## Validator Operator (or Owner) to set the Config
 For a Validator Owner who is not yet added to the Validator Set, the Validator Operator (or Validator Owner if `operator_account` is unset) may change the `config` by calling a transaction script `register_validator_config`, it takes an address of the Validator Owner (to avoid confusion when one Validator Operator runs Validator Nodes for multiple Validator Owners), a new consensus public key (a 32 elements byte array) and two byte arrays for network addresses: `validator_network_addresses` for other validators to communicate with this validator during consensus and `fullnode_network_addresses` for full-nodes, clients or validators who are catching-up.
@@ -131,7 +129,7 @@ If a Validator Owner is in the Validator Set, the `operator_account` may update 
 ## Validator Owner to be added/removed from the Validator Set
 Once the Validator Owner or its Validator Operator sets the `config` of the Validator Node and is ready to participate in the consensus protocol, it should ask the AOS off-chain to be added to the Validator Set. The AOS sends a transaction from the LibraRoot account: `add_validator_and_reconfigure`, once it executes, it triggers the Reconfiguration, other validators connect to the Validator Node and it starts participating in the protocol. Note that the size of the Validator Set and hence the size of the quorum for consensus decisions increases.
 
-Under special circumstances (that includes the member leaving the Association or compliance-related issues), the LibraRoot may remove a Validator Owner from the Validator Set. It does so by calling the `remove_validator_and_reconfigure` transaction script, it triggers the Reconfiguration. Note that the size of the Validator Set and hence the size of the quorum decreases.
+Under special circumstances, such as, members leaving the Association or compliance-related issues, the LibraRoot may remove a Validator Owner from the Validator Set. It does so by calling the `remove_validator_and_reconfigure` transaction script, it triggers the Reconfiguration. Note, that the size of the Validator Set and hence the size of the quorum decreases.
 
 ## Properties of the Validator Set enforced off-chain
 
@@ -139,4 +137,3 @@ The following properties are being enforced via contractual obligations:
 * Each Validator Owner is obliged to notify LN about the decision to change the Validator Operator. LN may disallow the switch when it would violate LN's obligations, such as when a new Validator Operator is deemed untrustworthy, or the change unacceptably concentrates consensus power among too few Validator Operators or Validator Nodes' architectures.
 * If a Validator Operator OP_1 is designated to run Validator Nodes for two Validator Owners V_1 and V_2, the Validator Operator must run two distinct instances of Validator Nodes to increase fault-tolerance of the system.
 * The Validator Operator designated by the Validator Owner is responsible for running a Validator Node with the config in the Validator Set and is responsible for updating/rotating this config as needed.
-
