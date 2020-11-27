@@ -2,7 +2,7 @@
 lip: 2
 title: Libra Roles and Permissions
 authors: Sam Blackshear, Tim Zakian, Junkil Park
-status: Draft
+status: Last Call
 type: Informational
 created: 06/26/2020
 ---
