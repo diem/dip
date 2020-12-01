@@ -11,7 +11,7 @@ module.exports = {
   projectName: 'lip',
   themeConfig: {
     algolia: {
-      apiKey: '410fb6151a3f329a286b9cb0fad63330',
+      apiKey: 'cf22f07a9b6b22b6b595b439878876f8',
       indexName: 'libra-lips',
     },
     prism: {
