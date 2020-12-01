@@ -44,9 +44,7 @@ The remaining of this document details the specifications for Commands, Objects 
 
 **Channel**: The communication path between a pair of entities who execute Commands and track the evolution of a set of Shared Objects.
 
-**Shared Object**: All Objects contained within a Command are logically shared, meaning that each VASP has a copy of the Object and may create a new Command to modify it. For example, during the lifecycle of a `KycDataObject`, both VASPs will add information to it. The protocol does not support simultaneous updates to Objects. Rather, VASPs must take turns updating, each update incrementing the Object's Version (defined below).
-
-**Version**: The state of an Object at a specific point in time. Upon creation an Object is assigned version 0. Every creation or mutation increments the Version  by one. To prevent VASPs overriding each other, each mutation command carries the previous Version and is conditionally to it.
+**Shared Object**: All Objects contained within a Command are logically shared, meaning that each VASP has a copy of the Object and may create a new Command to modify it. For example, during the lifecycle of a `KycDataObject`, both VASPs will add information to it. The protocol does not support simultaneous updates to Objects. Rather, VASPs must take turns updating the Object.
 
 **Reference ID**: Every Object type contains a `reference_id` field which is a unique reference ID for the Object. The reference ID is always specified by the payment initiator VASP (the VASP which originally created the Object). This value should be unique. We recommend the hexadecimal representation of a fresh >16 bytes random byte-string as a way of creating such values.
 
@@ -71,7 +69,7 @@ All transmitted requests/responses are signed by the sending party using the JWS
 ## Basic Protocol CommandRequest / CommandResponse Interaction
 Assume two VASPs A and B.  The basic protocol interaction consists of:
 
-* An initiating VASP A creates a `CommandRequestObject` containing a Command of the desired type.  Commands inform the other VASP what to create or mutate.  Every Command includes one or more Objects to create or update.  For each of those Objects, the Version of that Object is updated by the Command and the old Version becomes obsolete once the Command is applied successfully.
+* An initiating VASP A creates a `CommandRequestObject` containing a Command of the desired type.  Commands inform the other VASP what to create or mutate. Every Command refers to one or more Objects to create or update.
 * VASP A packages the Command via JWS using EdDSA and compact encoding.
 * VASP A establishes a connection to VASP B and sends the packaged Command to VASP B in the body of an HTTP POST.
 * VASP B listens for requests, and when received, verifies VASP A's signature and then processes the request to generate and send `CommandResponseObject` responses, with a success or failure status, through the HTTP response body. In case of an error that prevents VASP B from parsing an incoming `CommandRequestObject` an HTTP error code is returned.
@@ -81,13 +79,7 @@ If VASP A fails to receive a response from VASP B, or in the case of specific pr
 
 <img alt="Command Exchange" src={useBaseUrl('img/command_exchange.png')} />
 
-### Command Sequencing: Object Versioning and Next Writer
-
-As mentioned in [Terminology](#terminology), every Object type contains a `reference_id` field which is a unique reference ID for the Object. Each VASP also associates with an object its **latest version**, which is 0 upon creation and increases by one with every command on the object that succeeds.
-
-Commands specify the list of objects and versions they expect to operate on in the `_reads` field. The `_reads` field contains a map of object `reference_id` to object versions.  A command is only allowed to read or mutate objects that are referred to within this map. Upon a command being successful all object versions are increased by one. A command failure leaves the object versions unchanged.
-
-At each state of an Object, only one VASP is allowed to mutate it (or none if the Object is in a terminal state). If the other VASP tries to mutate the object the command will be rejected. This prevents concurrent attempts to update Objects that could lead to inconsistencies.
+As mentioned in [Terminology](#terminology), every Object type contains a `reference_id` field which is a unique reference ID for the Object. At each state of an Object, only one VASP is allowed to mutate it (or none if the Object is in a terminal state). If the other VASP tries to mutate the object the command will be rejected. This prevents concurrent attempts to update Objects that could lead to inconsistencies.
 
 # Network Error Handling
 
@@ -178,7 +170,7 @@ Represents an error that occurred in response to a Command.
     "message": "",
 }
 ```
-'command_error' occurs in response to a Command failing to be applied - for example, invalid `_reads` values, or high level validation errors.  `protocol_error` occurs in response to a failure related to the lower-level protocol.  Note: Additional information detailing all errors will be added.
+'command_error' occurs in response to a Command failing to be applied - for example, a high level validation error.  `protocol_error` occurs in response to a failure related to the lower-level protocol.  Note: Additional information detailing all errors will be added.
 
 
 # Travel Rule Data Exchange
@@ -195,9 +187,6 @@ All requests between VASPs are structured as [`CommandRequestObject`s](basic_bui
     "cid": "88b282d6181129f682be0421d0ee9887",
     "command": {
 	    "_ObjectType": "PaymentCommand",
-        "_reads": {
-            "5b8403c986f53fe072301fe950d030cb": 0
-        },
 	    "payment": {
 		    "sender": {
 			    "address": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pg9skzctpv9skzcg9kmwta",
@@ -259,18 +248,16 @@ For a travel rule data exchange, the [command_type](basic_building_blocks.md#com
 |-------	    |------	|-----------	|-------------	|
 | _ObjectType   | str  | Y             | The fixed string `PaymentCommand` |
 | payment| [`PaymentObject`](#paymentobject) | Y | contains a `PaymentObject` that either creates a new payment or updates an existing payment. Note that strict validity check apply when updating payments, that are listed in the section below describing these Objects. An invalid update or initial payment Object results in a Command error
-| _reads | JSON Object map |  Y | Must be an Object containing mappings of `reference_id` (str) to latest object Version (uint).  For a payment Command, only zero or one `_reads` values should be specified since payments are only dependent upon at most prior Version of an Object. A list with any other number of items results in a Command error.  If the list is empty this payment Command defines a new payment. If the list contains one item, then this Command updates the shared `PaymentObject`. |
 ```
 {
     "_ObjectType": "PaymentCommand",
-    "_reads": {
-            "d4115900aad65d8141236b464f1315f5": 1
-        },
     "payment": {
         PaymentObject(),
     }
 }
 ```
+
+The contents of `payment` in a `PaymentCommand` either create or update a `PaymentObject`. The field `reference_id` must always be included in `payment` to determine which object is created or updated. In case of update there is an existing Object with the given `reference_id`, and the contents of the `payment` field update or add to the fields that already exist -- validation happens on the resulting, updated, object. This enables transfering only the updated fields within a `PaymentCommand`, rather than retransmitting the full state of the `PaymentObject` (which is also valid).
 
 ### PaymentObject
 
