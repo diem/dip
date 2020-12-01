@@ -28,6 +28,7 @@ module.exports = {
     require.resolve('./plugins/alias/src'),
     require.resolve('./plugins/lip-metadata/src'),
     require.resolve('./plugins/react-axe-ada-monitoring'),
+    require.resolve('./plugins/new-site-redirects'),
   ],
   presets: [
     [
