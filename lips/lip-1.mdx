@@ -48,7 +48,7 @@ The remaining of this document details the specifications for Commands, Objects 
 
 **Version**: The state of an Object at a specific point in time. Upon creation an Object is assigned version 0. Every creation or mutation increments the Version  by one. To prevent VASPs overriding each other, each mutation command carries the previous Version and is conditionally to it.
 
-**reference_id**: Every Object type contains a `reference_id` field which is a unique reference ID for the Object. The reference ID is always specified by the payment initiator VASP (the VASP which originally created the Object). This value should be unique. We recommend the hexadecimal representation of a fresh >16 bytes random byte-string as a way of creating such values. The field is Unicode utf-8 encoded.
+**Reference ID**: Every Object type contains a `reference_id` field which is a unique reference ID for the Object. The reference ID is always specified by the payment initiator VASP (the VASP which originally created the Object). This value should be unique. We recommend the hexadecimal representation of a fresh >16 bytes random byte-string as a way of creating such values.
 
 ### On-Chain Account Setup
 A VASP's on-chain account must be created and set up in accordance with the standard VASP account creation process.
@@ -87,7 +87,7 @@ As mentioned in [Terminology](#terminology), every Object type contains a `refer
 
 Commands specify the list of objects and versions they expect to operate on in the `_reads` field. The `_reads` field contains a map of object `reference_id` to object versions.  A command is only allowed to read or mutate objects that are referred to within this map. Upon a command being successful all object versions are increased by one. A command failure leaves the object versions unchanged.
 
-Given the state of an object there is an unambigious way to define who the **next writer** to the object should be (unless the object is in a terminal state and no more commands should be issued on it). Only this VASP is allowed to issue a command to update this Object, and a command from the other VASP will be rejected as a command failure. This prevents concurrent attempts to update Objects that could lead to inconsistencies.
+At each state of an Object, only one VASP is allowed to mutate it (or none if the Object is in a terminal state). If the other VASP tries to mutate the object the command will be rejected. This prevents concurrent attempts to update Objects that could lead to inconsistencies.
 
 # Network Error Handling
 
@@ -279,7 +279,7 @@ The structure in this Object can be a full payment or just the fields of an exis
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
 | sender/receiver | [`PaymentActorObject`](#paymentactorobject) | Required for payment creation | Information about the sender/receiver in this payment |
-| reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value should be unique. This field is mandatory on payment creation and immutable after that. |
+| reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value should be unique. This field is mandatory on payment creation and immutable after that. The field contains a subset of characters in the set [`A-Za-z0-9_`] and has a maximum length of 80 characters. |
 | original_payment_reference_id | str | N | Used for updates to a payment after it has been committed on chain. For example, used for refunds. The reference ID of the original payment will be placed into this field. This value is optional on payment creation and invalid on updates. |
 | recipient_signature | str | N | Signature of the recipient of this transaction. The is signed with the compliance key of the recipient VASP and is used for on-chain attestation from the recipient party.  This may be omitted on blockchains which do not require on-chain attestation. Generated via [Recipient Signature](#recipient-signature) |
 | action | [`PaymentActionObject`](#paymentactionobject) | Y | Number of cryptocurrency + currency type (LBR, etc.)<a href="#note1" id="note1ref"><sup>1</sup></a> + type of action to take. This field is mandatory and immutable |
@@ -510,10 +510,10 @@ The payment can be executed on-chain by the sender (or settled in any other way)
 
 The Sender issues `PaymentCommand` to update an existing payment.
 
-The sender VASP requires more time, has a soft match for the receiver or cannot proceed with the payment. It issues an abort command:
+The sender VASP receives the Receiver KYC information and decides it cannot proceed with the payment. It issues an abort command:
 
 * `Sender.Status.Status`: `abort`
-* `Sender.Status.abort_code`: one of `pending`, `soft-match`, or `rejected`.
+* `Sender.Status.abort_code`: `rejected`.
 
 ## Steps of the protocol: The soft-match states and flows
 
