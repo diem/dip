@@ -2,7 +2,7 @@
 lip: 4
 title: Transaction Metadata Specification
 authors: Kevin Hurley (@kphfb)
-status: Draft
+status: Final
 type: Informational
 created: 06/26/2020
 ---
@@ -90,13 +90,13 @@ With the metadata in hand, the sender can now submit a transaction to the Libra 
 
 ## Processing the transaction
 
-Much like any other funds transfer request, validators only verify that the sender has sufficient Libra Coins to support the transaction and that the transaction is properly formed and valid, they do not inspect or verify the correctness of the metadata.
+Much like any other funds transfer request, validators only verify that the sender has sufficient Libra Coins to support the transaction and that the transaction is properly formed and valid, and do not inspect or verify the correctness of the metadata.
 
-The recipient custodial wallet should make an effort to refund in the case of malformed metadata or an invalid subaddress for the recipient.
+The recipient custodial wallet should make an effort to refund (via issuing a transaction in the reverse direction for the received amount minus gas costs) in the case of malformed metadata or an invalid subaddress for the recipient.
 
 # Transaction Examples
 
-The following examples demonstrate how subaddressing and metadata are used in the transaction flow.  *Note that the terminology “NC” will mean non-custodial account and “C” will mean a custodial account. We note that Unhosted Wallets will not be permitted to transact on the Libra Payment Network at launch.*
+The following examples demonstrate how subaddressing and metadata are used in the transaction flow.  *Note that the terminology “NC” will mean non-custodial account and “C” will mean a custodial account. We note that as per the Libra Association non-custodial, unhosted wallets will not be permitted to transact on the Libra Payment Network at launch.*
 
 ## NC to NC transaction Flow
 

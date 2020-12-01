@@ -2,7 +2,7 @@
 lip: 1
 title: Off-chain API
 authors: Kevin Hurley (@kphfb), Dmitry Pimenov, George Danezis
-status: Last Call
+status: Final
 type: Informational
 created: 05/29/2020
 ---
@@ -178,7 +178,7 @@ Represents an error that occurred in response to a Command.
 In the initial version of the off-chain APIs, the usage is intended as a means of transferring travel-rule information between VASPs.  The following will detail the request and response payloads utilized for this purpose.
 
 ## Request/Response Payload
-All requests between VASPs are structured as [`CommandRequestObject`s](basic_building_blocks.md#commandrequestobject) and all responses are structured as [`CommandResponseObject`s](basic_building_blocks.md#commandresponseobject).  For a travel-rule data exchange, the resulting request takes a form of the following:
+All requests between VASPs are structured as [`CommandRequestObject`s](#commandrequestobject) and all responses are structured as [`CommandResponseObject`s](#commandresponseobject).  For a travel-rule data exchange, the resulting request takes a form of the following:
 
 ```
 {
@@ -241,7 +241,7 @@ A response would look like the following:
 ```
 
 ### CommandRequestObject
-For a travel rule data exchange, the [command_type](basic_building_blocks.md#commandrequestobject) field is set to "PaymentCommand".  The Command Object is a [`PaymentCommand` Object](#paymentcommand-object).
+For a travel rule data exchange, the [command_type](#commandrequestobject) field is set to "PaymentCommand".  The Command Object is a [`PaymentCommand` Object](#paymentcommand-object).
 
 ### PaymentCommand Object
 | Field 	    | Type 	| Required? 	| Description 	|
@@ -266,9 +266,9 @@ The structure in this Object can be a full payment or just the fields of an exis
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
 | sender/receiver | [`PaymentActorObject`](#paymentactorobject) | Required for payment creation | Information about the sender/receiver in this payment |
-| reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value should be unique. This field is mandatory on payment creation and immutable after that. The field contains a subset of characters in the set [`A-Za-z0-9_`] and has a maximum length of 80 characters. |
+| reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value should be unique. This field is mandatory on payment creation and immutable after that. The field contains a subset of characters in the set [`A-Za-z0-9_`] and has a maximum length of 64 characters. |
 | original_payment_reference_id | str | N | Used for updates to a payment after it has been committed on chain. For example, used for refunds. The reference ID of the original payment will be placed into this field. This value is optional on payment creation and invalid on updates. |
-| recipient_signature | str | N | Signature of the recipient of this transaction. The is signed with the compliance key of the recipient VASP and is used for on-chain attestation from the recipient party.  This may be omitted on blockchains which do not require on-chain attestation. Generated via [Recipient Signature](#recipient-signature) |
+| recipient_signature | str | N | Signature of the recipient of this transaction encoded in hex. The is signed with the compliance key of the recipient VASP and is used for on-chain attestation from the recipient party.  This may be omitted on blockchains which do not require on-chain attestation. Generated via [Recipient Signature](#recipient-signature) |
 | action | [`PaymentActionObject`](#paymentactionobject) | Y | Number of cryptocurrency + currency type (LBR, etc.)<a href="#note1" id="note1ref"><sup>1</sup></a> + type of action to take. This field is mandatory and immutable |
 | description | str | N | Description of the payment. To be displayed to the user. Unicode utf-8 encoded max length of 255 characters. This field is optional but can only be written once.
 
@@ -294,6 +294,7 @@ A `PaymentActorObject` represents a participant in a payment - either sender or 
 | kyc_data | [KycDataObject](#kycdataobject) | N | The KYC data for this account. This field is optional but immutable once it is set. |
 | status | [StatusObject](#statusobject) | Y | Status of the payment from the perspective of this actor. This field can only be set by the respective sender/receiver VASP and represents the status on the sender/receiver VASP side. This field is mandatory by this respective actor (either sender or receiver side) and mutable. |
 | metadata | list of str | N | Can be specified by the respective VASP to hold metadata that the sender/receiver VASP wishes to associate with this payment. It may be set to an empty list (i.e. `[]`). New string-typed entries can be appended at the end of the list, but not deleted.
+
 
 ```
 {
@@ -597,36 +598,67 @@ A valid compliance Signature output is (bytes, hex):
 
 The following is a concrete example of how to generate the Travel Rule dual attestation signable and the recipient signature using Libra Python Client SDK:
 ```
+from dataclasses import dataclass
 from pylibra import lcs
 from pylibra import libra_types as libra
+from pylibra import utils
 from pylibra import serde_types as st
 ...
 
-metadata: Metadata = libra.Metadata__TravelRuleMetadata(
+# Suffix of every signed dual attestation message
+# (https://github.com/libra/libra/blob/8cf7dcb14b8a9c1049cf64c1a8fa299ffa550a6c/language/stdlib/modules/DualAttestation.move#L83)
+DOMAIN_SEPARATOR = b"@@$$LIBRA_ATTEST$$@@"
+
+
+metadata: libra.Metadata = libra.Metadata__TravelRuleMetadata(
   libra.TravelRuleMetadata__TravelRuleMetadataVersion0(
     libra.TravelRuleMetadataV0(
       off_chain_reference_id="reference_id",
     )
   )
 )
+
+# on-chain account address in hexadecimal (https://github.com/libra/lip/blob/master/lips/lip-5.md#terminology)
+sender_libra_address_hex = "793251de1a61e9b4d1a17d13aa015e45
+amount = 1_000_000
+
+# Method1: use a dataclass
+
+@dataclass
+class Attestation:
+    metadata: libra.Metadata
+    sender_address: libra.AccountAddress
+    amount: st.uint64
+
+    def lcs_serialize(self) -> bytes:
+        return lcs.serialize(self, Attestation)
+
+attestation = Attestation(
+    metadata=metadata,
+    sender_address=utils.account_address(sender_libra_address_hex),
+    amount=st.uint64(amount),
+)
+dual_attest_msg = attestation.lcs_serialize() + DOMAIN_SEPARATOR
+
+# Method2: concat individually serialized bytes
+
 // `lcs_metadata` will be used as the `metadata` parameter in encode_peer_to_peer_with_metadata_script()
 lcs_metadata = lcs.serialize(metadata, libra.Metadata)
 
-dual_attest_msg_bytes: bytearray = bytearray()
-dual_attest_msg_bytes.extend(lcs_metadata)  # Travel Rule metadata
-dual_attest_msg_bytes.extend(lcs.serialize(bytes.fromhex("793251de1a61e9b4d1a17d13aa015e45"), bytes))  # Raw on-chain address (https://github.com/libra/lip/blob/master/lips/lip-5.md#terminology)
-dual_attest_msg_bytes.extend(lcs.serialize(st.uint64(1000000), st.uint64))  # Amount
-dual_attest_msg_bytes.extend(lcs.serialize(b"@@$$LIBRA_ATTEST$$@@", bytes))  # ASCII-encoded Libra Domain Separator string
+dual_attest_bytearray: bytearray = bytearray()
+dual_attest_bytearray.extend(lcs_metadata)
+dual_attest_bytearray.extend(utils.account_address(sender_libra_address_hex).lcs_serialize())
+dual_attest_bytearray.extend(lcs.serialize(st.uint64(amount), st.uint64))
+dual_attest_bytearray.extend(DOMAIN_SEPARATOR)
+dual_attest_msg = bytes(dual_attest_bytearray)
 
-dual_attest_msg = libra.TransactionArgument__U8Vector(bytes(dual_attest_msg_bytes))
-dual_attest_msg_lcs = lcs.serialize(dual_attest_msg, libra.TransactionArgument__U8Vector)
 
 // We sign the bytes LCS bytes directly with the compliance private key
 // `receiver_metadata_signature` will be used as the `metadata_signature` parameter in  encode_peer_to_peer_with_metadata_script()
-receiver_metadata_signature = compliance_private_key.sign(dual_attest_msg_lcs)
+receiver_metadata_signature = compliance_private_key.sign(dual_attest_msg)
 ```
 
-The `receiver_metadata_signature` will then be placed into the `recipient_signature` field of the PaymentObject in the off-chain API, thus providing it to the sender so that the sender VASP may submit the transaction on-chain.
+The `receiver_metadata_signature` will then be encoded in hex and placed into the `recipient_signature` field of the PaymentObject in the off-chain API, thus providing it to the sender so that the sender VASP may submit the transaction on-chain.
 
 # On-chain Transaction Submission
 Once both sender and receiver have a status of 'ready_for_settlement', the transaction may then be submitted on-chain by the sender VASP. This submission will utilize the `recipient_signature` which was provided by the receiver VASP (generated via [Recipient Signature](#recipient-signature).  The sender VASP will now generate a transaction via the following and then submit the transaction on-chain:
@@ -651,7 +683,7 @@ program = encode_peer_to_peer_with_metadata_script(
     0x1234 /*recipient*/,
     100 /*amount*/,
     lcs_metadata,
-    recipient_signature /* from off-chain API exchange */);
+    receiver_metadata_signature /* from off-chain API exchange */);
 
 RawTransaction {
     sender_account: 0x7777,
