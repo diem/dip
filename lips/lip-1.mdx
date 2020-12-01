@@ -58,7 +58,10 @@ Of particular note for off-chain APIs is the compliance key value.  This is the 
 Each VASP exposes an HTTPS POST end point at `https://<hostname>:<port>/<protocol_version>/command`. The `protocol_version` is initially `v1` for this iteration of the off-chain APIs.
 
 ### HTTP Headers
-All HTTP requests and responses must contain a header `X-Request-ID` with a unique ID for the request, used for tracking requests and debugging. Responses must have the same string in the `X-Request-ID` header value as the requests they correspond to.
+All HTTP requests and responses must contain:
+
+* A header `X-Request-ID` with a unique ID for the request, used for tracking requests and debugging. Responses must have the same string in the `X-Request-ID` header value as the requests they correspond to.
+* A header `X-Sender-Address` with the LIP-5 Libra address of the VASP initating the HTTP reqquest. This header is used to retrieve the VASP vertifcation key used to verify the JWS signature of the payload included in the HTTP request, and to authenticate the request.
 
 ### Payloads
 The exposed endpoint receives JWS signed `CommandRequestObject`s in the POST body, and responds with a JWS signed `CommandResponseObject`s in the HTTP response (See [Request/Response Payload](#requestresponse-payload) for more details. Single Command requests-responses are supported (HTTP1.0) but also pipelined request-responses are supported (HTTP1.1). The content type of the HTTP request/response is ignored. The version for the Off-Chain Protocol is the string `v1`.  All structures transmitted, nested within `CommandRequestObject` and `CommandResponseObject` are valid JSON serialized Objects and can be parsed and serialized using standard JSON libraries.
