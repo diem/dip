@@ -29,10 +29,10 @@ Both roles and permissions can be parameterized by types (e.g., the AddCurrency(
 
 Mathematically, we can view Libra role/permissions as a pair of relations over three sets:
 
-* Sets: Role, Privilege, Address
-* Relations: Privilege -> Role (a many-many relation) and Address -> Role (a partial function)
+* Sets: Role, Permission, Address
+* Relations: Permission -> Role (a many-many relation) and Address -> Role (a partial function)
 
-This LIP focuses on defining the Roles and Privileges sets and the Privilege -> Role relation because these are fairly static. The relations only change when we add new roles/permissions or update the existing allocation of permissions. By contrast, the Address -> Role function is highly dynamic--it is updated by any transaction that creates a new account.
+This LIP focuses on defining the Roles and Permissions sets and the Permissions -> Role relation because these are fairly static. The relations only change when we add new roles/permissions or update the existing allocation of permissions. By contrast, the Address -> Role function is highly dynamic--it is updated by any transaction that creates a new account.
 
 
 ## Roles
