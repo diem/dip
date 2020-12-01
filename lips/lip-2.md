@@ -127,7 +127,7 @@ The current permissions in Libra are:
 ### Notes
 * The "Granted to" column specifies which role(s) can be assigned the given privilege
 * All privileges are granted to an account upon creation, and most remain in that account forever. There are three exceptions: UpdateValidatorConfig, RotateAuthenticationKey and Withdraw.
-	- UpdateValidatorConfig is granted to a Validator account upon creation, but can be delegated to a ValidatorOperator. The Validator can subsequently revoke the privilege and delegate to a different operator with the permission of LPN.
+	- UpdateValidatorConfig is granted to a Validator account upon creation, but can be delegated to a ValidatorOperator. The Validator can subsequently revoke the privilege and delegate to a different operator with the permission of LN.
 	- Both RotateAuthenticationKey and Withdraw are "transferable" privileges that can be be extracted from their original account and placed in a resource elsewhere (including one published under a different account).
 
 ### Move Implementation
