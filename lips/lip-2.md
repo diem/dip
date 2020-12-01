@@ -53,7 +53,7 @@ The current roles in Libra are:
 * TreasuryCompliance - LPN account responsible for day-to-day treasury (e.g. minting, burning), and compliance (e.g., updating on-chain exchange rates, freezing accounts) operations.
 * Validator - The on-chain representation of a Libra Association member for validation purposes.
 * ValidatorOperator - A third-partity entity authorized by LN to operate validator nodes on behalf of Association members.
-* Designated Dealer - An entity with the authority to place  mint and burn orders for Libra Coins with LPN and interact with the Libra Reserve.
+* Designated Dealer - An entity with the authority to place  mint and burn orders for Libra Coins with LN and interact with the Libra Reserve.
 * ParentVASP - The primary account of a virtual asset service provider (VASP) operating on the Libra blockchain.
 * ChildVASP(**addr**) - A child account of a the ParentVASP account at **addr**
 
