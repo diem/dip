@@ -49,7 +49,7 @@ The current roles in Libra are:
 | 6 |     ParentVASP      | TreasuryCompliance |         Per VASP          |      -      |         Y         |          Y          |       Y        |            0             |
 | 7 | ChildVASP(**addr**) |     ParentVASP     |             N             |      -      |         Y         |          Y          |       Y        |            0             |
 
-* LibraRoot - The root authority of LPN. Controlled jointly by LPN and the Association Council.
+* LibraRoot - The root authority of LPN. Controlled jointly by LN and the Association Council.
 * TreasuryCompliance - LPN account responsible for day-to-day treasury (e.g. minting, burning), and compliance (e.g., updating on-chain exchange rates, freezing accounts) operations.
 * Validator - The on-chain representation of a Libra Association member for validation purposes.
 * ValidatorOperator - A third-partity entity authorized by LPN to operate validator nodes on behalf of Association members.
