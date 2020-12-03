@@ -43,7 +43,7 @@ Even though WriteSet transactions prescribe arbitrary state change, they are aut
 ### Genesis transactions
 Genesis transactions can be either normal or WriteSet transactions. As the name suggests, the process of applying such a transaction is similar to how the very first genesis transaction works. The genesis transaction applies on top of a specific snapshot of a Libra blockchain (might be empty). LN is responsible for picking the appropriate snapshot and building the genesis transactions. Users of Libra including validators use the genesis transaction to authenticate the blockchain. If a validator fails to acquire the correct genesis transaction, it will vote on an irrelevant blockchain, but not otherwise impact the system. If a user of the system acquires the incorrect genesis transaction, they will see incorrect state.
 
-Note that, after Libra starts, we may need genesis transactions as a last resort for extremely unlikely catastrophic scenarios such as losing more than a third validators.
+Note that, after Libra starts, we may need genesis transactions as a last resort for extremely unlikely catastrophic scenarios such as losing more than a third of the validators.
 
 The decision flow chart below summarizes the building blocks and how they will be used.
 
