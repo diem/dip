@@ -17,9 +17,9 @@ This LIP describes the conceptual model and implementation of access control on 
 
 Libra uses a variant of [role-based access control](https://en.wikipedia.org/wiki/Role-based_access_control) (RBAC) to restrict access to sensitive on-chain operations.
 
-A *role* is an entity with some authority in the Libra system. Every account in the Libra system is created with a single, immutable role that is granted at the time the account is created. Creating an account with a particular role is a privileged operation (e.g., only an account with the ParentVASP role can create an account with the ChildVASP role). In some cases, the role is globally unique (e.g., there is only one account with the LibraRoot role). In other cases, there may be many accounts with the given role (e.g., ChildVASP).
+A *role* is an entity with some authority in the Libra Payment Network (LPN). Every account in LPN is created with a single, immutable role that is granted at the time the account is created. Creating an account with a particular role is a privileged operation (e.g., only an account with the ParentVASP role can create an account with the ChildVASP role). In some cases, the role is globally unique (e.g., there is only one account with the LibraRoot role). In other cases, there may be many accounts with the given role (e.g., ChildVASP).
 
-A *permission* is the authority to perform a sensitive action in the Libra system. Each permission may be assigned to one or more roles (usually only one), and each role may have zero or more permissions. Permissions can be assigned in genesis, upon account creation (most common), or claimed by an existing account with the appropriate role. Like roles, some permissions are globally unique (e.g., the permission to mint a particular currency type) and some are not.
+A *permission* is the authority to perform a specific action in LPN. Each permission may be assigned to one or more roles (usually only one), and each role may have zero or more permissions. Permissions can be assigned in genesis, upon account creation (most common), or claimed by an existing account with the appropriate role. Like roles, some permissions are globally unique (e.g., the permission to mint a particular currency type) and some are not.
 
 Both roles and permissions can be parameterized by types (e.g., the AddCurrency(**type**) permission) and account address values (e.g., ChildVASP(**addr**)).
 
@@ -29,10 +29,10 @@ Both roles and permissions can be parameterized by types (e.g., the AddCurrency(
 
 Mathematically, we can view Libra role/permissions as a pair of relations over three sets:
 
-* Sets: Role, Privilege, Address
-* Relations: Privilege -> Role (a many-many relation) and Address -> Role (a partial function)
+* Sets: Role, Permission, Address
+* Relations: Permission -> Role (a many-many relation) and Address -> Role (a partial function)
 
-This LIP focuses on defining the Roles and Privileges sets and the Privilege -> Role relation because these are fairly static. The relations only change when we add new roles/permissions or update the existing allocation of permissions. By contrast, the Address -> Role function is highly dynamic--it is updated by any transaction that creates a new account.
+This LIP focuses on defining the Roles and Permissions sets and the Permissions -> Role relation because these are fairly static. The relations only change when we add new roles/permissions or update the existing allocation of permissions. By contrast, the Address -> Role function is highly dynamic--it is updated by any transaction that creates a new account.
 
 
 ## Roles
@@ -49,12 +49,12 @@ The current roles in Libra are:
 | 6 |     ParentVASP      | TreasuryCompliance |         Per VASP          |      -      |         Y         |          Y          |       Y        |            0             |
 | 7 | ChildVASP(**addr**) |     ParentVASP     |             N             |      -      |         Y         |          Y          |       Y        |            0             |
 
-* LibraRoot - The root authority of Libra. Controlled jointly by Libra Payment Networks and the Association Council.
-* TreasuryCompliance - A Libra Payment Networks entity responsible for day-to-day treasury (e.g. minting, burning), and compliance (e.g., updating on-chain exchange rates, freezing accounts) operations.
-* Validator - The on-chain representation of a Libra Association member.
-* ValidatorOperator - An entity authorized to operate one or more validator nodes on behalf of an Association member.
-* Designated Dealer - An entity that manages fiat transfers to/from the Libra reserve.
-* ParentVASP - The primary account of a regulated custodial wallet operating on the Libra blockchain.
+* LibraRoot - The root authority of LPN. Controlled jointly by LN and the Association Council.
+* TreasuryCompliance - LN account responsible for day-to-day treasury (e.g. minting, burning), and compliance (e.g., updating on-chain exchange rates, freezing accounts) operations.
+* Validator - The on-chain representation of a Libra Association member for validation purposes.
+* ValidatorOperator - A third-partity entity authorized by LN to operate validator nodes on behalf of Association members.
+* Designated Dealer - An entity with the authority to place  mint and burn orders for Libra Coins with LN and interact with the Libra Reserve.
+* ParentVASP - The primary account of a virtual asset service provider (VASP) operating on the Libra blockchain.
 * ChildVASP(**addr**) - A child account of a the ParentVASP account at **addr**
 
 ### Notes
@@ -64,7 +64,7 @@ The current roles in Libra are:
 * The administrative roles LibraRoot, TreasuryCompliance, Validator, and ValidatorOperator cannot hold balances in any currency and thus cannot receive funds sent from other accounts.
 * The DesignatedDealer, ParentVASP, and ChildVASP roles can each hold balances in any currency. ParentVASP and ChildVASP accounts have daily limits on their incoming and outgoing transfers and total balance. DesignatedDealer accounts are not subject to these limits.
 * All accounts with roles other than LibraRoot and TreasuryCompliance can be "frozen". A frozen account cannot send any transactions or receive funds from other accounts.
-* To ensure that important system transactions are executed promptly, the Libra mempool prioritizes transactions sent by non-VASP accounts. LibraRoot transactions have the highest priority, TreasuryCompliance transactions have the second highest, and so on. The mempool compares transactions by role priority first and gas price second.
+* To ensure that important system transactions are executed promptly, the Libra mempool prioritizes transactions sent by certain roles. LibraRoot transactions have the highest priority, TreasuryCompliance transactions have the second highest, Validator/ValidatorOperator/DesignatedDealer transactions have the third highest, and VASP transactions have the lowest. The mempool compares transactions by role priority first and gas price second.
 
 ### Move Implementation
 Roles are implemented in the [`Roles`](https://github.com/libra/libra/blob/master/language/stdlib/modules/doc/Roles.md#module-0x1roles) Move module. Every account contains a [`Roles::RoleId`](https://github.com/libra/libra/blob/master/language/stdlib/modules/doc/Roles.md#resource-roleid) resource with an integer code to identify the role. The codes are:
@@ -127,7 +127,7 @@ The current permissions in Libra are:
 ### Notes
 * The "Granted to" column specifies which role(s) can be assigned the given privilege
 * All privileges are granted to an account upon creation, and most remain in that account forever. There are three exceptions: UpdateValidatorConfig, RotateAuthenticationKey and Withdraw.
-	- UpdateValidatorConfig is granted to a Validator account upon creation, but can be delegated to a ValidatorOperator. The Validator can subsequently revoke the privilege and delegate to a different operator.
+	- UpdateValidatorConfig is granted to a Validator account upon creation, but can be delegated to a ValidatorOperator. The Validator can subsequently revoke the privilege and delegate to a different operator with the permission of LN.
 	- Both RotateAuthenticationKey and Withdraw are "transferable" privileges that can be be extracted from their original account and placed in a resource elsewhere (including one published under a different account).
 
 ### Move Implementation
