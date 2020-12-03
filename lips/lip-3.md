@@ -17,7 +17,7 @@ Due to being a reserve backed currency, the true blockchain is the one that is m
 The goal of LUM is to provide the means to effectively and transparently update the LPN in order to meet changing requirements as well as remediate any plausible operational incident.
 
 # Building blocks
-Conceptually, the software running on validator nodes comprises two layers. One is a blockchain core whose goal is to replicate a ledger of transactions and their outcome. The second is a framework that stores the ledger-state and a set of software modules -- encoded in the Move programming language -- that define the rules for interacting with the LPN and mutating the ledge-state (see also [LIP-2](./lip-2.md)). There are two corresponding type of upgrades to the system, (i) [updates to the core software](#software-upgrade) (ii) [updates to the framework state](#on-chain-state-upgrade).
+Conceptually, the software running on validator nodes comprises two layers. One is a blockchain core whose goal is to replicate a ledger of transactions and their outcome. The second is a framework that stores the ledger-state and a set of software modules -- encoded in the Move programming language -- that define the rules for interacting with the LPN and mutating the ledge-state (see also [LIP-2](./lip-2.md)). There are two corresponding types of upgrades to the system, (i) [updates to the core software](#software-upgrade) (ii) [updates to the framework state](#on-chain-state-upgrade).
 
 All building blocks may be used for "business-as-usual" upgrades or to address urgent incidents.
 
