@@ -1,6 +1,6 @@
 ---
-lip: 6
-title: Libra Validator Configuration Management
+dip: 6
+title: Diem Validator Configuration Management
 authors: Valeria Nikolaenko (valerini), David Wolinsky (@davidiw), Dahlia Malkhi (dahliamalkhi)
 status: Last Call
 type: Informational
@@ -10,33 +10,33 @@ created: 07/30/2020
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Summary
-This LIP describes the operation of the proof of authority consensus model that is used to establish consensus about the ledger state of the Libra Blockchain. In a proof of authority consensus model, known participants leverage cryptographical digital signatures to agree upon a set of transactions and their output to advance the blockchain's state. The set of potential entities that can participate in consensus are known as Validator Owners, while the active participants are known as the Validator Set.  The adding and removing of Validator Owners and specifying the current Validator Set is left to the sole discretion of the entity managing LibraRoot account.
+This DIP describes the operation of the proof of authority consensus model that is used to establish consensus about the ledger state of the Diem Blockchain. In a proof of authority consensus model, known participants leverage cryptographical digital signatures to agree upon a set of transactions and their output to advance the blockchain's state. The set of potential entities that can participate in consensus are known as Validator Owners, while the active participants are known as the Validator Set.  The adding and removing of Validator Owners and specifying the current Validator Set is left to the sole discretion of the entity managing DiemRoot account.
 
 # Background
-Libra Payment Network ("LPN") is a blockchain-backed payment platform and an infrastructure for stablecoins.
+Diem Payment Network ("DPN") is a blockchain-backed payment platform and an infrastructure for stablecoins.
 
-The Libra Association ("LA" or the “Association”) is an independent membership organization that is responsible for the LPN technology and the development of the Libra project. The LA is governed by the Association Council, which is comprised of one representative per Association member. The Association Council manages the technology roadmap of the platform and oversees and maintains the Libra Improvement Proposal and Libra Upgrade Process, often through subcommittees of the Association Council such as the Technical Steering Committee (the “TSC”) and the Association Board.
+The Diem Association ("DA" or the “Association”) is an independent membership organization that is responsible for the DPN technology and the development of the Diem project. The DA is governed by the Association Council, which is comprised of one representative per Association member. The Association Council manages the technology roadmap of the platform and oversees and maintains the Diem Improvement Proposal and Diem Upgrade Process, often through subcommittees of the Association Council such as the Technical Steering Committee (the “TSC”) and the Association Board.
 
-Libra Networks ("LN"), a wholly owned subsidiary of LA is in the process of applying for a license as a payment system operator from the Swiss Financial Market Supervisory Authority ("FINMA").  Once granted, LN will be responsible for ensuring that LPN operates in compliance with the payment system license from FINMA.
+Diem Networks ("DN"), a wholly owned subsidiary of DA is in the process of applying for a license as a payment system operator from the Swiss Financial Market Supervisory Authority ("FINMA").  Once granted, DN will be responsible for ensuring that DPN operates in compliance with the payment system license from FINMA.
 
 Validator Owners are all members of the Association.
 
-LN and LA will jointly manage the LibraRoot account.  The LibraRoot account determines the composition of the Validator Set at any given time. Reasons for changing the Validator Set include new members joining the Association or existing members leaving the Association, possible suspension of Validator Owners for violating their Validator Agreement.
+DN and DA will jointly manage the DiemRoot account.  The DiemRoot account determines the composition of the Validator Set at any given time. Reasons for changing the Validator Set include new members joining the Association or existing members leaving the Association, possible suspension of Validator Owners for violating their Validator Agreement.
 
 # Framework Guide
 ## Terminology
-* *Validator Node* is a replica that runs the Libra consensus protocol to maintain and advance the blockchain state. A Validator Node processes transactions and interacts with other Validator Nodes to reach consensus on the ordering of transactions and the resulting state of the database after transaction execution.
+* *Validator Node* is a replica that runs the Diem consensus protocol to maintain and advance the blockchain state. A Validator Node processes transactions and interacts with other Validator Nodes to reach consensus on the ordering of transactions and the resulting state of the database after transaction execution.
 * *Validator Config* is an on-chain configuration or Move resource that contains configuration information of a Validator Node. This includes a *consensus public key* and [network addresses](https://github.com/libra/libra/blob/master/specifications/network/network-address.md).
-* *Consensus public key* verifies the digital signature authenticating the sender of a consensus message in the Libra consensus protocol.
+* *Consensus public key* verifies the digital signature authenticating the sender of a consensus message in the Diem consensus protocol.
 * *Network addresses* define endpoints and cryptographic credentials for establishing secure connections with other Validator Nodes as well as FullNodes and other participants.
-* *Validator Owner* is the entity responsible for the operation of a Validator Node and is a member of the Libra Association. Each Validator Owner has an account on the Libra Blockchain that stores the Validator Config Move resource (see [Move Tutorial](https://developers.libra.org/docs/move-paper)).
-* *Validator Operator* is the entity, approved by LN, that operates a Validator Node. A Validator Operator could be run by a Validator Owner, or a Validator Operator could be a separate entity acting as an operator on behalf of one or more Validator Owners. A Validator Operator may run multiple Validator Nodes. The Validator Operator for a Validator Owner has permission to modify the Validator Config stored in the Validator Owner account and update its copy in the Validator Set.
+* *Validator Owner* is the entity responsible for the operation of a Validator Node and is a member of the Diem Association. Each Validator Owner has an account on the Diem Blockchain that stores the Validator Config Move resource (see [Move Tutorial](https://developers.diem.com/docs/technical-papers/move-paper/)).
+* *Validator Operator* is the entity, approved by DN, that operates a Validator Node. A Validator Operator could be run by a Validator Owner, or a Validator Operator could be a separate entity acting as an operator on behalf of one or more Validator Owners. A Validator Operator may run multiple Validator Nodes. The Validator Operator for a Validator Owner has permission to modify the Validator Config stored in the Validator Owner account and update its copy in the Validator Set.
 * *Validator Set* is an on-chain Move resource represented by a vector containing the active set of Validator Owners. There exists a one-to-one relationship between a Validator Owner in the Validator Set and a Validator Node. The entries within the Validator Set consist of the Validator Owner's address as well as a copy of its Validator Config. Each Validator Owner address must appear only once in the Validator Set. Validator Nodes run according to the configuration defined in the Validator Set. Validator Set changes come in two ways: a change in the set of Validator Owners or a change in the configuration of some Validator Owners. Both cases result in a Reconfiguration.
-* *Reconfiguration* is an on-chain configuration change. Reconfigurations are separated by epochs signified by a LibraConfig::NewEpochEvent. If a transaction causes a Reconfiguration, that transaction is the last transaction within the current epoch. Subsequent transactions will be executed in the new epoch with the configuration change that triggered the Reconfiguration.
-* *LibraRoot* is the sole account capable of adding or removing Validator Owner and Validator Operator accounts and specifying the current Validator Owners in the Validator Set. It may also submit an AdminScript.
-* *AdminScript* is a transaction script that can be sent by the LibraRoot on behalf of any other account. This includes key rotation enabling LibraRoot to support account recovery for both Validator Owners and Operators.
+* *Reconfiguration* is an on-chain configuration change. Reconfigurations are separated by epochs signified by a NewEpochEvent. If a transaction causes a Reconfiguration, that transaction is the last transaction within the current epoch. Subsequent transactions will be executed in the new epoch with the configuration change that triggered the Reconfiguration.
+* *DiemRoot* is the sole account capable of adding or removing Validator Owner and Validator Operator accounts and specifying the current Validator Owners in the Validator Set. It may also submit an AdminScript.
+* *AdminScript* is a transaction script that can be sent by the DiemRoot on behalf of any other account. This includes key rotation enabling DiemRoot to support account recovery for both Validator Owners and Operators.
 
-For the aforementioned roles, Libra uses a variant of role-based access control as defined in [LIP2: Libra Roles and Permissions](useBaseUrl('lip-2')).
+For the aforementioned roles, Diem uses a variant of role-based access control as defined in [DIP2: Diem Roles and Permissions](useBaseUrl('lip-2')).
 
 <img alt="Validator Set" src={useBaseUrl('img/validators_set.png')} />
 
@@ -44,12 +44,12 @@ For the aforementioned roles, Libra uses a variant of role-based access control 
 Four move modules are involved in the validator configuration management
 * [`ValidatorConfig`](https://github.com/libra/libra/blob/master/language/stdlib/modules/ValidatorConfig.move): defines local consensus configuration for a Validator Node of a Validator Owner.
 * [`ValidatorOperatorConfig`](https://github.com/libra/libra/blob/master/language/stdlib/modules/ValidatorOperatorConfig.move): defines the configuration of the Validator Operator (it only contains a human-readable name).
-* [`LibraSystem`](https://github.com/libra/libra/blob/master/language/stdlib/modules/LibraSystem.move): publishes the Validator Set as a global on-chain config and enforces the rules for modifying it.
-* [`LibraConfig`](https://github.com/libra/libra/blob/master/language/stdlib/modules/LibraConfig.move): a generic module that manages all of the global on-chain configurations, including the Validator Set configurations.
+* [`DiemSystem`](https://github.com/libra/libra/blob/master/language/stdlib/modules/LibraSystem.move): publishes the Validator Set as a global on-chain config and enforces the rules for modifying it.
+* [`DiemConfig`](https://github.com/libra/libra/blob/master/language/stdlib/modules/LibraConfig.move): a generic module that manages all of the global on-chain configurations, including the Validator Set configurations.
 
 ## Move resources
 
-For Validator Owner the Libra Account has a *Validator Role* and stores a `ValidatorConfig` resource managed by `ValidatorConfig` module:
+For Validator Owner the Diem Account has a *Validator Role* and stores a `ValidatorConfig` resource managed by `ValidatorConfig` module:
 
 ```
 resource struct ValidatorConfig {
@@ -67,7 +67,7 @@ struct Config {
 }
 ```
 
-For Validator Operator the Libra Account has a *Validator Operator Role* (see [lip-2: Libra Roles and Permissions](https://github.com/libra/lip/blob/master/lips/lip-2.md)) and stores a `ValidatorOperatorConfig` resource managed by the `ValidatorOperatorConfig` module.
+For Validator Operator the Diem Account has a *Validator Operator Role* (see [lip-2: Diem Roles and Permissions](https://github.com/libra/lip/blob/master/lips/lip-2.md)) and stores a `ValidatorOperatorConfig` resource managed by the `ValidatorOperatorConfig` module.
 ```
 resource struct ValidatorOperatorConfig {
   human_name: vector<u8>,
@@ -76,7 +76,7 @@ resource struct ValidatorOperatorConfig {
 
 The Validator Set consists of a consensus signature scheme's id and the set of Validator Info described next.
 ```
-struct LibraSystem {
+struct DiemSystem {
   scheme: u8,
   validators: vector<ValidatorInfo>,
 }
@@ -93,7 +93,7 @@ struct ValidatorInfo {
 ```
 
 ## Transaction scripts
-The following transaction scripts can be run by the LibraRoot:
+The following transaction scripts can be run by the DiemRoot:
 * [`create_validator_account`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/create_validator_account.move) - creates a Validator Owner account (an account with Validator role)
 * [`create_validator_operator_account`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/create_validator_operator_account.move) - to create a Validator Operator account
 * [`add_validator_and_reconfigure`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/add_validator_and_reconfigure.move) - to add Validator Owner to the Validator Set with its current config and trigger reconfiguration
@@ -105,20 +105,20 @@ The following transaction scripts can be run by the Validator Owner:
 The following transaction scripts can be run by the Validator Operator:
 * [`set_validator_config_and_reconfigure`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/set_validator_config_and_reconfigure.move) - to change values of the Validator Config resource and update the config in the Validator Set (aborts if the Validator Owner is not in the Validator Set)
 
-The following script relevant to the operations of a Validator Owner and Validator Operator can also be run by any LibraAccount's owner:
+The following script relevant to the operations of a Validator Owner and Validator Operator can also be run by any Diem Account's owner:
 * [`rotate_authentication_key`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/rotate_authentication_key.move) - to rotate the authentication key of an account.
 
-More on these transaction scripts (their specifications, information about error-codes and emitted events) can be found in [Overview of Libra Transaction Scripts](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/doc/transaction_script_documentation.md).
+More on these transaction scripts (their specifications, information about error-codes and emitted events) can be found in [Overview of Diem Transaction Scripts](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/doc/transaction_script_documentation.md).
 
 # Workflows
 
 This section details the workflows or common scenarios related to Validator Set management.
 ## Validator Owner and Validator Operator accounts creation
-LibraRoot (through the Association Operation Services, "AOS") creates Validator Owner and Validator Operator accounts. To get an account created, each Validator Owner or Validator Operator needs to provide an authentication key and a name of their organization to LibraRoot. The authentication key is a 32 byte array, derived from the public verification key of Ed25519 or MultiEd25519 signature schemes.
+DiemRoot (through the Association Operation Services, "AOS") creates Validator Owner and Validator Operator accounts. To get an account created, each Validator Owner or Validator Operator needs to provide an authentication key and a name of their organization to DiemRoot. The authentication key is a 32 byte array, derived from the public verification key of Ed25519 or MultiEd25519 signature schemes.
 
-LibraRoot creates the Validator Owner's account by sending the `create_validator_account` transaction script. An account address of a Validator Owner is derived from its name. A Validator Owner may ask the LibraRoot to manage the newly created account in which case for account creation a Validator Owner only needs to provide a name. In the case when LibraRoot maintains ownership of a Validator Owner's account the auth key of that account is set to an all-zeroes string and the transactions on behalf of the Validator Owner are sent via AdminScripts.
+DiemRoot creates the Validator Owner's account by sending the `create_validator_account` transaction script. An account address of a Validator Owner is derived from its name. A Validator Owner may ask the DiemRoot to manage the newly created account in which case for account creation a Validator Owner only needs to provide a name. In the case when DiemRoot maintains ownership of a Validator Owner's account the auth key of that account is set to an all-zeroes string and the transactions on behalf of the Validator Owner are sent via AdminScripts.
 
-LibraRoot creates the Validator Operator's account by sending the `create_validator_account` transaction script. An account address of a Validator Operator is derived from their authentication key in the usual way: the authentication key is obtained by SHA3-256-hashing of the scheme ID (one byte: 0 for Ed25519 signature scheme and 1 for MultiEd25519) concatenated with the bytes of the public key, the address is the last 16 bytes of the authentication key.
+DiemRoot creates the Validator Operator's account by sending the `create_validator_account` transaction script. An account address of a Validator Operator is derived from their authentication key in the usual way: the authentication key is obtained by SHA3-256-hashing of the scheme ID (one byte: 0 for Ed25519 signature scheme and 1 for MultiEd25519) concatenated with the bytes of the public key, the address is the last 16 bytes of the authentication key.
 
 ## Validator Owner to set the Validator Operator
 Validator Owner may call a transaction script `set_validator_operator` to set the `operator_account` field of the `ValidatorConfig` resource. This script will succeed only if the `operator_account` has a Validator Operator role.
@@ -131,6 +131,6 @@ For a Validator Owner who is not yet added to the Validator Set, the Validator O
 If a Validator Owner is in the Validator Set, the `operator_account` may update the `config` both locally and in the Validator Set by sending `set_validator_config_and_reconfigure` transaction script, this transaction script triggers the Reconfiguration.
 
 ## Validator Owner to be added/removed from the Validator Set
-A Validator Node is consensus-ready once the Validator Operator sets the config and the node is operational. At which point, AOS can submit a transaction from the LibraRoot account: `add_validator_and_reconfigure`. Once this transaction executes, it triggers the Reconfiguration, other Validator Operators connect to the Validator Node and the Validator Operator starts participating in the protocol. Note that the size of the Validator Set and hence the size of the quorum for consensus decisions increases.
+A Validator Node is consensus-ready once the Validator Operator sets the config and the node is operational. At which point, AOS can submit a transaction from the DiemRoot account: `add_validator_and_reconfigure`. Once this transaction executes, it triggers the Reconfiguration, other Validator Operators connect to the Validator Node and the Validator Operator starts participating in the protocol. Note that the size of the Validator Set and hence the size of the quorum for consensus decisions increases.
 
-Under certain circumstances, such as, members leaving the Association or a Validator Owner breaching its Validator Agreement, the LibraRoot may remove or suspend a Validator Owner from the Validator Set. It does so by calling the `remove_validator_and_reconfigure` transaction script, which triggers the Reconfiguration. Note, that the size of the Validator Set and hence the size of the consensus quorum decreases.
+Under certain circumstances, such as, members leaving the Association or a Validator Owner breaching its Validator Agreement, the DiemRoot may remove or suspend a Validator Owner from the Validator Set. It does so by calling the `remove_validator_and_reconfigure` transaction script, which triggers the Reconfiguration. Note, that the size of the Validator Set and hence the size of the consensus quorum decreases.
