@@ -63,10 +63,10 @@ All HTTP requests and responses must contain:
 * A header `X-REQUEST-ID` with a unique ID for the request, used for tracking requests and debugging. Responses must have the same string in the `X-REQUEST-ID` header value as the requests they correspond to.
 * A header `X-VERIFICATION-KEY-ADRRESS` with the LIP-5 Libra address of the VASP signing the HTTP reqquest or HTTP response. This header is used to retrieve the VASP verification key used to authenticate the request or response. For HTTP requests, the header is set to the VASP parent address initiating the request. For HTTP response, the header is set to the parent VASP address of the VASP responding.
 
-Headers shuld be upper-case as specified above.
+Both `X-REQUEST-ID` and `X-VERIFICATION-KEY-ADRRESS` are case insensitive.
 
 ### Payloads
-The exposed endpoint receives JWS signed `CommandRequestObject`s in the POST body, and responds with a JWS signed `CommandResponseObject`s in the HTTP response (See [Request/Response Payload](#requestresponse-payload) for more details. Single Command requests-responses are supported (HTTP1.0) but also pipelined request-responses are supported (HTTP1.1). The content type of the HTTP request/response is ignored. The version for the Off-Chain Protocol is the string `v1`.  All structures transmitted, nested within `CommandRequestObject` and `CommandResponseObject` are valid JSON serialized Objects and can be parsed and serialized using standard JSON libraries.
+The exposed endpoint receives JWS signed `CommandRequestObject`s in the POST body, and responds with a JWS signed `CommandResponseObject`s in the HTTP response (See [Request/Response Payload](#requestresponse-payload) for more details. Single Command requests-responses are supported (HTTP1.0) but also pipelined request-responses are supported (HTTP1.1). The content type of the HTTP request/response is ignored.  All structures transmitted, nested within `CommandRequestObject` and `CommandResponseObject` are valid JSON serialized Objects and can be parsed and serialized using standard JSON libraries.
 
 All transmitted requests/responses are signed by the sending party using the JWS Signature standard (with the Ed25519 / EdDSA cipher suite, and `compact` encoding).  The party's on-chain compliance key shall be used to sign these messages. This ensures all information and meta-data about payments is authenticated and cannot be repudiated.
 
@@ -123,7 +123,7 @@ All requests between VASPs are structured as `CommandRequestObject`s.
 | _ObjectType  | str    | Y | Fixed value: `CommandRequestObject`|
 | command_type | str    | Y | A string representing the type of Command contained in the request. |
 | command      | Command object | Y | The Command to sequence. |
-| cid | str    | Y     | A unique identifier for the Command. |
+| cid | str    | Y     | A unique identifier for the Command. Should be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122). |
 
 
 ```
@@ -143,7 +143,7 @@ All responses to a CommandRequestObject are in the form of a CommandResponseObje
 | _ObjectType    | str      | Y             | The fixed string `CommandResponseObject`. |
 | status         | str      | Y             | Either `success` or `failure`. |
 | error          | List of [OffChainErrorObject](#offchainerrorobject) | N | Details on errors when status == "failure" |
-| cid            | str      | N | The Command identifier to which this is a response. |
+| cid            | str      | N | The Command identifier to which this is a response. Should be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122). |
 
 
 ```
@@ -262,8 +262,6 @@ For a travel rule data exchange, the [command_type](#commandrequestobject) field
 }
 ```
 
-The contents of `payment` in a `PaymentCommand` either create or update a `PaymentObject`. The field `reference_id` must always be included in `payment` to determine which object is created or updated. In case of update there is an existing Object with the given `reference_id`, and the contents of the `payment` field update or add to the fields that already exist -- validation happens on the resulting, updated, object. This enables transfering only the updated fields within a `PaymentCommand`, rather than retransmitting the full state of the `PaymentObject` (which is also valid).
-
 ### PaymentObject
 
 The structure in this Object can be a full payment or just the fields of an existing payment Object that need to be changed. Some fields are immutable after they are defined once (see below). Others can by updated multiple times. Updating immutable fields with a different value results in a Command error, but it is acceptable to re-send the same value.
@@ -271,7 +269,7 @@ The structure in this Object can be a full payment or just the fields of an exis
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
 | sender/receiver | [`PaymentActorObject`](#paymentactorobject) | Required for payment creation | Information about the sender/receiver in this payment |
-| reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value should be unique. This field is mandatory on payment creation and immutable after that. The field contains a subset of characters in the set [`A-Za-z0-9_-`] and has a maximum length of 64 characters. |
+| reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value should be unique. This field is mandatory on payment creation and immutable after that. The field contains a subset of characters in the set [`A-Za-z0-9_-`] and has a maximum length of 64 characters. Should be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122). |
 | original_payment_reference_id | str | N | Used for updates to a payment after it has been committed on chain. For example, used for refunds. The reference ID of the original payment will be placed into this field. This value is optional on payment creation and invalid on updates. |
 | recipient_signature | str | N | Signature of the recipient of this transaction encoded in hex. The is signed with the compliance key of the recipient VASP and is used for on-chain attestation from the recipient party.  This may be omitted on blockchains which do not require on-chain attestation. Generated via [Recipient Signature](#recipient-signature) |
 | action | [`PaymentActionObject`](#paymentactionobject) | Y | Number of cryptocurrency + currency type (LBR, etc.)<a href="#note1" id="note1ref"><sup>1</sup></a> + type of action to take. This field is mandatory and immutable |
@@ -298,7 +296,7 @@ A `PaymentActorObject` represents a participant in a payment - either sender or 
 | address | str | Y | Address of the sender/receiver account. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Libra addresses, refer to "account identifier" section in LIP-5 for format. |
 | kyc_data | [KycDataObject](#kycdataobject) | N | The KYC data for this account. This field is optional but immutable once it is set. |
 | status | [StatusObject](#statusobject) | Y | Status of the payment from the perspective of this actor. This field can only be set by the respective sender/receiver VASP and represents the status on the sender/receiver VASP side. This field is mandatory by this respective actor (either sender or receiver side) and mutable. |
-| metadata | list of str | N | Can be specified by the respective VASP to hold metadata that the sender/receiver VASP wishes to associate with this payment. It may be set to an empty list (i.e. `[]`). New string-typed entries can be appended at the end of the list, but not deleted.
+| metadata | list of str | N | Can be specified by the respective VASP to hold metadata that the sender/receiver VASP wishes to associate with this payment. It may be set to an empty list (i.e. `[]`). New string-typed entries can be appended at the end of the list by `PaymentCommands`.
 
 
 ```
@@ -451,7 +449,7 @@ Soft-match disambiguation states:
 
 A star (`*`) denotes _any_ value, while an underscore (`_`) for a flag denotes _not set_.
 
-**Final States and next Writer.** The VASP that is the sender of the Payment creates the first `PaymentObject`/`PaymentCommand `, and then the receiver and sender take turns to issue commands updating it until the object they mutate is in one of the final states, namely SABORT, RABORT or READY. 
+**Final States and next Writer.** The VASP that is the sender of the Payment creates the first `PaymentObject`/`PaymentCommand `, and then the receiver and sender take turns to issue commands updating it until the object they mutate is in one of the final states, namely SABORT, RABORT or READY.
 
 **Protocol Flow Illustration & VASP logic**. Below is a high level illustration of the commands and internal processes a sender and receiver VASPs to define a payment, and update it until it reaches a final state. Light blue blocks represent successful PaymentCommand requests and responses that create or update the PaymentObject. Each is labelled from 1-9, and we will reference these labels when discussing each step in details below.
 
@@ -459,7 +457,7 @@ A star (`*`) denotes _any_ value, while an underscore (`_`) for a flag denotes _
 
 ## Steps of the protocol: The KYC Exchange Flow
 
-The basic KYC exchange flow starts with the Sender including KYC information and requesting KYC information by the receiver. In the straight-forward case the Receiver is satisfied with this information and responds with a command providing the receiver KYC information, and recipient signature. The Sender can then finalize the payment and also settle it on-chain (status sequence SINIT -> RSEND -> READY). At each step Sender or Receiver may also abort the payment.
+The basic KYC exchange flow starts with the Sender including KYC information and requesting KYC information by the receiver. In the straight-forward case the Receiver is satisfied with this information and responds with a command providing the receiver KYC information, and recipient signature. The Sender can then finalize the payment (by setting its status to `ready_for_settlement`, see below) and also settle it on-chain (status sequence SINIT -> RSEND -> READY). At each step Sender or Receiver may also abort the payment, in their turn, until the payment is finalized (aka READY).
 
 ### Start -> SINIT (Step 1)
 The Sender issues `PaymentCommand` to create initial payment.
@@ -497,7 +495,7 @@ The Sender VASP examines the KYC information from the Receiver and is satisfied 
 
 * `Sender.Status.Status`: `ready_for_settlement`
 
-The payment can be executed on-chain by the sender (or settled in any other way).
+The payment should be executed on-chain by the sender (or settled in any other way) following the success of the command.
 
 ### RSEND -> SABORT (Step 9)
 
