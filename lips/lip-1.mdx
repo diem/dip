@@ -51,7 +51,7 @@ The remaining of this document details the specifications for Commands, Objects 
 ### On-Chain Account Setup
 A VASP's on-chain account must be created and set up in accordance with the standard VASP account creation process.
 
-Of particular note for off-chain APIs is the compliance key value.  This is the Ed25519 key with which a VASP signs travel rule statements on-chain and all off-chain requests and responses. During account creation, a VASP will set their compliance key which will be stored under the primary VASP account.
+Of particular note for off-chain APIs is the compliance key value.  This is the Ed25519 key with which a VASP signs travel rule statements which are verified on-chain and all off-chain requests and responses. During account creation, a VASP will set their compliance key which will be stored under the primary VASP account.
 
 ### HTTP end-point
 
@@ -436,9 +436,9 @@ The states (Sender Status, Receiver Status, Sx Flag, Rx Flag) are:
 
 Basic KYC exchange flow
 
-* SINIT: (`need_kyc_data`, `none`, `*`, `*`)
-* RSEND: (`need_kyc_data`, `ready_for_settlement`, `*`, `*`)
-* RABORT: (`need_kyc_data`, `abort`)
+* SINIT: (`need_kyc_data`, `none`, `_`, `_`)
+* RSEND: (`need_kyc_data`, `ready_for_settlement`, `*`, `_`)
+* RABORT: (`need_kyc_data`, `abort`, `*`, `*`)
 * SABORT: (`abort`, `ready_for_settlement`, `*`, `*`)
 * READY: (`ready_for_settlement`, `ready_for_settlement`, `*`, `*`)
 
@@ -451,7 +451,7 @@ Soft-match disambiguation states:
 
 A star (`*`) denotes _any_ value, while an underscore (`_`) for a flag denotes _not set_.
 
-**Final States and next Writer.** The sender and receiver of the payment take turns issuing `PaymentCommand` Objects, until the object they create or mutate is in one of the final states, namely SABORT, RABORT or READY. The VASP that is the sender of the Payment always creates the Payment Object, and then the receiver and sender take turns to issue commands updating it.
+**Final States and next Writer.** The VASP that is the sender of the Payment creates the first `PaymentObject`/`PaymentCommand `, and then the receiver and sender take turns to issue commands updating it until the object they mutate is in one of the final states, namely SABORT, RABORT or READY. 
 
 **Protocol Flow Illustration & VASP logic**. Below is a high level illustration of the commands and internal processes a sender and receiver VASPs to define a payment, and update it until it reaches a final state. Light blue blocks represent successful PaymentCommand requests and responses that create or update the PaymentObject. Each is labelled from 1-9, and we will reference these labels when discussing each step in details below.
 
@@ -624,7 +624,7 @@ metadata: libra.Metadata = libra.Metadata__TravelRuleMetadata(
 )
 
 # on-chain account address in hexadecimal (https://github.com/libra/lip/blob/master/lips/lip-5.md#terminology)
-sender_libra_address_hex = "793251de1a61e9b4d1a17d13aa015e45
+sender_libra_address_hex = "793251de1a61e9b4d1a17d13aa015e45"
 amount = 1_000_000
 
 # Method1: use a dataclass
