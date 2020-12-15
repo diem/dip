@@ -11,13 +11,13 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Summary
 ---
-The Off-Chain Protocol allows two services to define payments off-chain and privately exchange information required for compliance purposes before settling a Libra payment on-chain. Note that this API is being published by the Libra Association on an “as is” basis.  Publication of this API by the Libra Association does not mean that the Association is taking any position on whether the API addresses issues of compliance, privacy and scalability.  Users of this API must make such determinations on their own.
+The Off-Chain Protocol allows two services to define payments off-chain and privately exchange information required for compliance purposes before settling a Diem payment on-chain. Note that this API is being published by the Diem Association on an “as is” basis. Publication of this API by the Diem Association does not mean that the Association is taking any position on whether the API addresses issues of compliance, privacy and scalability. Users of this API must make such determinations on their own.
 
 ---
 # Abstract / Motivation
 ---
 
-The Off-Chain Protocol is an API and payload specification to support compliance, privacy and scalability on blockchains. It is executed between a pair of entities and allows them to privately exchange payment information before they settle it on a Blockchain.  The entities can be inclusive of designated dealers (DDs) and _Virtual Asset Service Providers_ (VASPs), such as wallets or exchanges.
+The Off-Chain Protocol is an API and payload specification to support compliance, privacy and scalability on blockchains. It is executed between a pair of entities and allows them to privately exchange payment information before they settle it on a Blockchain. The entities can be inclusive of designated dealers (DDs) and _Virtual Asset Service Providers_ (VASPs), such as wallets or exchanges.
 
 The Off-Chain Protocol relates to _supporting compliance_, and in particular supporting the implementation of the _Travel Rule_ requirements that VASPs may be required to follow. Those requirements generally specify that when money transfers above a certain amount are executed by VASPs, some information about the sender and recipient of funds must become available to both VASPs. The Off-Chain Protocols allows VASPs to exchange this information privately.
 
@@ -31,39 +31,43 @@ A VASP can define a `PaymentCommand` that creates or updates a single `PaymentOb
 
 A VASP initially creates a `PaymentObject`, and then VASPs take turns updating it, through successful `PaymentCommands`, until it is ready to be settled or aborted. In a typical protocol flow, the VASP representing the sender would define the `PaymentObject` and include the sender's KYC information. The receiver VASP would check this information and either request more (see `soft-match` flows), abort, or signal that it is ready to settle the payment by updating sending the receiver's KYC information. The sender's VASP would check the receiver's KYC, and request more, abort, or settle the payment on-chain.
 
-The remaining of this document details the specifications for Commands, Objects and the typical and exceptional flows to define Payments and their Commands.
+The remainder of this document details the specifications for Commands, Objects and the typical and exceptional flows to define Payments and their Commands.
 
 ---
 # Specification
 ---
 
 ### Terminology
+
 **Object**: A record. A PaymentObject is an example of an Object representing a payment.
 
-**Command**: An instruction sent over a Channel to mutate/create one or more Objects.  In the case of a mutation, this Command will depend upon the current value of one of more existing Shared Objects.
+**Command**: An instruction sent over a Channel to mutate/create one or more Objects. In the case of a mutation, this Command will depend upon the current value of one of more existing Shared Objects.
 
 **Channel**: The communication path between a pair of entities who execute Commands and track the evolution of a set of Shared Objects.
 
 **Shared Object**: All Objects contained within a Command are logically shared, meaning that each VASP has a copy of the Object and may create a new Command to modify it. For example, during the lifecycle of a `KycDataObject`, both VASPs will add information to it. The protocol does not support simultaneous updates to Objects. Rather, VASPs must take turns updating the Object.
 
-**Reference ID**: Every Object type contains a `reference_id` field which is a unique reference ID for the Object. The reference ID is always specified by the payment initiator VASP (the VASP which originally created the Object). This value should be unique. We recommend the hexadecimal representation of a fresh >16 bytes random byte-string as a way of creating such values or deriving it as a UUID.
+**Reference ID**: Every Object type contains a `reference_id` field which is a unique reference ID for the Object. The reference ID is always specified by the payment initiator VASP (the VASP which originally created the Object). This value should be global unique. We recommend use a 128 bits long UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122).
 
 ### On-Chain Account Setup
+
 A VASP's on-chain account must be created and set up in accordance with the standard VASP account creation process.
 
-Of particular note for off-chain APIs is the compliance key value.  This is the Ed25519 key with which a VASP signs travel rule statements which are verified on-chain and all off-chain requests and responses. During account creation, a VASP will set their compliance key which will be stored under the primary VASP account.
+Of particular note for off-chain APIs is the compliance key and base url values. The compliance key value is the Ed25519 key with which a VASP signs travel rule statements which are verified on-chain and all off-chain requests and responses. During account creation, a VASP will set their compliance key and base url which will be stored under the primary VASP account (Parent VASP account).
 
 ### HTTP end-point
 
-Each VASP exposes an HTTPS POST end point at `https://<hostname>:<port>/<protocol_version>/command`. The `protocol_version` is initially `v1` for this iteration of the off-chain APIs.
+Each VASP exposes an HTTPS POST end point at `https://<hostname>:<port>/<protocol_version>/command`. The `protocol_version` is `v2` for this iteration of the off-chain APIs.
+The base url value should be the url without path `/<protocol_version>/command`, e.g. `https://<hostname>:<port>`.
 
 ### HTTP Headers
+
 All HTTP requests and responses must contain:
 
-* A header `X-REQUEST-ID` with a unique ID for the request, used for tracking requests and debugging. Responses must have the same string in the `X-REQUEST-ID` header value as the requests they correspond to.
-* A header `X-VERIFICATION-KEY-ADRRESS` with the LIP-5 Libra address of the VASP signing the HTTP reqquest or HTTP response. This header is used to retrieve the VASP verification key used to authenticate the request or response. For HTTP requests, the header is set to the VASP parent address initiating the request. For HTTP response, the header is set to the parent VASP address of the VASP responding.
+* A header `X-REQUEST-ID` with a unique UUID for the request, used for tracking requests and debugging. Responses must have the same string in the `X-REQUEST-ID` header value as the requests they correspond to.
+* A header `X-VERIFICATION-KEY-ADRRESS` with the LIP-5 Diem address of the VASP signing the HTTP request or HTTP response. This header is used to retrieve the VASP verification key used to authenticate the request or response. The value must be the HTTP request sender’s VASP LIP-5 address used in the command, for example: the value should be sender/receiver actor address from PaymentObject in PaymentCommand.
 
-Both `X-REQUEST-ID` and `X-VERIFICATION-KEY-ADRRESS` are case insensitive.
+Both `X-REQUEST-ID` and `X-VERIFICATION-KEY-ADRRESS` are case insensitive according to HTTP protocol [RFC2616](https://www.ietf.org/rfc/rfc2616.txt).
 
 ### Payloads
 The exposed endpoint receives JWS signed `CommandRequestObject`s in the POST body, and responds with a JWS signed `CommandResponseObject`s in the HTTP response (See [Request/Response Payload](#requestresponse-payload) for more details. Single Command requests-responses are supported (HTTP1.0) but also pipelined request-responses are supported (HTTP1.1). The content type of the HTTP request/response is ignored.  All structures transmitted, nested within `CommandRequestObject` and `CommandResponseObject` are valid JSON serialized Objects and can be parsed and serialized using standard JSON libraries.
@@ -72,6 +76,7 @@ All transmitted requests/responses are signed by the sending party using the JWS
 
 
 ## Basic Protocol CommandRequest / CommandResponse Interaction
+
 Assume two VASPs A and B.  The basic protocol interaction consists of:
 
 * An initiating VASP A creates a `CommandRequestObject` containing a Command of the desired type.  Commands inform the other VASP what to create or mutate. Every Command refers to one or more Objects to create or update.
@@ -90,7 +95,14 @@ As mentioned in [Terminology](#terminology), every Object type contains a `refer
 
 In the case of network failure, the sending party for this Command is required to re-send the Command until it gets a response from the counterparty VASP.  An exponential backoff is suggested for Command re-sends.  This retransmission strategy allows the Off-Chain Protocol to achieve [eventual consistency](#eventual-consistency) of the Shared Objects.
 
-Upon receipt of a Command that has already been processed (resulting in a success response or a Command error), the receiving side must reply with the same response as was previously issued (successful commands, or commands that fail with a command error, are _idempotent_). Requests that resulted in protocol errors (such as `wait`) may result in different responses. For example if VASP A sends a Requests to VASP B, and VASP B responds with a `wait` protocol error, later VASP A may re-send the same request, and VASP B may respond with a `success` or a different error.
+Upon receipt of a Command that has already been processed (resulting in a success response or a Command error), the receiving side must reply with the same response as was previously issued (successful commands, or commands that fail with a command error, are idempotent). Requests that resulted in protocol errors may result in different responses.
+For example:
+
+* VASP A sends a request to VASP B failed with an unknown network error. VASP A retried the send request to VASP B.
+* VASP B received both requests, and processed them in parallel. However the first request that VASP A considered as failure acquired the object / data lock by reference id.
+* VASP B processed first request successfully and replied a success response, but VASP A didn’t receive it.
+* VASP B respond a protocol error for the second request as it can’t acquire the object / data lock by reference id.
+* VASP A received failure for the second request, later VASP A may re-send the same request, and VASP B may respond with a success because the request was processed successfully.
 
 # Request/Response Payload
 All requests between VASPs are structured as [`CommandRequestObject`s](#commandrequestobject) and all responses are structured as [`CommandResponseObject`s](#commandresponseobject).  The resulting request takes a form of the following (prior to JWS signing):
@@ -142,20 +154,20 @@ All responses to a CommandRequestObject are in the form of a CommandResponseObje
 |-------	     |------	|-----------	|-------------	|
 | _ObjectType    | str      | Y             | The fixed string `CommandResponseObject`. |
 | status         | str      | Y             | Either `success` or `failure`. |
-| error          | List of [OffChainErrorObject](#offchainerrorobject) | N | Details on errors when status == "failure" |
+| error          | OffChainErrorObject(#offchainerrorobject) | N | Details of the error when status == "failure" |
 | cid            | str      | N | The Command identifier to which this is a response. Should be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122). |
 
 
 ```
 {
     "_ObjectType": "CommandResponseObject",
-    "error": [OffChainErrorObject()],
+    "error": OffChainErrorObject(),
     "status": "failure"
     "cid": str,
 }
 ```
 
-When the `CommandResponseObject` status field is `failure`, the `error` field is included in the response to indicate the nature of the failure. The `error` field (type `OffChainError`) is a list of OffChainError objects. In case of failure to recover the request (such as a parsing failure or a signature failure) `cid` may be omitted.
+When the `CommandResponseObject` status field is `failure`, the `error` field is included in the response to indicate the nature of the failure. The `error` field (type `OffChainError`) is an OffChainError object. In case of failure to recover the request (such as a parsing failure or a signature failure) `cid` may be omitted.
 
 ### OffChainErrorObject
 Represents an error that occurred in response to a Command.
@@ -293,10 +305,11 @@ A `PaymentActorObject` represents a participant in a payment - either sender or 
 
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
-| address | str | Y | Address of the sender/receiver account. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Libra addresses, refer to "account identifier" section in LIP-5 for format. |
+| address | str | Y | Address of the sender/receiver account. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Diem addresses, refer to "account identifier" section in LIP-5 for format. |
 | kyc_data | [KycDataObject](#kycdataobject) | N | The KYC data for this account. This field is optional but immutable once it is set. |
 | status | [StatusObject](#statusobject) | Y | Status of the payment from the perspective of this actor. This field can only be set by the respective sender/receiver VASP and represents the status on the sender/receiver VASP side. This field is mandatory by this respective actor (either sender or receiver side) and mutable. |
-| metadata | list of str | N | Can be specified by the respective VASP to hold metadata that the sender/receiver VASP wishes to associate with this payment. It may be set to an empty list (i.e. `[]`). New string-typed entries can be appended at the end of the list by `PaymentCommands`.
+| metadata | list of str | N | Can be specified by the respective VASP to hold metadata that the sender/receiver VASP wishes to associate with this payment. It may be set to an empty list (i.e. `[]`). New string-typed entries can be appended at the end of the list by `PaymentCommands`.|
+| additional_kyc_data | str | N | Freeform KYC data.  If a soft-match occurs, this field should be used to specify additional KYC data which can be used to clear the soft-match.  It is suggested that this data be JSON, XML, or another human-readable form.|
 
 
 ```
@@ -323,7 +336,6 @@ A `KYCDataObject` represents the required information for a single subaddress.  
 | place_of_birth | [AddressObject](#addressobject) | N | Place of birth for this user.  line1 and line2 fields should not be populated for this usage of the address Object |
 | national_id | [NationalIdObject](#nationalidobject) | N | National ID information for the holder of this account |
 | legal_entity_name | str | N | Name of the legal entity.  Used when subaddress represents a legal entity rather than an individual. KYCDataObject should only include one of legal_entity_name OR given_name/surname |
-| additional_kyc_data | str | N | Freeform KYC data.  If a soft-match occurs, this field should be used to specify additional KYC data which can be used to clear the soft-match.  It is suggested that this data be JSON, XML, or another human-readable form.
 
 ```
 {
@@ -389,7 +401,7 @@ Represents a national ID.
 
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
-| amount | uint | Y | Amount of the transfer.  Base units are the same as for on-chain transactions for this currency.  For example, if LibraUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. |
+| amount | uint | Y | Amount of the transfer.  Base units are the same as for on-chain transactions for this currency.  For example, if DiemUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. |
 | currency | enum | Y | One of the supported on-chain currency types - ex. LBR, etc. <a href="#note1" id="note1ref"><sup>1</sup></a> |
 | action | enum | Y | Populated in the request.  This value indicates the requested action to perform, and the only valid value is `charge`. |
 | timestamp | uint | Y | Unix timestamp indicating the time that the payment Command was created.
@@ -544,7 +556,7 @@ JWK key:
 
     {"crv":"Ed25519","d":"vLtWeB7kt7fcMPlk01GhGmpWYTHYqnGRZUUN72AT1K4","kty":"OKP","x":"vUfj56-5Teu9guEKt9QQqIW1idtJE4YoVirC7IVyYSk"}
 
-Corresponding verification key (hex, bytes), as the 32 bytes stored on the Libra blockchain.
+Corresponding verification key (hex, bytes), as the 32 bytes stored on the Diem blockchain.
 
     "bd47e3e7afb94debbd82e10ab7d410a885b589db49138628562ac2ec85726129" (len=64)
 
@@ -561,103 +573,91 @@ Valid JWS Compact Signature (str, utf8):
 Once the receiver side is comfortable that it has received appropriate information and is ready for the transaction to go on-chain (Step 4), they provide a signature in order to support dual attestation of the on-chain transaction. The receiver VASP signs with the receiver compliance private key.
 
 * The algorithm used to generate the signature is `EdDSA` as specified in RFC 8032.
-* The signature is over the Libra Canonical Serialization of a Metadata structure including `reference_id` (bytes, ASCII), a 16-byes Libra on-chain `address`, the payment `amount` (u64), and a domain separator `DOMAIN_SEPARATOR` (with value in ascii `@@$$LIBRA_ATTEST$$@@`).
+* The signature is over the Diem Canonical Serialization of a Metadata structure including `reference_id` (bytes, ASCII), a 16-byes Diem on-chain `address`, the payment `amount` (u64), and a domain separator `DOMAIN_SEPARATOR` (with value in ascii `@@$$DIEM_ATTEST$$@@`).
 * The output is a hex encoded 64-byte string representing the raw byte representation of the EdDSA signature.
 
 ## Test Vector for compliance signature
 
-JWK key:
+A raw Ed25519 private key bytes hex-encoded string:
 
-    {"crv":"Ed25519","d":"vLtWeB7kt7fcMPlk01GhGmpWYTHYqnGRZUUN72AT1K4","kty":"OKP","x":"vUfj56-5Teu9guEKt9QQqIW1idtJE4YoVirC7IVyYSk"}
+    "842f4c650596b4461f3c1d787e2cd4e43653cdf2835750cc7b005c6e0cc65402"
+
 
 The data that contributes to the compliance recipient signature.
 
-    reference_id (ascii): "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_5b8403c986f53fe072301fe950d030cb" (in hex "6c6272 ... 306362")
+    reference_id (ascii): "bb991d8e3e6011eb8eaeacde48001122"
 
-    libra_address_bytes (hex, bytes) = "53414d504c4552454641444452455353"
+    diem onchain account address bytes hex-encoded string = "53414d504c4552454641444452455353"
 
     amount (u64) = "5123456" (Hex "802d4e0000000000")
 
 Metadata is serialized using  LCS (including encoding of `reference_id`) and appended to the fixed length byte sequences representing `address`, `amount`, and `DOMAIN_SEPARATOR`. For example the byte sequence that is signed for the transaction data above is (bytes, hex):
 
-    "020001536c62723170673971357a733270673971357a733270673971357a73327067797171717171717171717171717171737061336d5f356238343033633938366635336665303732333031666539353064303330636253414d504c4552454641444452455353802d4e0000000000404024244c494252415f41545445535424244040" (len=262)
+     "02000120626239393164386533653630313165623865616561636465343830303131323253414d504c4552454641444452455353802d4e0000000000404024244449454d5f41545445535424244040" (len=158)
 
 The above serialized byte array represents:
 
         "0200"                                      - Metadata type and version (2 bytes, constant value)
-        "0153"                                      - uleb128 encoded reference_id length (variable)◊
-        "6c6272 ... 306362"                         - Bytes of reference_id (variable)
-        "53414d504c4552454641444452455353"          - Bytes of Libra address (16 bytes)
+        "0120"                                      - uleb128 encoded reference_id length (variable)
+        "6262 ... 3232"                             - Bytes of reference_id (variable)
+        "53414d504c4552454641444452455353"          - Bytes of Diem address (16 bytes)
         "802d4e0000000000"                          - Bytes of amount (8 bytes)
-        "404024244c494252415f41545445535424244040"  - DOMAIN_SEPARATOR (20 bytes)
+        "404024244449454d5f41545445535424244040"    - DOMAIN_SEPARATOR (20 bytes)
 
 For information on uleb128 encoding of a u32 length integer see: https://en.wikipedia.org/wiki/LEB128
 
 A valid compliance Signature output is (bytes, hex):
 
-    "4c988922f95f0697e83783383ce81cfc5e1ac06e6201ad7223c5abf38b839532ebb24ad46d0bde14ee30f2139580163670bfb4b06d730603bc19759d326e6602" (len=128)
+    "8d5cc08a01e2f9634505af0c2ffca980fb824c1c56f83593b3f35bf0f52d717dad7087c7980b9c3e00009d604f1a0953e79fb7dce48fb1ea5201d93130d62d0e" (len=128)
 
 ## Sample code to generate the compliance signature
 
-The following is a concrete example of how to generate the Travel Rule dual attestation signable and the recipient signature using Libra Python Client SDK:
+The following is a concrete example of how to generate the Travel Rule dual attestation signable and the recipient signature using Diem Python Client SDK:
 ```
 from dataclasses import dataclass
-from pylibra import lcs
-from pylibra import libra_types as libra
-from pylibra import utils
-from pylibra import serde_types as st
+from diem import lcs
+from diem import diem_types
+from diem import utils
+from diem import diem_types
 ...
 
 # Suffix of every signed dual attestation message
-# (https://github.com/libra/libra/blob/8cf7dcb14b8a9c1049cf64c1a8fa299ffa550a6c/language/stdlib/modules/DualAttestation.move#L83)
-DOMAIN_SEPARATOR = b"@@$$LIBRA_ATTEST$$@@"
-
-
-metadata: libra.Metadata = libra.Metadata__TravelRuleMetadata(
-  libra.TravelRuleMetadata__TravelRuleMetadataVersion0(
-    libra.TravelRuleMetadataV0(
-      off_chain_reference_id="reference_id",
-    )
-  )
-)
-
-# on-chain account address in hexadecimal (https://github.com/libra/lip/blob/master/lips/lip-5.md#terminology)
-sender_libra_address_hex = "793251de1a61e9b4d1a17d13aa015e45"
-amount = 1_000_000
-
-# Method1: use a dataclass
+# (https://github.com/diem/diem/blob/master/language/stdlib/modules/DualAttestation.move#L86)
+DOMAIN_SEPARATOR = b"@@$$DIEM_ATTEST$$@@"
 
 @dataclass
-class Attestation:
-    metadata: libra.Metadata
-    sender_address: libra.AccountAddress
-    amount: st.uint64
+class Attest:
+
+    metadata: diem_types.Metadata
+    sender_address: diem_types.AccountAddress
+    amount: serde_types.uint64
 
     def lcs_serialize(self) -> bytes:
-        return lcs.serialize(self, Attestation)
+        return lcs.serialize(self, Attest)
 
-attestation = Attestation(
-    metadata=metadata,
-    sender_address=utils.account_address(sender_libra_address_hex),
-    amount=st.uint64(amount),
-)
-dual_attest_msg = attestation.lcs_serialize() + DOMAIN_SEPARATOR
+def travel_rule(
+    off_chain_reference_id: str, sender_address: diem_types.AccountAddress, amount: int
+) -> typing.Tuple[bytes, bytes]:
 
-# Method2: concat individually serialized bytes
+    metadata = diem_types.Metadata__TravelRuleMetadata(
+        value=diem_types.TravelRuleMetadata__TravelRuleMetadataVersion0(
+            value=diem_types.TravelRuleMetadataV0(off_chain_reference_id=off_chain_reference_id)
+        )
+    )
 
-// `lcs_metadata` will be used as the `metadata` parameter in encode_peer_to_peer_with_metadata_script()
-lcs_metadata = lcs.serialize(metadata, libra.Metadata)
+    attest = Attest(metadata=metadata, sender_address=sender_address, amount=serde_types.uint64(amount))
+    signing_msg = attest.lcs_serialize() + DOMAIN_SEPARATOR
 
-dual_attest_bytearray: bytearray = bytearray()
-dual_attest_bytearray.extend(lcs_metadata)
-dual_attest_bytearray.extend(utils.account_address(sender_libra_address_hex).lcs_serialize())
-dual_attest_bytearray.extend(lcs.serialize(st.uint64(amount), st.uint64))
-dual_attest_bytearray.extend(DOMAIN_SEPARATOR)
-dual_attest_msg = bytes(dual_attest_bytearray)
+    return (metadata.lcs_serialize(), signing_msg)
 
+reference_id = "bb991d8e3e6011eb8eaeacde48001122"
+sender_account_address = utils.account_address("793251de1a61e9b4d1a17d13aa015e45")
+amount = 1_000_000_000
 
-// We sign the bytes LCS bytes directly with the compliance private key
-// `receiver_metadata_signature` will be used as the `metadata_signature` parameter in  encode_peer_to_peer_with_metadata_script()
+metadata, dual_attest_msg = travel_rule(reference_id, sender_account_address, amount)
+
+// We sign the dual attest msg bytes with the compliance private key
+// `receiver_metadata_signature` will be used as the `metadata_signature` parameter in [peer_to_peer_with_metadata script](https://github.com/diem/diem/blob/master/language/stdlib/transaction_scripts/doc/transaction_script_documentation.md#peer_to_peer_with_metadata)
 receiver_metadata_signature = compliance_private_key.sign(dual_attest_msg)
 ```
 
@@ -667,34 +667,31 @@ The `receiver_metadata_signature` will then be encoded in hex and placed into th
 Once both sender and receiver have a status of 'ready_for_settlement', the transaction may then be submitted on-chain by the sender VASP. This submission will utilize the `recipient_signature` which was provided by the receiver VASP (generated via [Recipient Signature](#recipient-signature).  The sender VASP will now generate a transaction via the following and then submit the transaction on-chain:
 
 ```
-use libra_types::transaction::{
-    RawTransaction,
-    metadata::{Metadata, TravelRuleMetadata, TravelRuleMetadataV0}
-};
+from diem import txnmetadata, stdlib, utils, diem_types
 
-metadata = Metadata::TravelRuleMetadata(
-  TravelRuleMetadata::TravelRuleMetadataVersion0(
-    TravelRuleMetadataV0 {
-      off_chain_reference_id: "123abc", /* The off-chain reference ID specified by `reference_id` in the Off-chain APIs */
-}));
+reference_id = "bb991d8e3e6011eb8eaeacde48001122"
+sender_account_address = utils.account_address("793251de1a61e9b4d1a17d13aa015e45")
+amount = 1_000_000_000
 
+lcs_metadata, _ = txnmetadata.travel_rule(reference_id, sender_account_address, amount)
 
-lcs_metadata = lcs.serialize(metadata, Metadata);
+script = stdlib.encode_peer_to_peer_with_metadata_script(
+    currency=utils.currency_code("XUS"),
+    payee=receiver_account_address,
+    amount=amount,
+    metadata=lcs_metadata,
+    metadata_signature=receiver_metadata_signature,
+)
 
-program = encode_peer_to_peer_with_metadata_script(
-    "LBR" /*currency*/,
-    0x1234 /*recipient*/,
-    100 /*amount*/,
-    lcs_metadata,
-    receiver_metadata_signature /* from off-chain API exchange */);
-
-RawTransaction {
-    sender_account: 0x7777,
-    program: program,
+diem_types.RawTransaction(
+    sender=sender_account_address,
+    payload=diem_types.TransactionPayload__Script(script),
+    ...
 }
 ```
 
-For additional details, see https://lip.libra.org/lip-4/#c-to-c-transaction-flow
+For additional details, see https://dip.diem.com/dip-4/#c-to-c-transaction-flow or https://github.com/diem/client-sdk-python/blob/master/examples/p2p_transfer.py#L127
+
 
 # Reference Implementation
 A reference implementation of the Off-Chain Protocol is located at https://github.com/libra/off-chain-reference.
@@ -703,10 +700,10 @@ A reference implementation of the Off-Chain Protocol is located at https://githu
 
 THIS API AND REFERENCE IMPLEMENTATION IS PROVIDED "AS IS" WITH NO EXPRESS OR IMPLIED WARRANTIES WHATSOEVER, INCLUDING ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, COMPLIANCE WITH LAW, ACCURACY, COMPLETENESS, OR NONINFRINGEMENT OF INTELLECTUAL PROPERTY RIGHTS.
 
-The Libra Association disclaims all liability relating to this API and to the implementation of this API, including the reference implementation, and disclaims all liability for cost of procurement of substitute services, lost profits, loss of use, loss of data or any incidental, consequential, direct,
+The Diem Association disclaims all liability relating to this API and to the implementation of this API, including the reference implementation, and disclaims all liability for cost of procurement of substitute services, lost profits, loss of use, loss of data or any incidental, consequential, direct,
 indirect, or special damages, whether under contract, tort, warranty or otherwise, arising in any way out of use or reliance upon this API, the reference implementation, or any information herein.
 
-The compliance processes described in this LIP are for informational purposes only and do not reflect the specific compliance obligations of VASPs under applicable regulatory frameworks, their compliance programs, and/or standards imposed by Libra Networks.
+The compliance processes described in this LIP are for informational purposes only and do not reflect the specific compliance obligations of VASPs under applicable regulatory frameworks, their compliance programs, and/or standards imposed by Diem Networks.
 
 # Copyright Notice
 This documentation is made available under the Creative Commons Attribution 4.0 International (CC BY 4.0) license (available at https://creativecommons.org/licenses/by/4.0/).
