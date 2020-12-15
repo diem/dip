@@ -13,6 +13,27 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 ---
 The Off-Chain Protocol allows two services to define payments off-chain and privately exchange information required for compliance purposes before settling a Diem payment on-chain. Note that this API is being published by the Diem Association on an “as is” basis. Publication of this API by the Diem Association does not mean that the Association is taking any position on whether the API addresses issues of compliance, privacy and scalability. Users of this API must make such determinations on their own.
 
+
+# Versions
+
+| Version | Revision | Link      |
+|---------|----------|-----------|
+| v2      | current  | n/a       |
+| v1      | e82a0eb8a9dd5d498fc89bf84565cc7adae3d8ef/lips/lip-1 | https://github.com/diem/lip/blob/e82a0eb8a9dd5d498fc89bf84565cc7adae3d8ef/lips/lip-1.mdx  |
+
+V2 changes:
+
+* Only allow one actor to send command for mutating object.
+* Removed Command `_writes` and `_reads` with object versioning.
+* Changed reference_id to use 128 bit UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122).
+* additional_kyc_data field is moved from KycDataObject to PaymentActorObject.
+* Protocol URL is changed, removed sender/receiver's address in the URL path, added X-VERIFICATION-KEY-ADRRESS HTTP header for looking up JWS verification key.
+* Removed payment actor StatusEnum: needs_recipient_signature and pending_review.
+* Required to set sender's kyc_data for initial PaymentCommand.
+* Required to set receiver's kyc_data and recipient signature when receiver actor's status is set to ready_for_settlement.
+* Updated corresponding example code.
+
+
 ---
 # Abstract / Motivation
 ---
@@ -85,7 +106,7 @@ Assume two VASPs A and B.  The basic protocol interaction consists of:
 * VASP B listens for requests, and when received, verifies VASP A's signature and then processes the request to generate and send `CommandResponseObject` responses, with a success or failure status, through the HTTP response body. In case of an error that prevents VASP B from parsing an incoming `CommandRequestObject` an HTTP error code is returned.
 * The initiating VASP A receives the response, verifies its signature, and processes it to assess whether it was successful or not.
 
-If VASP A fails to receive a response from VASP B, or in the case of specific protocol failure codes, it must re-send the request at some cadence until a response is received to ensure eventual consistency.
+If VASP A fails to receive a response from VASP B, or in the case of specific protocol failure codes, it must re-send the request at some cadence until a response is received to ensure consistency.
 
 <img alt="Command Exchange" src={useBaseUrl('img/command_exchange.png')} />
 
@@ -93,7 +114,7 @@ As mentioned in [Terminology](#terminology), every Object type contains a `refer
 
 # Network Error Handling
 
-In the case of network failure, the sending party for this Command is required to re-send the Command until it gets a response from the counterparty VASP.  An exponential backoff is suggested for Command re-sends.  This retransmission strategy allows the Off-Chain Protocol to achieve [eventual consistency](#eventual-consistency) of the Shared Objects.
+In the case of network failure, the sending party for this Command is required to re-send the Command until it gets a response from the counterparty VASP. An exponential backoff is suggested for Command re-sends.
 
 Upon receipt of a Command that has already been processed (resulting in a success response or a Command error), the receiving side must reply with the same response as was previously issued (successful commands, or commands that fail with a command error, are idempotent). Requests that resulted in protocol errors may result in different responses.
 For example:
@@ -281,7 +302,7 @@ The structure in this Object can be a full payment or just the fields of an exis
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
 | sender/receiver | [`PaymentActorObject`](#paymentactorobject) | Required for payment creation | Information about the sender/receiver in this payment |
-| reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value should be unique. This field is mandatory on payment creation and immutable after that. The field contains a subset of characters in the set [`A-Za-z0-9_-`] and has a maximum length of 64 characters. Should be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122). |
+| reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value should be global unique. This field is mandatory on payment creation and immutable after that. We recommend use a 128 bits long UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122). |
 | original_payment_reference_id | str | N | Used for updates to a payment after it has been committed on chain. For example, used for refunds. The reference ID of the original payment will be placed into this field. This value is optional on payment creation and invalid on updates. |
 | recipient_signature | str | N | Signature of the recipient of this transaction encoded in hex. The is signed with the compliance key of the recipient VASP and is used for on-chain attestation from the recipient party.  This may be omitted on blockchains which do not require on-chain attestation. Generated via [Recipient Signature](#recipient-signature) |
 | action | [`PaymentActionObject`](#paymentactionobject) | Y | Number of cryptocurrency + currency type (LBR, etc.)<a href="#note1" id="note1ref"><sup>1</sup></a> + type of action to take. This field is mandatory and immutable |
