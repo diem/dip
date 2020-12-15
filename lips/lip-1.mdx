@@ -19,18 +19,19 @@ The Off-Chain Protocol allows two services to define payments off-chain and priv
 | Version | Revision | Link      |
 |---------|----------|-----------|
 | v2      | current  | n/a       |
-| v1      | e82a0eb8a9dd5d498fc89bf84565cc7adae3d8ef/lips/lip-1 | https://github.com/diem/lip/blob/e82a0eb8a9dd5d498fc89bf84565cc7adae3d8ef/lips/lip-1.mdx  |
+| v1      | e82a0eb8a9dd5d498fc89bf84565cc7adae3d8ef | https://github.com/diem/lip/blob/e82a0eb8a9dd5d498fc89bf84565cc7adae3d8ef/lips/lip-1.mdx  |
 
 V2 changes:
 
-* Restricted to one actor to send commands for mutating objects.
-* Removed Command `_writes` and `_reads` with object versioning.
-* Changed cid, reference_id and X-REQUEST-ID to use 128 bit UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122).
-* Field `additional_kyc_data` is moved from KycDataObject to PaymentActorObject.
-* Protocol URL is changed, removed sender/receiver's address in the URL path, added X-REQUEST-SENDER-ADDRESS HTTP header for looking up JWS verification key.
-* Removed 2 payment actor StatusEnum values: `needs_recipient_signature` and `pending_review`.
-* Required to set sender's `kyc_data` for initial PaymentCommand.
-* Required to set receiver's `kyc_data` and `recipient_signature` when receiver actor's status is set to `ready_for_settlement`.
+* Simplifications to state management:
+  * Allow only one actor to send command for mutating object.
+  * Removed Command `_writes` and `_reads` with object versioning - no longer needed when only a single actor can mutate an object in each object state
+  * Required to set sender's kyc_data for initial PaymentCommand.
+  * Required to set receiver's kyc_data and recipient signature when receiver actor's status is set to ready_for_settlement.
+  * Removed payment actor StatusEnum: needs_recipient_signature and pending_review - no longer needed with updated state flow.
+* Changed reference_id to use 128 bit UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122).
+* additional_kyc_data field is moved from KycDataObject to PaymentActorObject. Allows KycDataObject to be set once and never mutated.
+* Protocol URL is changed, removed sender/receiver's address in the URL path, added X-VERIFICATION-KEY-ADRRESS HTTP header for looking up JWS verification key.
 * Updated corresponding example code.
 
 
@@ -199,17 +200,17 @@ When the `CommandResponseObject` status field is `failure`, the `error` field is
 ### OffChainErrorObject
 Represents an error that occurred in response to a Command.
 
-| Field 	     | Type 	| Required? 	| Description 	|
-|-------	     |------	|-----------	|-------------	|
-| type    | str (enum)     | Y             | Either "command_error" or "protocol_error"|
-| field            | str       | N             | The field on which this error occurred|
-| code    | str (enum) | Y    | The error code of the corresponding error |
-| message         | str      | N             | Additional details about this error |
+| Field   | Type 	   | Required? | Description |
+|---------|------------|-----------|-------------|
+| type    | str (enum) | Y         | Either "command_error" or "protocol_error"|
+| field   | str        | N         | The field on which this error occurred|
+| code    | str (enum) | Y         | The error code of the corresponding error |
+| message | str        | N         | Additional details about this error |
 
 ```
 {
     "type": "command_error",
-    "field": "0.sender.kyc_data.surname",
+    "field": "payment.sender.kyc_data.surname",
     "code": "missing_data",
     "message": "",
 }
@@ -499,7 +500,8 @@ A star (`*`) denotes _any_ value, `is-provided` denotes the field value is provi
 The basic KYC exchange flow starts with the Sender including KYC information and requesting KYC information by the receiver. In the straight-forward case the Receiver is satisfied with this information and responds with a command providing the receiver KYC information, and recipient signature. The Sender can then finalize the payment (by setting its status to `ready_for_settlement`, see below) and also settle it on-chain (status sequence SINIT -> RSEND -> READY). At each step Sender or Receiver may also abort the payment, in their turn, until the payment is finalized (aka READY).
 
 ### Start -> SINIT (Step 1)
-The Sender issues `PaymentCommand` to create initial payment.
+
+The Sender issues `PaymentCommand` to create the initial payment object.
 
 The sender creates a payment object that they believe requires KYC information exchange. The payment command includes a full payment object including all mandatory fields and the following optional fields populated as:
 
@@ -553,7 +555,7 @@ The flows below allow the Receiver VASP and the Sender VASP to request additiona
 
 ### Receiver soft-match (SINIT -> RSOFT -> SSOFTSEND)
 
-After the Sender initiates a payment by providing KYC information (SINIT), the Receiver may determine they require more information to disambiguate a match. In that case they commit a command to set `Receiver.Status.Status` to `soft-match` (state RSOFT) (Step 5) or abort (step 9). The sender may respond with a command that populates the `Sender.additional_kyc_data` (Step 6), which sets the flag `Sender.additional_kyc_data` (state SSOFTSEND) or abort (SABORT, Step not shown in diagram). Finally, if the Receiver is satisfied with the additional information they move to provide all information necessary to go to RSEND (Step 4, see above. This includes receiver KYC information and recipient signature). Otherwise, the receiver can abort to state RABORT (Step 8).
+After the Sender initiates a payment by providing KYC information (SINIT), the Receiver may determine they require more information to disambiguate a match. In that case they commit a command to set `Receiver.Status.Status` to `soft-match` (state RSOFT) (Step 5) or abort (step 9). The sender may respond with a command that populates the `Sender.additional_kyc_data` (Step 6), which sets the field `Sender.additional_kyc_data` (state SSOFTSEND) or abort (SABORT, Step not shown in diagram). Finally, if the Receiver is satisfied with the additional information they move to provide all information necessary to go to RSEND (Step 4, see above. This includes receiver KYC information and recipient signature). Otherwise, the receiver can abort to state RABORT (Step 8).
 
 ### Sender soft-match (RSEND -> SSOFT -> RSOFTSEND)
 
@@ -721,7 +723,7 @@ For additional details, see https://dip.diem.com/dip-4/#c-to-c-transaction-flow 
 
 
 # Reference Implementation
-A reference implementation of the Off-Chain Protocol is located at https://github.com/libra/off-chain-reference.
+A reference implementation of the Off-Chain Protocol is located at https://github.com/diem/off-chain-reference.
 
 # Disclaimers
 
