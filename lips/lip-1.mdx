@@ -448,7 +448,7 @@ Represents a national ID.
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
 | status | str enum | Y | Status of the payment from the perspective of this actor. This field can only be set by the respective sender/receiver VASP and represents the status on the sender/receiver VASP side. This field is mandatory by this respective actor (either sender or receiver side) and mutable. Valid values are specified in [ StatusEnum ](#statusenum)  |
-| abort_code    | str (enum) | N    | In the case of an `abort` status, this field may be used to describe the reason for the abort. Represents the error code of the corresponding error |
+| abort_code    | str (enum) | N    | In the case of an `abort` status, this field may be used to describe the reason for the abort. Represents the error code of the corresponding error.  Valid values are specified in [AbortCodeEnum](#abortcodeenum) |
 | abort_message         | str      | N             | Additional details about this error.  To be used only when `code` is populated |
 
 ```
@@ -456,6 +456,11 @@ Represents a national ID.
     "status": "needs_kyc_data",
 }
 ```
+
+### AbortCodeEnum
+
+* `no-kyc-needed`: the receiver indicates that they are not willing to provide KYC information since they judge that it is not necessary. The payment can be directly executed on chain.
+* `rejected`: the payment is rejected. It should not be used in the `original_payment_reference_id` field of a new payment.
 
 ### StatusEnum
 
@@ -560,13 +565,6 @@ After the Sender initiates a payment by providing KYC information (SINIT), the R
 ### Sender soft-match (RSEND -> SSOFT -> RSOFTSEND)
 
 Similarly to the flow above, the Sender at state (RSEND) may decide they need information about the receiver of the payment to disambiguate a soft-match. They set their status `Sender.Status.Status` to `soft-match` (state SSOFT) (Step 5). The receiver can abort (RABORT) (Step not shown in diagram) or provide the additional KYC in `Receiever.additional_kyc_data` (state RSOFTSEND, Step 6). The sender may then abort (SABORT, Step 8) or move to READY (Step 7), and settle the payment.
-
-## Abort codes and `original_payment_reference_id`
-
-The meaning of abort codes in the `Status.abort_code` field of an `PaymentActorObject` are:
-
-* `no-kyc-needed`: the receiver indicates that they are not willing to provide KYC information since they judge that it is not necessary. The payment can be directly executed on chain.
-* `rejected`: the payment is rejected. It should not be used in the `original_payment_reference_id` field of a new payment.
 
 # Details of JWS signature scheme
 
