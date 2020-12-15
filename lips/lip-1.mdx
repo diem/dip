@@ -23,14 +23,14 @@ The Off-Chain Protocol allows two services to define payments off-chain and priv
 
 V2 changes:
 
-* Only allow one actor to send command for mutating object.
+* Restricted to one actor to send command for mutating object.
 * Removed Command `_writes` and `_reads` with object versioning.
-* Changed reference_id to use 128 bit UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122).
-* additional_kyc_data field is moved from KycDataObject to PaymentActorObject.
+* Changed cid, reference_id and X-REQUEST-ID to use 128 bit UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122).
+* Field `additional_kyc_data` is moved from KycDataObject to PaymentActorObject.
 * Protocol URL is changed, removed sender/receiver's address in the URL path, added X-VERIFICATION-KEY-ADRRESS HTTP header for looking up JWS verification key.
-* Removed payment actor StatusEnum: needs_recipient_signature and pending_review.
-* Required to set sender's kyc_data for initial PaymentCommand.
-* Required to set receiver's kyc_data and recipient signature when receiver actor's status is set to ready_for_settlement.
+* Removed 2 payment actor StatusEnum values: `needs_recipient_signature` and `pending_review`.
+* Required to set sender's `kyc_data` for initial PaymentCommand.
+* Required to set receiver's `kyc_data` and `recipient_signature` when receiver actor's status is set to `ready_for_settlement`.
 * Updated corresponding example code.
 
 
@@ -85,7 +85,7 @@ The base url value should be the url without path `/<protocol_version>/command`,
 
 All HTTP requests and responses must contain:
 
-* A header `X-REQUEST-ID` with a unique UUID for the request, used for tracking requests and debugging. Responses must have the same string in the `X-REQUEST-ID` header value as the requests they correspond to.
+* A header `X-REQUEST-ID` with a unique UUID (according to [RFC4122](https://tools.ietf.org/html/rfc4122)) for the request, used for tracking requests and debugging. Responses must have the same string in the `X-REQUEST-ID` header value as the requests they correspond to.
 * A header `X-VERIFICATION-KEY-ADRRESS` with the LIP-5 Diem address of the VASP signing the HTTP request or HTTP response. This header is used to retrieve the VASP verification key used to authenticate the request or response. The value must be the HTTP request sender’s VASP LIP-5 address used in the command, for example: the value should be sender/receiver actor address from PaymentObject in PaymentCommand.
 
 Both `X-REQUEST-ID` and `X-VERIFICATION-KEY-ADRRESS` are case insensitive according to HTTP protocol [RFC2616](https://www.ietf.org/rfc/rfc2616.txt).
