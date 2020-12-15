@@ -99,7 +99,7 @@ Both `X-REQUEST-ID` and `X-REQUEST-SENDER-ADDRESS` are case insensitive accordin
 
 The exposed endpoint receives JWS signed `CommandRequestObject`s in the POST body, and responds with a JWS signed `CommandResponseObject`s in the HTTP response (See [Request/Response Payload](#requestresponse-payload) for more details). Single Command requests-responses are supported (HTTP1.0) but also pipelined request-responses are supported (HTTP1.1). The content type of the HTTP request/response is ignored.  All structures transmitted, nested within `CommandRequestObject` and `CommandResponseObject` are valid JSON serialized Objects and can be parsed and serialized using standard JSON libraries.
 
-All transmitted requests/responses are signed by the sending party using the JWS Signature standard (with the Ed25519 / EdDSA cipher suite, and `compact` encoding).  The party's on-chain compliance key shall be used to sign these messages. This ensures all information and meta-data about payments is authenticated and cannot be repudiated.
+All transmitted requests/responses are signed by the sending party using the [JWS Signature standard](#details-of-jws-signature-scheme) (with the Ed25519 / EdDSA cipher suite, and `compact` encoding).  The party's on-chain compliance key shall be used to sign these messages. This ensures all information and meta-data about payments is authenticated and cannot be repudiated.
 
 
 ## Basic Protocol CommandRequest / CommandResponse Interaction
@@ -183,7 +183,7 @@ All responses to a CommandRequestObject are in the form of a CommandResponseObje
 | _ObjectType    | str      | Y             | The fixed string `CommandResponseObject`. |
 | status         | str      | Y             | Either `success` or `failure`. |
 | error          | [OffChainErrorObject](#offchainerrorobject) | N | Details of the error when status == "failure" |
-| cid            | str      | N | The Command identifier to which this is a response. Should be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included. |
+| cid            | str      | N | The Command identifier to which this is a response. Should be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included and should match the 'cid' of the CommandRequestObject. |
 
 
 ```
@@ -195,7 +195,7 @@ All responses to a CommandRequestObject are in the form of a CommandResponseObje
 }
 ```
 
-When the `CommandResponseObject` status field is `failure`, the `error` field is included in the response to indicate the nature of the failure. The `error` field (type `OffChainError`) is an OffChainError object. In case of failure to recover the request (such as a parsing failure or a signature failure) `cid` may be omitted.
+When the `CommandResponseObject` status field is `failure`, the `error` field is included in the response to indicate the nature of the failure. The `error` field (type `OffChainError`) is an OffChainError object. 'cid' should be included in the CommandResponseObject whenever possible (note that it may not be possible in cases where the request resulted in an error due to an invalid request that could not be parsed).
 
 ### OffChainErrorObject
 Represents an error that occurred in response to a Command.
@@ -215,7 +215,7 @@ Represents an error that occurred in response to a Command.
     "message": "",
 }
 ```
-'command_error' occurs in response to a Command failing to be applied - for example, a high level validation error.  `protocol_error` occurs in response to a failure related to the lower-level protocol.  Note: Additional information detailing all errors will be added.
+`command_error` occurs in response to a Command failing to be applied - for example, a high level validation error.  `protocol_error` occurs in response to a failure related to the lower-level protocol.  Note: Additional information detailing all errors will be added.
 
 
 # Travel Rule Data Exchange
@@ -234,9 +234,8 @@ All requests between VASPs are structured as [`CommandRequestObject`s](#commandr
 	    "_ObjectType": "PaymentCommand",
 	    "payment": {
 		    "sender": {
-			    "address": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pg9skzctpv9skzcg9kmwta",
+			    "address": "dm1pg9q5zs2pg9q5zs2pg9q5zs2pg9skzctpv9skzcg9kmwta",
 			    "kyc_data": {
-				    "payload_type": "KYC_DATA"
 				    "payload_version": 1,
 				    "type": "individual",
 				    "given_name": "ben",
@@ -262,7 +261,7 @@ All requests between VASPs are structured as [`CommandRequestObject`s](#commandr
 			    	}
 			},
 		    "receiver": {
-			    "address": "lbr1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
+			    "address": "dm1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
 			},
 		    "reference_id": "5b8403c9-86f5-3fe0-7230-1fe950d030cb",
 		    "action": {
@@ -312,7 +311,7 @@ The structure in this Object can be a full payment or just the fields of an exis
 | reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value should be globally unique. This field is mandatory on payment creation and immutable after that. We recommend using a 128 bits long UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included. |
 | original_payment_reference_id | str | N | Used for updates to a payment after it has been committed on chain. For example, used for refunds. The reference ID of the original payment will be placed into this field. This value is optional on payment creation and invalid on updates. |
 | recipient_signature | str | N | Signature of the recipient of this transaction encoded in hex. The is signed with the compliance key of the recipient VASP and is used for on-chain attestation from the recipient party.  This may be omitted on blockchains which do not require on-chain attestation. Generated via [Recipient Signature](#recipient-signature) |
-| action | [`PaymentActionObject`](#paymentactionobject) | Y | Number of cryptocurrency + currency type (LBR, etc.)<a href="#note1" id="note1ref"><sup>1</sup></a> + type of action to take. This field is mandatory and immutable |
+| action | [`PaymentActionObject`](#paymentactionobject) | Y | Number of cryptocurrency + currency type (XUS, etc.)<a href="#note1" id="note1ref"><sup>1</sup></a> + type of action to take. This field is mandatory and immutable |
 | description | str | N | Description of the payment. To be displayed to the user. Unicode utf-8 encoded max length of 255 characters. This field is optional but can only be written once.
 
 ```
@@ -322,7 +321,7 @@ The structure in this Object can be a full payment or just the fields of an exis
     "reference_id": "d4115900-aad6-5d81-4123-6b464f1315f5",
     "original_payment_reference_id": "5b8403c9-86f5-3fe0-7230-1fe950d030cb",
     "recipient_signature": "...",
-    "action": payment_action_object(),
+    "action": PaymentActionObject(),
     "description": "A free form or structured description of the payment.",
 }
 ```
@@ -335,14 +334,14 @@ A `PaymentActorObject` represents a participant in a payment - either sender or 
 |-------	    |------	|-----------	|-------------	|
 | address | str | Y | Address of the sender/receiver account. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Diem addresses, refer to the "account identifier" section in LIP-5 for format. |
 | kyc_data | [KycDataObject](#kycdataobject) | N | The KYC data for this account. This field is optional but immutable once it is set. |
-| status | [StatusObject](#statusobject) | Y | Status of the payment from the perspective of this actor. This field can only be set by the respective sender/receiver VASP and represents the status on the sender/receiver VASP side. This field is mandatory by this respective actor (either sender or receiver side) and mutable. |
-| metadata | list of str | N | Can be specified by the respective VASP to hold metadata that the sender/receiver VASP wishes to associate with this payment. It may be set to an empty list (i.e. `[]`). New string-typed entries can be appended at the end of the list by `PaymentCommands`.|
+| status | [StatusObject](#statusobject) | Y | Status of the payment from the perspective of this actor. This field can only be set by the respective sender/receiver VASP and represents the status on the sender/receiver VASP side. This field is mandatory by this respective actor (either sender or receiver side) and mutable. Note that in the first request (which is initiated by the sender), the receiver status should be set to `None`. |
+| metadata | list of str | N | Can be specified by the respective VASP to hold metadata that the sender/receiver VASP wishes to associate with this payment. It may be set to an empty list (i.e. `[]`). New `metadata` elements may be appended to the `metadata` list via subsequent commands on an object.|
 | additional_kyc_data | str | N | Freeform KYC data.  If a soft-match occurs, this field should be used to specify additional KYC data which can be used to clear the soft-match.  It is suggested that this data be JSON, XML, or another human-readable form.|
 
 
 ```
 {
-    "address": "lbr1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
+    "address": "dm1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
     "kyc_data": KycDataObject(),
     "status": StatusObject(),
     "metadata": [],
@@ -350,11 +349,10 @@ A `PaymentActorObject` represents a participant in a payment - either sender or 
 ```
 
 ### KYCDataObject
-A `KYCDataObject` represents the required information for a single subaddress.  Proof of non-repudiation is provided by the signatures included in the JWS payloads.  The only mandatory fields are `payload_type`, `payload_version` and `type`. All other fields are optional from the point of view of the protocol -- however they may need to be included for another VASP to be ready to settle the payment.
+A `KYCDataObject` represents the required information for a single subaddress.  Proof of non-repudiation is provided by the signatures included in the JWS payloads.  The only mandatory fields are `payload_version` and `type`. All other fields are optional from the point of view of the protocol -- however they may need to be included for another VASP to be ready to settle the payment.
 
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
-| payload_type | str | Y | Used to help determine what type of data this will deserialize into.  Always set to KYC_DATA. |
 | payload_version | str | Y | Version identifier to allow modifications to KYC data Object without needing to bump version of entire API set.  Set to 1 |
 | type | str | Y | Required field, must be either “individual” or “entity” |
 | given_name | str | N | Legal given name of the user for which this KYC data Object applies. |
@@ -367,7 +365,6 @@ A `KYCDataObject` represents the required information for a single subaddress.  
 
 ```
 {
-    "payload_type": "KYC_DATA"
     "payload_version": 1,
     "type": "individual",
     "given_name": "ben",
@@ -430,7 +427,7 @@ Represents a national ID.
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
 | amount | uint | Y | Amount of the transfer.  Base units are the same as for on-chain transactions for this currency.  For example, if DiemUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. |
-| currency | enum | Y | One of the supported on-chain currency types - ex. LBR, etc. <a href="#note1" id="note1ref"><sup>1</sup></a> |
+| currency | enum | Y | One of the supported on-chain currency types - ex. XUS, etc. <a href="#note1" id="note1ref"><sup>1</sup></a> |
 | action | enum | Y | Populated in the request.  This value indicates the requested action to perform, and the only valid value is `charge`. |
 | timestamp | uint | Y | Unix timestamp indicating the time that the payment Command was created.
 
