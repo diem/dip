@@ -31,7 +31,7 @@ V2 changes:
   * Removed payment actor StatusEnum: needs_recipient_signature and pending_review - no longer needed with updated state flow.
 * Changed reference_id to use 128 bit UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122).
 * additional_kyc_data field is moved from KycDataObject to PaymentActorObject. Allows KycDataObject to be set once and never mutated.
-* Protocol URL is changed, removed sender/receiver's address in the URL path, added X-VERIFICATION-KEY-ADRRESS HTTP header for looking up JWS verification key.
+* Protocol URL is changed, removed sender/receiver's address in the URL path, added X-REQUEST-SENDER-ADDRESS HTTP header for looking up JWS verification key.
 * Updated corresponding example code.
 
 
