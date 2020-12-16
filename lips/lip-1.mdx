@@ -429,7 +429,7 @@ Represents a national ID.
 | amount | uint | Y | Amount of the transfer.  Base units are the same as for on-chain transactions for this currency.  For example, if DiemUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. |
 | currency | enum | Y | One of the supported on-chain currency types - ex. XUS, etc. <a href="#note1" id="note1ref"><sup>1</sup></a> |
 | action | enum | Y | Populated in the request.  This value indicates the requested action to perform, and the only valid value is `charge`. |
-| timestamp | uint | Y | Unix timestamp indicating the time that the payment Command was created.
+| timestamp | uint | Y | [Unix time](https://en.wikipedia.org/wiki/Unix_time) indicating the time that the payment Command was created.
 
 ```
 {
