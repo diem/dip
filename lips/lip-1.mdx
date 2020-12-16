@@ -133,7 +133,7 @@ For example:
 * VASP A received failure for the second request, later VASP A may re-send the same request, and VASP B may respond with a success because the request was processed successfully.
 
 # Request/Response Payload
-All requests between VASPs are structured as [`CommandRequestObject`s](#commandrequestobject) and all responses are structured as [`CommandResponseObject`s](#commandresponseobject).  The resulting request takes a form of the following (prior to JWS signing):
+All requests between VASPs are structured as a [`CommandRequestObject`](#commandrequestobject) and all responses are structured as a [`CommandResponseObject`](#commandresponseobject).  The resulting request takes a form of the following (prior to JWS signing):
 
 ```
 {
