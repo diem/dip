@@ -47,7 +47,7 @@ The Off-Chain Protocol provides higher levels of privacy than those that can be 
 
 ## Overview
 
-Two VASPs participate in the off-chain protocol. They communicate through HTTP requests and responses protected with TLS, and exchange messages that are signed to ensure authenticity and integrity. The goal of the off-chain protocol is for a pair of VASPs to jointly create a `PaymentObject` containing a Reference ID. When a `PaymentObject` is **completed**, both VASPs have identical copies of the object and its Reference ID. A completed `PaymentObject` can be submitted by the Blockchain to settle.
+Two VASPs participate in the off-chain protocol. They communicate through HTTP requests and responses protected with TLS, and exchange messages that are signed to ensure authenticity and integrity. The goal of the off-chain protocol is for a pair of VASPs to jointly create a `PaymentObject` containing a Reference ID. When a `PaymentObject` is **completed**, both VASPs have identical copies of the object and its Reference ID. A completed `PaymentObject` can be submitted to the Blockchain to settle.
 
 A VASP can define a `PaymentCommand` that creates or updates a single `PaymentObject`. Each `PaymentCommand` is sent to the other VASP in a `CommandRequestObject` and responded to by a `CommandResponseObject`. A success status in the response signals that the command was a success and the payment is updated by both VASPs (a command failure indicates the command is invalid, and a protocol failure indicates the command should be resubmitted at a later time).
 
