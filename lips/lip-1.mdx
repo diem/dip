@@ -636,17 +636,18 @@ A valid compliance Signature output is (bytes, hex):
 ## Sample code to generate the compliance signature
 
 The following is a concrete example of how to generate the Travel Rule dual attestation signable and the recipient signature using Diem Python Client SDK:
-```
+``` python
 from dataclasses import dataclass
-from diem import lcs
+from diem import bcs
 from diem import diem_types
 from diem import utils
-from diem import diem_types
 ...
+
 
 # Suffix of every signed dual attestation message
 # (https://github.com/diem/diem/blob/master/language/stdlib/modules/DualAttestation.move#L86)
 DOMAIN_SEPARATOR = b"@@$$DIEM_ATTEST$$@@"
+
 
 @dataclass
 class Attest:
@@ -655,13 +656,13 @@ class Attest:
     sender_address: diem_types.AccountAddress
     amount: serde_types.uint64
 
-    def lcs_serialize(self) -> bytes:
-        return lcs.serialize(self, Attest)
+    def bcs_serialize(self) -> bytes:
+        return bcs.serialize(self, Attest)
+
 
 def travel_rule(
     off_chain_reference_id: str, sender_address: diem_types.AccountAddress, amount: int
 ) -> typing.Tuple[bytes, bytes]:
-
     metadata = diem_types.Metadata__TravelRuleMetadata(
         value=diem_types.TravelRuleMetadata__TravelRuleMetadataVersion0(
             value=diem_types.TravelRuleMetadataV0(off_chain_reference_id=off_chain_reference_id)
@@ -669,48 +670,46 @@ def travel_rule(
     )
 
     attest = Attest(metadata=metadata, sender_address=sender_address, amount=serde_types.uint64(amount))
-    signing_msg = attest.lcs_serialize() + DOMAIN_SEPARATOR
+    signing_msg = attest.bcs_serialize() + DOMAIN_SEPARATOR
 
-    return (metadata.lcs_serialize(), signing_msg)
+    return (metadata.bcs_serialize(), signing_msg)
 
-reference_id = "bb991d8e-3e60-11eb-8eae-acde48001122"
-sender_account_address = utils.account_address("793251de1a61e9b4d1a17d13aa015e45")
-amount = 1_000_000_000
 
-metadata, dual_attest_msg = travel_rule(reference_id, sender_account_address, amount)
+def add_payment_recipient_signature(payment: PaymentObject) -> None:
+    """`recipient_signature` will be used as the `metadata_signature` parameter in [peer_to_peer_with_metadata script](https://github.com/diem/diem/blob/master/language/stdlib/transaction_scripts/doc/transaction_script_documentation.md#peer_to_peer_with_metadata)"""
 
-// We sign the dual attest msg bytes with the compliance private key
-// `receiver_metadata_signature` will be used as the `metadata_signature` parameter in [peer_to_peer_with_metadata script](https://github.com/diem/diem/blob/master/language/stdlib/transaction_scripts/doc/transaction_script_documentation.md#peer_to_peer_with_metadata)
-receiver_metadata_signature = compliance_private_key.sign(dual_attest_msg)
+    sender_account_address, _ = identifier.decode_account(payment.sender.address)
+    metadata, dual_attest_msg = travel_rule(payment.reference_id, sender_account_address, payment.action.amount)
+
+    // We sign the dual attest msg bytes with the compliance private key
+    payment.recipient_signature = compliance_private_key.sign(dual_attest_msg).hex()
 ```
-
-The `receiver_metadata_signature` will then be encoded in hex and placed into the `recipient_signature` field of the PaymentObject in the off-chain API, thus providing it to the sender so that the sender VASP may submit the transaction on-chain.
 
 # On-chain Transaction Submission
 Once both sender and receiver have a status of 'ready_for_settlement', the transaction may then be submitted on-chain by the sender VASP. This submission will utilize the `recipient_signature` which was provided by the receiver VASP (generated via [Recipient Signature](#recipient-signature).  The sender VASP will now generate a transaction via the following and then submit the transaction on-chain:
 
-```
-from diem import txnmetadata, stdlib, utils, diem_types
+```python
+from diem import stdlib, utils, diem_types, identifier
 
-reference_id = "bb991d8e-3e60-11eb-8eae-acde48001122"
-sender_account_address = utils.account_address("793251de1a61e9b4d1a17d13aa015e45")
-amount = 1_000_000_000
+def create_payment_transaction(payment: PaymentObject) -> diem_types.RawTransaction:
+    sender_account_address, _ = identifier.decode_account(payment.sender.address)
+    receiver_account_address, _ = identifier.decode_account(payment.receiver.address)
 
-lcs_metadata, _ = txnmetadata.travel_rule(reference_id, sender_account_address, amount)
+    bcs_metadata, _ = travel_rule(payment.reference_id, sender_account_address, payment.action.amount)
 
-script = stdlib.encode_peer_to_peer_with_metadata_script(
-    currency=utils.currency_code("XUS"),
-    payee=receiver_account_address,
-    amount=amount,
-    metadata=lcs_metadata,
-    metadata_signature=receiver_metadata_signature,
-)
+    script = stdlib.encode_peer_to_peer_with_metadata_script(
+        currency=utils.currency_code(payment.action.currency),
+        payee=receiver_account_address,
+        amount=diem_types.st.uint64(payment.action.amount),
+        metadata=bcs_metadata,
+        metadata_signature=bytes.fromhex(payment.recipient_signature),
+    )
 
-diem_types.RawTransaction(
-    sender=sender_account_address,
-    payload=diem_types.TransactionPayload__Script(script),
-    ...
-}
+    return diem_types.RawTransaction(
+        sender=sender_account_address,
+        payload=diem_types.TransactionPayload__Script(script),
+        ...
+    }
 ```
 
 For additional details, see https://dip.diem.com/dip-4/#c-to-c-transaction-flow or https://github.com/diem/client-sdk-python/blob/master/examples/p2p_transfer.py#L127
