@@ -1,14 +1,15 @@
 ---
-lip: 4
+dip: 4
 title: Transaction Metadata Specification
 authors: Kevin Hurley (@kphfb)
-status: Final
+status: Last Call
 type: Informational
 created: 06/26/2020
 ---
+
 # Summary
 ---
-Custodial wallets may want to identify specific users, such as merchants or individual consumers, that are the parties to an on-chain transaction. The Libra Payment Network leverages subaddressing to provide this functionality.
+Custodial wallets may want to identify specific users, such as merchants or individual consumers, that are the parties to an on-chain transaction. The Diem Payment Network leverages subaddressing to provide this functionality.
 
 ---
 # Terminology
@@ -22,7 +23,7 @@ ___
 # Abstract / Motivation
 ---
 
-Custodial wallets may want to identify specific users, such as merchants or individual consumers, that are the parties to an on-chain transaction.  The Libra Payment Network leverages subaddressing to provide this functionality. This document describes an approach to supporting this functionality by defining a standard that supports subaddressing to enable multiplexing a single account address into multiple wallets, enabling custodial wallets to maintain a single address rather than maintain numerous addresses.
+Custodial wallets may want to identify specific users, such as merchants or individual consumers, that are the parties to an on-chain transaction.  The Diem Payment Network leverages subaddressing to provide this functionality. This document describes an approach to supporting this functionality by defining a standard that supports subaddressing to enable multiplexing a single account address into multiple wallets, enabling custodial wallets to maintain a single address rather than maintain numerous addresses.
 
 ---
 # Specification
@@ -30,7 +31,7 @@ Custodial wallets may want to identify specific users, such as merchants or indi
 
 # The Lifetime of a Transaction Containing Metadata
 
-The first step to submitting a transaction is producing the metadata. The sender first produces a *Libra Canonically Serialized (LCS)* metadata_wrapper consisting of an LCS-serialized Metadata object:
+The first step to submitting a transaction is producing the metadata. The sender first produces a *Binary Canonical Serialization (BCS)* metadata_wrapper consisting of an BCS-serialized Metadata object:
 
 ```
 enum Metadata {
@@ -74,7 +75,7 @@ struct UnstructuredBytesMetadata {
 ```
 
 
-Using the initial example described in the motivation, the merchant whose wallet's subaddress for this payment is "merch_a", is hosted by a custodial wallet with a public address of 0x1234 may post a URI for shoes that cost 20 microlibra.  The purchaser would then submit a transaction containing the following metadata:
+Using the initial example described in the motivation, the merchant whose wallet's subaddress for this payment is "merch_a", is hosted by a custodial wallet with a public address of 0x1234 may post a URI for shoes that cost 20 microdiem.  The purchaser would then submit a transaction containing the following metadata:
 
 ```
 0x01, 0x00, 01, "merch_a", 00, 00, 00
@@ -86,17 +87,17 @@ Using the initial example described in the motivation, the merchant whose wallet
 
 ## Submitting a transaction
 
-With the metadata in hand, the sender can now submit a transaction to the Libra block chain via a [deposit call](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/doc/peer_to_peer_with_metadata.md) in Move. Note that metadata_signature must only be present for travel-rule cases between VASPs and is utilized for dual attestation.
+With the metadata in hand, the sender can now submit a transaction to the Diem block chain via a [deposit call](https://github.com/diem/diem/blob/master/language/stdlib/transaction_scripts/doc/peer_to_peer_with_metadata.md) in Move. Note that metadata_signature must only be present for travel-rule cases between VASPs and is utilized for dual attestation.
 
 ## Processing the transaction
 
-Much like any other funds transfer request, validators only verify that the sender has sufficient Libra Coins to support the transaction and that the transaction is properly formed and valid, and do not inspect or verify the correctness of the metadata.
+Much like any other funds transfer request, validators only verify that the sender has sufficient Diem Coins to support the transaction and that the transaction is properly formed and valid, and do not inspect or verify the correctness of the metadata.
 
 The recipient custodial wallet should make an effort to refund (via issuing a transaction in the reverse direction for the received amount minus gas costs) in the case of malformed metadata or an invalid subaddress for the recipient.
 
 # Transaction Examples
 
-The following examples demonstrate how subaddressing and metadata are used in the transaction flow.  *Note that the terminology “NC” will mean non-custodial account and “C” will mean a custodial account. We note that as per the Libra Association non-custodial, unhosted wallets will not be permitted to transact on the Libra Payment Network at launch.*
+The following examples demonstrate how subaddressing and metadata are used in the transaction flow.  *Note that the terminology “NC” will mean non-custodial account and “C” will mean a custodial account. We note that as per the Diem Association non-custodial, unhosted wallets will not be permitted to transact on the Diem Payment Network at launch.*
 
 ## NC to NC transaction Flow
 
@@ -104,7 +105,7 @@ For NC to NC transactions, there is no usage of subaddressing/metadata.
 
 ## NC to C Transaction Flow
 
-User A (address 0x1234) on a NC wallet wishes to send 100 microlibra to merchant B who is on a private custodial wallet (where the custodial wallet has a public address of 0x7777 and the merchant has a sub-account of 'bob').  User A's client now composes a raw transaction with the following relevant fields:
+User A (address 0x1234) on a NC wallet wishes to send 100 microdiem to merchant B who is on a private custodial wallet (where the custodial wallet has a public address of 0x7777 and the merchant has a sub-account of 'bob').  User A's client now composes a raw transaction with the following relevant fields:
 
 ```
 metadata = Metadata::GeneralMetadata(
@@ -114,10 +115,10 @@ metadata = Metadata::GeneralMetadata(
 })));
 
 program = encode_peer_to_peer_with_metadata_script(
-    "LBR" /*currency*/,
+    "XDX" /*currency*/,
     0x7777 /*recipient*/,
     100 /*amount*/,
-    lcs.serialize(metadata, Metadata),
+    bcs.serialize(metadata, Metadata),
     None /*metadata_signature*/);
 
 RawTransaction {
@@ -128,7 +129,7 @@ RawTransaction {
 
 ## C to NC transaction flow
 
-User A who is on a custodial wallet (where the C wallet has a public address of 0x7777 and user A has a sub-account of 'alice') wishes to send 100 microlibra to merchant B who is on a NC wallet (with an address of 0x1234).  User A's wallet then composes a transaction via:
+User A who is on a custodial wallet (where the C wallet has a public address of 0x7777 and user A has a sub-account of 'alice') wishes to send 100 microdiem to merchant B who is on a NC wallet (with an address of 0x1234).  User A's wallet then composes a transaction via:
 
 ```
 metadata = Metadata::GeneralMetadata(
@@ -138,10 +139,10 @@ metadata = Metadata::GeneralMetadata(
 })));
 
 program = encode_peer_to_peer_with_metadata_script(
-    "LBR" /*currency*/,
+    "XDX" /*currency*/,
     0x1234 /*recipient*/,
     100 /*amount*/,
-    lcs.serialize(metadata, Metadata),
+    bcs.serialize(metadata, Metadata),
     None /*metadata_signature*/);
 
 RawTransaction {
@@ -165,10 +166,10 @@ metadata = Metadata::GeneralMetadata(
 
 
 program = encode_peer_to_peer_with_metadata_script(
-    "LBR" /*currency*/,
+    "XDX" /*currency*/,
     0x7777 /*recipient*/,
     100 /*amount*/,
-    lcs.serialize(metadata, Metadata),
+    bcs.serialize(metadata, Metadata),
     None /*metadata_signature*/);
 
 RawTransaction {
@@ -183,7 +184,7 @@ For transactions under the travel rule threshold, transaction metadata inclusive
 
 For transactions over the travel rule limit, custodial to custodial transactions must exchange travel rule compliance data off-chain, so the suggested way to exchange the metadata is during this off-chain exchange. This information should not be exchanged using subaddressing.  An example of this data exchange can be seen in LIP-1.  Once the off-chain APIs have been utilized, there will be an off-chain reference ID which represents this transaction.  The on-chain transaction is now constructed.
 
-User A who is on a custodial wallet (where the C wallet has a public address of 0x7777 and user A has a sub-account of 'alice') wishes to send 100 microlibra to merchant B who is on a C wallet (where the C wallet has a public address of 0x1234 and merchant B has a sub-account of 'bob').  User A's wallet then composes a transaction via (note that the to/from subaddresses are not included since they were shared via the off-chain API):
+User A who is on a custodial wallet (where the C wallet has a public address of 0x7777 and user A has a sub-account of 'alice') wishes to send 100 microdiem to merchant B who is on a C wallet (where the C wallet has a public address of 0x1234 and merchant B has a sub-account of 'bob').  User A's wallet then composes a transaction via (note that the to/from subaddresses are not included since they were shared via the off-chain API):
 
 ```
 metadata = Metadata::TravelRuleMetadata(
@@ -192,17 +193,17 @@ metadata = Metadata::TravelRuleMetadata(
       off_chain_reference_id: "123abc",
 }));
 
-lcs_metadata = lcs.serialize(metadata, Metadata);
+bcs_metadata = bcs.serialize(metadata, Metadata);
 
 
 // receiver_signature is passed to the sender via the off-chain APIs as per
-// https://github.com/libra/lip/blob/master/lips/lip-1.mdx#recipient-signature
+// https://github.com/diem/dip/blob/master/lips/lip-1.mdx#recipient-signature
 
 program = encode_peer_to_peer_with_metadata_script(
-    "LBR" /*currency*/,
+    "XDX" /*currency*/,
     0x1234 /*recipient*/,
     100 /*amount*/,
-    lcs_metadata,
+    bcs_metadata,
     receiver_signature);
 
 RawTransaction {

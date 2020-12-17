@@ -1,11 +1,13 @@
+import DefaultTableData from './DefaultTableData';
 import Icon from './Icon';
-import LIPTable from './LIPTable';
-import LIPProcessInfographic from './LipProcessInfographic';
+import DIPTable from './DIPTable';
+import DIPProcessInfographic from './DipProcessInfographic';
 import Section from './Section';
 
 export default {
+  td: DefaultTableData,
   Icon,
-  LIPTable,
-  LIPProcessInfographic,
+  DIPTable,
+  DIPProcessInfographic,
   Section,
 };

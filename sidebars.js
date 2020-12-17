@@ -27,109 +27,109 @@ module.exports = {
       },
     },
     {
-      label: 'LIPS',
+      label: 'DIPS',
       extra: {
-        classNames: [globalClass('lip-category')],
+        classNames: [globalClass('dip-category')],
       },
       items: [
         {
           type: 'ref',
-          id: 'all-lips',
+          id: 'all-dips',
           extra: {
             classNames: [
               globalClass('main-sidebar-icon'),
               globalClass('background-contain'),
-              globalClass('main-sidebar-all-lips')
+              globalClass('main-sidebar-all-dips')
             ],
-            icon: 'img/all-lips.png',
-            iconDark: 'img/all-lips-dark.png',
+            icon: 'img/all-dips.png',
+            iconDark: 'img/all-dips-dark.png',
           },
         },
         {
           type: 'ref',
-          id: 'standard-lips',
+          id: 'standard-dips',
           extra: {
             classNames: [globalClass('main-sidebar-icon')],
-            icon: 'img/standard-lips.svg',
-            iconDark: 'img/standard-lips-dark.png',
+            icon: 'img/standard-dips.svg',
+            iconDark: 'img/standard-dips-dark.png',
           },
         },
         {
           type: 'ref',
-          id: 'process-lips',
+          id: 'process-dips',
           extra: {
             classNames: [globalClass('main-sidebar-icon'), globalClass('background-contain')],
-            icon: 'img/process-lips.png',
-            iconDark: 'img/process-lips-dark.png',
+            icon: 'img/process-dips.png',
+            iconDark: 'img/process-dips-dark.png',
           },
         },
         {
           type: 'ref',
-          id: 'info-lips',
+          id: 'info-dips',
           extra: {
             classNames: [
               globalClass('main-sidebar-icon'),
-              globalClass('lip-info-icon'),
+              globalClass('dip-info-icon'),
             ],
-            icon: 'img/info-lips.svg',
-            iconDark: 'img/info-lips-dark.svg',
+            icon: 'img/info-dips.svg',
+            iconDark: 'img/info-dips-dark.svg',
           },
         },
       ],
       type: 'category',
     }
   ],
-  allLips: [
+  allDips: [
     backToHome,
     {
       type: 'doc',
-      id: 'all-lips',
+      id: 'all-dips',
       extra: {
         classNames: [
           'categoryLabel',
           globalClass('background-contain'),
         ],
-        icon: 'img/all-lips.png',
-        iconDark: 'img/all-lips-dark.png',
+        icon: 'img/all-dips.png',
+        iconDark: 'img/all-dips-dark.png',
       },
     },
   ],
-  standardLips: [
+  standardDips: [
     backToHome,
     {
       type: 'doc',
-      id: 'standard-lips',
+      id: 'standard-dips',
       extra: {
         classNames: ['categoryLabel', globalClass('icon-indented')],
-        icon: 'img/standard-lips.svg',
-        iconDark: 'img/standard-lips-dark.png',
+        icon: 'img/standard-dips.svg',
+        iconDark: 'img/standard-dips-dark.png',
       },
     },
   ],
-  infoLips: [
+  infoDips: [
     backToHome,
     {
       type: 'doc',
-      id: 'info-lips',
+      id: 'info-dips',
       extra: {
         classNames: ['categoryLabel',
           globalClass('icon-indented'),
-          globalClass('lip-info-icon'),
+          globalClass('dip-info-icon'),
         ],
-        icon: 'img/info-lips.svg',
-        iconDark: 'img/info-lips-dark.svg',
+        icon: 'img/info-dips.svg',
+        iconDark: 'img/info-dips-dark.svg',
       },
     },
   ],
-  processLips: [
+  processDips: [
     backToHome,
     {
       type: 'doc',
-      id: 'process-lips',
+      id: 'process-dips',
       extra: {
         classNames: ['categoryLabel'],
-        icon: 'img/process-lips.png',
-        iconDark: 'img/process-lips-dark.png',
+        icon: 'img/process-dips.png',
+        iconDark: 'img/process-dips-dark.png',
       },
     },
   ]

@@ -1,16 +1,11 @@
 ---
-id: process-dips
-title: Process DIPs
-title_toc_label: Intro
+id: all-dips
+title: All DIPs
 ---
 
 import {DIP_TYPE, DIP_STATUS} from '../src/enums';
 import DIPTable from '../src/DocComponents/DIPTable';
-const types = [
-  DIP_TYPE.PROCESS,
-];
-
-<p className="description">Process DIPs describe the governance procedures and tools of the Diem project, such as the DIP procedure itself, github plug-ins, and other development tools and guidelines.</p>
+const types = Object.values(DIP_TYPE);
 
 ## Draft
 

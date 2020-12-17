@@ -1,5 +1,5 @@
 ---
-lip: 8
+dip: 8
 title: Off-chain API Version 1 Extensions
 authors: Kevin Hurley (@kphfb)
 status: Draft
@@ -15,7 +15,7 @@ An extension of the Off-Chain protocol to provide support for more advanced merc
 # Abstract / Motivation
 ---
 
-Version 0 of the Off-Chain Protocol is described in [LIP 1](https://lip.libra.org/lip-1/).  Version 1 as described here is an extension of the Off-Chain Protocol and adds features to support more advanced functionality - particularly targeted to support merchant use-cases.  This is inclusive of pull payments, recurring payments, and auth/capture flows.
+Version 0 of the Off-Chain Protocol is described in [DIP 1](https://dip.diem.com/dip-1/).  Version 1 as described here is an extension of the Off-Chain Protocol and adds features to support more advanced functionality - particularly targeted to support merchant use-cases.  This is inclusive of pull payments, recurring payments, and auth/capture flows.
 
 ---
 # Specification
@@ -27,7 +27,7 @@ Version 0 of the Off-Chain Protocol is described in [LIP 1](https://lip.libra.or
 Establishes a relationship between sender and recipient where the recipient can then pull funds from the sender without sender approving each transaction.  This allows recipient to bill the sender without sender approving each payment.  This relationship exists between a subaddress on the biller side and a subaddress on the sender side.  After this request is POSTed, the target VASP can use out-of-band methods to determine if this request should be granted.  If the target VASP chooses to allow the relationship to be established, the biller can create a payment object and POST to the billed party’s VASP to request funds.  The “funds_pull_approval_id” object must then match the ID established by this request.
 
 ## Request/Response Payload
-All requests between VASPs are structured as [`CommandRequestObject`s](https://lip.libra.org/lip-1/#commandrequestobject) and all responses are structured as [`CommandResponseObject`s](https://lip.libra.org/lip-1/#commandresponseobject).  For a fund pre-approval command, the resulting request takes a form of the following:
+All requests between VASPs are structured as [`CommandRequestObject`s](https://dip.diem.com/dip-1/#commandrequestobject) and all responses are structured as [`CommandResponseObject`s](https://dip.diem.com/dip-1/#commandresponseobject).  For a fund pre-approval command, the resulting request takes a form of the following:
 
 ```
 {
@@ -47,7 +47,7 @@ All requests between VASPs are structured as [`CommandRequestObject`s](https://l
             "expiration_timestamp": 72322, 
             "max_cumulative_amount": {
                 "amount": 1000,
-                "currency": "LBR"
+                "currency": "XDX"
             }
             "description": "Kevin's online shop",
             "status": "pending",
@@ -66,7 +66,7 @@ A response would look like the following:
 ```
 
 ### CommandRequestObject
-For a fund pre-approval request, the [command_type](https://lip.libra.org/lip-1/#commandrequestobject) field is set to "FundPullPreApprovalCommand".  The command object is a [`FundPullPreApprovalCommand` object](#fundpullpreapprovalcommand-object).
+For a fund pre-approval request, the [command_type](https://dip.diem.com/dip-1/#commandrequestobject) field is set to "FundPullPreApprovalCommand".  The command object is a [`FundPullPreApprovalCommand` object](#fundpullpreapprovalcommand-object).
 
 ```
 {
@@ -105,8 +105,8 @@ The structure in this object can be a full pre-approval or just the fields of an
 
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
-| address | str | Required for creation | Address of account from which the pre-approval is being requested. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Libra addresses, refer to "account identifier" section in LIP-5 for format. |
-| biller_address | str | Required for creation | Address of account from which billing will happen. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Libra addresses, refer to "account identifier" section in LIP-5 for format. |
+| address | str | Required for creation | Address of account from which the pre-approval is being requested. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Diem addresses, refer to "account identifier" section in DIP-5 for format. |
+| biller_address | str | Required for creation | Address of account from which billing will happen. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Diem addresses, refer to "account identifier" section in DIP-5 for format. |
 | expiration_timestamp | uint | N | Unix timestamp indicating the time at which this pre-approval will expire - after which no funds pulls can occur.  To expire an existing pre-approval early, this field can be updated with the current unix timestamp. |
 | funds_pre_approval_id | str | Y | Unique reference ID of this pre-approval on the pre-approval initiator VASP (the VASP which originally created this pre-approval object). This value should be unique, and formatted as “<creator_vasp_onchain_address_bech32>_<unique_id>”.  For example, ”lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_7b8404c986f53fe072301fe950d030de“. Note that this should be the VASP address and thus have a subaddress portion of 0. This field is mandatory on pre-approval creation and immutable after that.  Updates to an existing pre-approval must also include the previously created pre-approval ID. |
 | max_cumulative_amount | [CurrencyObject](#currencyobject) | N | Max cumulative amount that is approved for funds pre-approval.  This is the sum across all transactions that occur while utilizing this funds pre-approval. |
@@ -131,13 +131,13 @@ Represents an amount and the currency type.
 
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
-| amount | uint | Y | Base units are the same as for on-chain transactions for this currency.  For example, if LibraUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. |
-| currency | str enum | Y | One of the supported on-chain currency types - ex. LBR, etc.|
+| amount | uint | Y | Base units are the same as for on-chain transactions for this currency.  For example, if DiemUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. |
+| currency | str enum | Y | One of the supported on-chain currency types - ex. XDX, etc.|
 
 ```
 {
     "amount": 100,
-    "currency": "LBR",
+    "currency": "XDX",
 }
 ```
 
@@ -157,10 +157,10 @@ At any point, the user can withdraw permission at which point the status will be
 All responses to a CommandRequestObject are in the form of a [CommandResponseObject](basic_building_blocks.md#commandresponseobject)
 
 ## Usage of a pre-approval
-Pre-approval usage manifests as an extension of [PaymentCommand](https://lip.libra.org/lip-1/#paymentcommand-object).  The extension happens primarily within the [PaymentObject](https://lip.libra.org/lip-1/#paymentobject) as seen below.
+Pre-approval usage manifests as an extension of [PaymentCommand](https://dip.diem.com/dip-1/#paymentcommand-object).  The extension happens primarily within the [PaymentObject](https://dip.diem.com/dip-1/#paymentobject) as seen below.
 
 ### PaymentObject Extension
-Payment object remains the same as [PaymentObject](https://lip.libra.org/lip-1/#paymentobject), but adds the following fields:
+Payment object remains the same as [PaymentObject](https://dip.diem.com/dip-1/#paymentobject), but adds the following fields:
 
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
@@ -177,16 +177,16 @@ Authorization allows the placing of holds on funds with the assurance that an am
 
 When an authorization happens, the VASP agreeing to the authorization must lock the funds for the specified amount of time - the VASP is agreeing to a guarantee that the funds will be available if later captured.
 
-Auth/capture is an extension of [PaymentCommand](https://lip.libra.org/lip-1/#paymentcommand-object).  The extension happens primarily within the [PaymentActionObject](https://lip.libra.org/lip-1/#paymentactionobject) and the status changes within the [PaymentActor](https://lip.libra.org/lip-1/#paymentactorobject).
+Auth/capture is an extension of [PaymentCommand](https://dip.diem.com/dip-1/#paymentcommand-object).  The extension happens primarily within the [PaymentActionObject](https://dip.diem.com/dip-1/#paymentactionobject) and the status changes within the [PaymentActor](https://dip.diem.com/dip-1/#paymentactorobject).
 
 ### PaymentActionObject Extension
 
-The [PaymentActionObject](https://lip.libra.org/lip-1/#paymentactionobject) now becomes:
+The [PaymentActionObject](https://dip.diem.com/dip-1/#paymentactionobject) now becomes:
 
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
-| amount | uint | Y | Amount of the transfer.  Base units are the same as for on-chain transactions for this currency.  For example, if LibraUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. |
-| currency | enum | Y | One of the supported on-chain currency types - ex. LBR, etc. |
+| amount | uint | Y | Amount of the transfer.  Base units are the same as for on-chain transactions for this currency.  For example, if DiemUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. |
+| currency | enum | Y | One of the supported on-chain currency types - ex. XDX, etc. |
 | action | enum | Y | Populated in the request.  This value indicates the requested action to perform. For a normal transfer, "charge" is still used.  For auth and capture, "auth" and "capture" are now available.  "capture" can only be performed after a valid "auth" |
 | valid_until | uint | N | Unix timestamp indicating the time period for which this authorization is valid.  Once this time has been reached, the authorization is no longer able to be captured and funds should be unlocked. |
 | timestamp | uint | Y | Unix timestamp indicating the time that the payment Command was created.
@@ -194,7 +194,7 @@ The [PaymentActionObject](https://lip.libra.org/lip-1/#paymentactionobject) now 
 ```
 {
     "amount": 100,
-    "currency": "LBR",
+    "currency": "XDX",
     "action": "auth",
     "valid_until": 74000,
     "timestamp": 72322,
@@ -203,7 +203,7 @@ The [PaymentActionObject](https://lip.libra.org/lip-1/#paymentactionobject) now 
 
 ### StatusEnum
 
-The auth/capture flow now adds the following to the status enum of [PaymentActor](https://lip.libra.org/lip-1/#paymentactorobject):
+The auth/capture flow now adds the following to the status enum of [PaymentActor](https://dip.diem.com/dip-1/#paymentactorobject):
 
 * `authorized` - Payment amount is authorized but not yet captured.
 

@@ -1,4 +1,4 @@
-exports.LIP_STATUS = {
+exports.DIP_STATUS = {
   'DRAFT': 'draft',
   'LAST_CALL': 'last call',
   'ACCEPTED': 'accepted',
@@ -6,13 +6,13 @@ exports.LIP_STATUS = {
   'REJECTED': 'rejected',
 };
 
-exports.LIP_TYPE = {
+exports.DIP_TYPE = {
   /* Standards Track */
   CORE: 'core',
   NETWORKING: 'networking',
   INTERFACE: 'interface',
   APPLICATION: 'application',
-  /* Standards Track */
+  /* End Standards Track */
+  PROCESS: 'process',
   INFORMATIONAL: 'informational',
-  META: 'meta',
 };
