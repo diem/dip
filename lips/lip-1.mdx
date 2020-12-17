@@ -11,7 +11,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Summary
 ---
-The Off-Chain Protocol allows two services to define payments off-chain and privately exchange information required for compliance purposes before settling a Diem payment on-chain. Note that this API is being published by the Diem Association on an “as is” basis. Publication of this API by the Diem Association does not mean that the Association is taking any position on whether the API addresses issues of compliance, privacy and scalability. Users of this API must make such determinations on their own.
+The Off-Chain Protocol allows two entities to define payments off-chain and privately exchange information, including for compliance purposes before settling a Diem payment on-chain. Note that this API is being published by the Diem Association on an “as is” basis. Publication of this Off-Chain Protocol by the Diem Association does not mean that the Association is taking any position on whether the Off-Chain Protocol addresses issues of compliance, privacy or scalability. Users of this Off-Chain Protocol must make such determinations on their own.
 
 
 # Versions
@@ -39,17 +39,17 @@ V2 changes:
 # Abstract / Motivation
 ---
 
-The Off-Chain Protocol is an API and payload specification to support compliance, privacy and scalability on blockchains. It is executed between a pair of entities and allows them to privately exchange payment information before they settle it on a Blockchain. The entities can be inclusive of designated dealers (DDs) and _Virtual Asset Service Providers_ (VASPs), such as wallets or exchanges.
+The Off-Chain Protocol is an API and payload specification to support compliance, privacy and scalability on blockchains. It is executed between a pair of entities and allows them to privately exchange payment information before they settle it on a Blockchain. The entities may include designated dealers (DDs) and _Virtual Asset Service Providers_ (VASPs), such as wallets or exchanges.
 
 The Off-Chain Protocol relates to _supporting compliance_, and in particular supporting the implementation of the _Travel Rule_ requirements that VASPs may be required to follow. Those requirements generally specify that when money transfers above a certain amount are executed by VASPs, some information about the sender and recipient of funds must become available to both VASPs. The Off-Chain Protocols allows VASPs to exchange this information privately.
 
-The Off-Chain Protocol provides higher levels of privacy than those that can be achieved directly on a Blockchain. The exact details of the customer accounts involved in a payment, as well as personal information that may need to be exchanged to support compliance, remain off-chain. The information is exchanged within a secure, authenticated and encrypted, Channel and would only be made available to the parties that strictly require them.
+The Off-Chain Protocol provides for the private exchange of information that cannot be achieved directly on a Blockchain. The exact details of the customer accounts involved in a payment, as well as personal information that may need to be exchanged to support compliance, remain off-chain. The information is exchanged within a secure, authenticated and encrypted, Channel and would only be made available to the parties that strictly require them.
 
 ## Overview
 
 Two VASPs participate in the off-chain protocol. They communicate through HTTP requests and responses protected with TLS, and exchange messages that are signed to ensure authenticity and integrity. The goal of the off-chain protocol is for a pair of VASPs to jointly create a `PaymentObject` containing a Reference ID. When a `PaymentObject` is **completed**, both VASPs have identical copies of the object and its Reference ID. A completed `PaymentObject` can be submitted to the Blockchain to settle.
 
-A VASP can define a `PaymentCommand` that creates or updates a single `PaymentObject`. Each `PaymentCommand` is sent to the other VASP in a `CommandRequestObject` and responded to by a `CommandResponseObject`. A success status in the response signals that the command was a success and the payment is updated by both VASPs (a command failure indicates the command is invalid, and a protocol failure indicates the command should be resubmitted at a later time).
+A VASP can define a `PaymentCommand` that creates or updates a single `PaymentObject`. Each `PaymentCommand` is sent to the other VASP in a `CommandRequestObject` and responded to by a `CommandResponseObject`. A success status in the response signals that the command was a success and the `PaymentObject` is updated by both VASPs (a command failure indicates the command is invalid, and a protocol failure indicates the command should be resubmitted at a later time).
 
 A VASP initially creates a `PaymentObject`, and then VASPs take turns updating it, through successful `PaymentCommand`s, until it is ready to be settled or aborted. In a typical protocol flow, the VASP representing the sender would define the `PaymentObject` and include the sender's KYC information. The receiver VASP would check this information and either request more (see `soft-match` flows), abort, or signal that it is ready to settle the payment by sending the receiver's KYC information. The sender's VASP would check the receiver's KYC, and request more, abort, or settle the payment on-chain.
 
@@ -336,7 +336,7 @@ A `PaymentActorObject` represents a participant in a payment - either sender or 
 | kyc_data | [KycDataObject](#kycdataobject) | N | The KYC data for this account. This field is optional but immutable once it is set. |
 | status | [StatusObject](#statusobject) | Y | Status of the payment from the perspective of this actor. This field can only be set by the respective sender/receiver VASP and represents the status on the sender/receiver VASP side. This field is mandatory by this respective actor (either sender or receiver side) and mutable. Note that in the first request (which is initiated by the sender), the receiver status should be set to `None`. |
 | metadata | list of str | N | Can be specified by the respective VASP to hold metadata that the sender/receiver VASP wishes to associate with this payment. It may be set to an empty list (i.e. `[]`). New `metadata` elements may be appended to the `metadata` list via subsequent commands on an object.|
-| additional_kyc_data | str | N | Freeform KYC data.  If a soft-match occurs, this field should be used to specify additional KYC data which can be used to clear the soft-match.  It is suggested that this data be JSON, XML, or another human-readable form.|
+| additional_kyc_data | str | N | Freeform KYC data.  If a soft-match occurs, this field can be used to specify additional KYC data which can be used to clear the soft-match.  It is suggested that this data be JSON, XML, or another human-readable form.|
 
 
 ```
@@ -498,7 +498,7 @@ A star (`*`) denotes _any_ value, `is-provided` denotes the field value is provi
 
 ## Steps of the protocol: The KYC Exchange Flow
 
-The basic KYC exchange flow starts with the Sender including KYC information and requesting KYC information by the receiver. In the straight-forward case the Receiver is satisfied with this information and responds with a command providing the receiver KYC information, and recipient signature. The Sender can then finalize the payment (by setting its status to `ready_for_settlement`, see below) and also settle it on-chain (status sequence SINIT -> RSEND -> READY). At each step Sender or Receiver may also abort the payment, in their turn, until the payment is finalized (aka READY).
+The basic KYC exchange flow starts with the Sender including KYC information and requesting KYC information by the receiver. In the straight-forward case the Receiver is satisfied with this information and responds with a command providing the Sender with the receiver's KYC information, and recipient signature. The Sender can then finalize the payment (by setting its status to `ready_for_settlement`, see below) and also settle it on-chain (status sequence SINIT -> RSEND -> READY). At each step Sender or Receiver may also abort the payment, in their turn, until the payment is finalized (aka READY).
 
 ### Start -> SINIT (Step 1)
 
@@ -593,7 +593,7 @@ Valid JWS Compact Signature (str, utf8):
 
 # Recipient Compliance Signature
 
-Once the receiver side is comfortable that it has received appropriate information and is ready for the transaction to go on-chain (Step 4), they provide a signature in order to support dual attestation of the on-chain transaction. The receiver VASP signs with the receiver compliance private key.
+Once the receiver side is comfortable that it has received appropriate information and is ready for the transaction to go on-chain (Step 4), it provides a signature in order to support dual attestation of the on-chain transaction. The receiver VASP signs with the receiver compliance private key.
 
 * The algorithm used to generate the signature is `EdDSA` as specified in RFC 8032.
 * The signature is over the Diem Canonical Serialization of a Metadata structure including `reference_id` (bytes, ASCII), a 16-byes Diem on-chain `address`, the payment `amount` (u64), and a domain separator `DOMAIN_SEPARATOR` (with value in ascii `@@$$DIEM_ATTEST$$@@`).
@@ -720,15 +720,15 @@ A reference implementation of the Off-Chain Protocol is located at https://githu
 
 # Disclaimers
 
-THIS API AND REFERENCE IMPLEMENTATION IS PROVIDED "AS IS" WITH NO EXPRESS OR IMPLIED WARRANTIES WHATSOEVER, INCLUDING ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, COMPLIANCE WITH LAW, ACCURACY, COMPLETENESS, OR NONINFRINGEMENT OF INTELLECTUAL PROPERTY RIGHTS.
+THIS OFF-CHAIN PROTOCOL AND REFERENCE IMPLEMENTATION ARE PROVIDED "AS IS" WITH NO EXPRESS OR IMPLIED WARRANTIES WHATSOEVER, INCLUDING ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, COMPLIANCE WITH LAW, ACCURACY, COMPLETENESS, OR NONINFRINGEMENT OF INTELLECTUAL PROPERTY RIGHTS.
 
-The Diem Association disclaims all liability relating to this API and to the implementation of this API, including the reference implementation, and disclaims all liability for cost of procurement of substitute services, lost profits, loss of use, loss of data or any incidental, consequential, direct,
-indirect, or special damages, whether under contract, tort, warranty or otherwise, arising in any way out of use or reliance upon this API, the reference implementation, or any information herein.
+The Diem Association disclaims all liability relating to this Off-Chain Protocol and to the implementation of this Off-Chain Protocol, including the reference implementation, and disclaims all liability for cost of procurement of substitute services, lost profits, loss of use, loss of data or any incidental, consequential, direct,
+indirect, or special damages, whether under contract, tort, warranty or otherwise, arising in any way out of use or reliance upon this Off-Chain Protocol, the reference implementation, or any information herein.
 
-The compliance processes described in this LIP are for informational purposes only and do not reflect the specific compliance obligations of VASPs under applicable regulatory frameworks, their compliance programs, and/or standards imposed by Diem Networks.
+The compliance processes described in this Off-Chain Protocol are for informational purposes only and do not reflect the specific compliance obligations of VASPs under applicable regulatory frameworks, their compliance programs, and/or standards imposed by Diem Networks.
 
 # Copyright Notice
 This documentation is made available under the Creative Commons Attribution 4.0 International (CC BY 4.0) license (available at https://creativecommons.org/licenses/by/4.0/).
 
 # Footnotes
-<a id="note1" href="#note1ref"><sup>1</sup></a>The Off-Chain Protocol is a generic protocol which is available for broader use among any blockchain - meaning currencies such as BTC could also utilize this same protocol if desired.
+<a id="note1" href="#note1ref"><sup>1</sup></a>The Off-Chain Protocol is a generic protocol which is available for broader use among any Blockchain - meaning currencies such as BTC could also utilize this same protocol if desired.
