@@ -47,7 +47,7 @@ All requests between VASPs are structured as [`CommandRequestObject`s](https://d
             "expiration_timestamp": 72322, 
             "max_cumulative_amount": {
                 "amount": 1000,
-                "currency": "XDM"
+                "currency": "XDX"
             }
             "description": "Kevin's online shop",
             "status": "pending",
@@ -105,8 +105,8 @@ The structure in this object can be a full pre-approval or just the fields of an
 
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
-| address | str | Required for creation | Address of account from which the pre-approval is being requested. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Diem addresses, refer to "account identifier" section in LIP-5 for format. |
-| biller_address | str | Required for creation | Address of account from which billing will happen. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Diem addresses, refer to "account identifier" section in LIP-5 for format. |
+| address | str | Required for creation | Address of account from which the pre-approval is being requested. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Diem addresses, refer to "account identifier" section in DIP-5 for format. |
+| biller_address | str | Required for creation | Address of account from which billing will happen. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Diem addresses, refer to "account identifier" section in DIP-5 for format. |
 | expiration_timestamp | uint | N | Unix timestamp indicating the time at which this pre-approval will expire - after which no funds pulls can occur.  To expire an existing pre-approval early, this field can be updated with the current unix timestamp. |
 | funds_pre_approval_id | str | Y | Unique reference ID of this pre-approval on the pre-approval initiator VASP (the VASP which originally created this pre-approval object). This value should be unique, and formatted as “<creator_vasp_onchain_address_bech32>_<unique_id>”.  For example, ”lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_7b8404c986f53fe072301fe950d030de“. Note that this should be the VASP address and thus have a subaddress portion of 0. This field is mandatory on pre-approval creation and immutable after that.  Updates to an existing pre-approval must also include the previously created pre-approval ID. |
 | max_cumulative_amount | [CurrencyObject](#currencyobject) | N | Max cumulative amount that is approved for funds pre-approval.  This is the sum across all transactions that occur while utilizing this funds pre-approval. |
@@ -132,12 +132,12 @@ Represents an amount and the currency type.
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
 | amount | uint | Y | Base units are the same as for on-chain transactions for this currency.  For example, if DiemUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. |
-| currency | str enum | Y | One of the supported on-chain currency types - ex. XDM, etc.|
+| currency | str enum | Y | One of the supported on-chain currency types - ex. XDX, etc.|
 
 ```
 {
     "amount": 100,
-    "currency": "XDM",
+    "currency": "XDX",
 }
 ```
 
@@ -186,7 +186,7 @@ The [PaymentActionObject](https://dip.diem.com/dip-1/#paymentactionobject) now b
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
 | amount | uint | Y | Amount of the transfer.  Base units are the same as for on-chain transactions for this currency.  For example, if DiemUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. |
-| currency | enum | Y | One of the supported on-chain currency types - ex. XDM, etc. |
+| currency | enum | Y | One of the supported on-chain currency types - ex. XDX, etc. |
 | action | enum | Y | Populated in the request.  This value indicates the requested action to perform. For a normal transfer, "charge" is still used.  For auth and capture, "auth" and "capture" are now available.  "capture" can only be performed after a valid "auth" |
 | valid_until | uint | N | Unix timestamp indicating the time period for which this authorization is valid.  Once this time has been reached, the authorization is no longer able to be captured and funds should be unlocked. |
 | timestamp | uint | Y | Unix timestamp indicating the time that the payment Command was created.
@@ -194,7 +194,7 @@ The [PaymentActionObject](https://dip.diem.com/dip-1/#paymentactionobject) now b
 ```
 {
     "amount": 100,
-    "currency": "XDM",
+    "currency": "XDX",
     "action": "auth",
     "valid_until": 74000,
     "timestamp": 72322,

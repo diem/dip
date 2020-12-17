@@ -4,8 +4,9 @@ title: Transaction Metadata Specification
 authors: Kevin Hurley (@kphfb)
 status: Last Call
 type: Informational
-created: 06/26/2020d
+created: 06/26/2020
 ---
+
 # Summary
 ---
 Custodial wallets may want to identify specific users, such as merchants or individual consumers, that are the parties to an on-chain transaction. The Diem Payment Network leverages subaddressing to provide this functionality.
@@ -30,7 +31,7 @@ Custodial wallets may want to identify specific users, such as merchants or indi
 
 # The Lifetime of a Transaction Containing Metadata
 
-The first step to submitting a transaction is producing the metadata. The sender first produces a *Diem Canonically Serialized (LCS)* metadata_wrapper consisting of an LCS-serialized Metadata object:
+The first step to submitting a transaction is producing the metadata. The sender first produces a *Binary Canonical Serialization (BCS)* metadata_wrapper consisting of an BCS-serialized Metadata object:
 
 ```
 enum Metadata {
@@ -117,7 +118,7 @@ program = encode_peer_to_peer_with_metadata_script(
     "LBR" /*currency*/,
     0x7777 /*recipient*/,
     100 /*amount*/,
-    lcs.serialize(metadata, Metadata),
+    bcs.serialize(metadata, Metadata),
     None /*metadata_signature*/);
 
 RawTransaction {
@@ -141,7 +142,7 @@ program = encode_peer_to_peer_with_metadata_script(
     "LBR" /*currency*/,
     0x1234 /*recipient*/,
     100 /*amount*/,
-    lcs.serialize(metadata, Metadata),
+    bcs.serialize(metadata, Metadata),
     None /*metadata_signature*/);
 
 RawTransaction {
@@ -168,7 +169,7 @@ program = encode_peer_to_peer_with_metadata_script(
     "LBR" /*currency*/,
     0x7777 /*recipient*/,
     100 /*amount*/,
-    lcs.serialize(metadata, Metadata),
+    bcs.serialize(metadata, Metadata),
     None /*metadata_signature*/);
 
 RawTransaction {
@@ -192,7 +193,7 @@ metadata = Metadata::TravelRuleMetadata(
       off_chain_reference_id: "123abc",
 }));
 
-lcs_metadata = lcs.serialize(metadata, Metadata);
+bcs_metadata = bcs.serialize(metadata, Metadata);
 
 
 // receiver_signature is passed to the sender via the off-chain APIs as per
@@ -202,7 +203,7 @@ program = encode_peer_to_peer_with_metadata_script(
     "LBR" /*currency*/,
     0x1234 /*recipient*/,
     100 /*amount*/,
-    lcs_metadata,
+    bcs_metadata,
     receiver_signature);
 
 RawTransaction {

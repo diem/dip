@@ -16,7 +16,7 @@ Diem Payment Network wallets benefit from consistent standards for serializing a
 
 * **account identifier**:  An account identifier is a base-32 encoded string that captures 1) the network version the address is intended for, 2) the address type (with or without subaddress) and 3) the underlying address components. This identifier uses the bech32 encoding which consists of a human readable prefix, delimiter, serialized payload (account address, subaddress) and checksum. An example of an account identifier is `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`.
 
-* **intent identifier**: An intent identifier is a URI-serialized string that couples an *account identifier* with optional query parameters that specify preferences for an on-chain action. Initially, intent identifiers will be used for specifying transaction requests. In the fullness of time, we can expect using intent identifiers for sharing richer transaction metadata or identity information. an example of an intent identifier is `diem://lbr11q8mjtzdhrl6035feva9r7umfc6du7ezz300tv2hj7v5pyg?am=1000000&c=LBR`
+* **intent identifier**: An intent identifier is a URI-serialized string that couples an *account identifier* with optional query parameters that specify preferences for an on-chain action. Initially, intent identifiers will be used for specifying transaction requests. In the fullness of time, we can expect using intent identifiers for sharing richer transaction metadata or identity information. an example of an intent identifier is `diem://lbr11q8mjtzdhrl6035feva9r7umfc6du7ezz300tv2hj7v5pyg?am=1000000&c=XDX`
 
 # Abstract / Motivation
 For a range of peer-to-peer and peer-to-merchant use cases, merchants and wallets will need to coordinate an information exchange about the intended recipient and transaction payload. Standardizing the format of this payment envelope promotes interoperability across the client ecosystem. This proposal covers standards for several related identifiers.
@@ -115,7 +115,7 @@ The Intent Identifier consists of
 * Query parameters
   * Provides details for how the request should be fulfilled
   * Initially, currency code and amount to specify transaction request preferences
-    * currency uses the 'c' key, with the value encoded as a 3-letter currency code (ex. XDM)
+    * currency uses the 'c' key, with the value encoded as a 3-letter currency code (ex. XDX)
     * amount uses the 'am' key, with the value encoded in micro units (10e-6)
 
 ### Example of request intent
@@ -140,9 +140,9 @@ Identifier information
 * Base URI
   * Account Identifier: `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`
 * Query parameters
-  * `c=LBR` (currency preference is LBR composite token)
+  * `c=XDX` (currency preference is XDX composite token)
 
-**Result**: `diem://lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t?c=LBR`
+**Result**: `diem://lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t?c=XDX`
 
 ### Example of request intent with currency and amount specified
 This intent represents a request to receive a specific amount in a specific currency for a given address.
@@ -153,9 +153,9 @@ Identifier information
 * Base URI
   * Address: `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`
 * Query parameters
-  * `c=LBR&am=1000000` (request for 1 LBR, currency preference is LBR composite token, amount is 1000000 µ-units)
+  * `c=XDX&am=1000000` (request for 1 XDX, currency preference is XDX composite token, amount is 1000000 µ-units)
 
-**Result**: `diem://lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t?c=LBR&am=1000000`
+**Result**: `diem://lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t?c=XDX&am=1000000`
 
 ### Looking ahead
 We expect to evolve the Intent Identifier to support a broader range of payment and identity scenarios. These may range from sharing stable identity information to supporting richer payment metadata.
