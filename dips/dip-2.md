@@ -109,7 +109,7 @@ The current permissions in Diem are:
 * {Enable,Disable}Minting(**type**): Enable and disable minting the currency of the given **type**
 * BurnCurrency(**type**): Destroy currency of the given **type**
 * PreburnCurrency(**type**): Create a burn request for the currency of the given **type** to be fulfilled or canceled by the holder of BurnCurrency
-* UpdateExchangeRate(**type**): Update the exchange rate from each non-LBR currency **type** to LBR
+* UpdateExchangeRate(**type**): Update the exchange rate from each non-XDX currency **type** to XDX
 * UpdateDualAttestationLimit: Update the amount above which VASP <-> VASP transactions must use the travel rule protocol
 * {Freeze,Unfreeze}Account: Prevent an account from sending transactions or receiving funds
 * RegisterNewCurrency: Add a new currency type to the system

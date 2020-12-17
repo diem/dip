@@ -115,7 +115,7 @@ metadata = Metadata::GeneralMetadata(
 })));
 
 program = encode_peer_to_peer_with_metadata_script(
-    "LBR" /*currency*/,
+    "XDX" /*currency*/,
     0x7777 /*recipient*/,
     100 /*amount*/,
     bcs.serialize(metadata, Metadata),
@@ -139,7 +139,7 @@ metadata = Metadata::GeneralMetadata(
 })));
 
 program = encode_peer_to_peer_with_metadata_script(
-    "LBR" /*currency*/,
+    "XDX" /*currency*/,
     0x1234 /*recipient*/,
     100 /*amount*/,
     bcs.serialize(metadata, Metadata),
@@ -166,7 +166,7 @@ metadata = Metadata::GeneralMetadata(
 
 
 program = encode_peer_to_peer_with_metadata_script(
-    "LBR" /*currency*/,
+    "XDX" /*currency*/,
     0x7777 /*recipient*/,
     100 /*amount*/,
     bcs.serialize(metadata, Metadata),
@@ -200,7 +200,7 @@ bcs_metadata = bcs.serialize(metadata, Metadata);
 // https://github.com/diem/dip/blob/master/lips/lip-1.mdx#recipient-signature
 
 program = encode_peer_to_peer_with_metadata_script(
-    "LBR" /*currency*/,
+    "XDX" /*currency*/,
     0x1234 /*recipient*/,
     100 /*amount*/,
     bcs_metadata,
