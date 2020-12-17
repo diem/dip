@@ -17,12 +17,12 @@ Due to being a reserve backed currency, the true blockchain is the one that is m
 The goal of DUM is to provide the means to effectively and transparently update the DPN in order to meet changing requirements as well as remediate any plausible operational incident.
 
 # Building blocks
-Conceptually, the software running on validator nodes comprises two layers. One is a blockchain core whose goal is to replicate a ledger of transactions and their outcome. The second is a framework that stores the ledger-state and a set of software modules -- encoded in the Move programming language -- that define the rules for interacting with the DPN and mutating the ledge-state (see also [LIP-2](./lip-2.md)). There are two corresponding types of upgrades to the system, (i) [updates to the core software](#software-upgrade) (ii) [updates to the framework state](#on-chain-state-upgrade).
+Conceptually, the software running on validator nodes comprises two layers. One is a blockchain core whose goal is to replicate a ledger of transactions and their outcome. The second is a framework that stores the ledger-state and a set of software modules -- encoded in the Move programming language -- that define the rules for interacting with the DPN and mutating the ledge-state (see also [DIP-2](./dip-2.md)). There are two corresponding types of upgrades to the system, (i) [updates to the core software](#software-upgrade) (ii) [updates to the framework state](#on-chain-state-upgrade).
 
 All building blocks may be used for "business-as-usual" upgrades or to address urgent incidents.
 
 ## Software upgrade
-Specification changes go through the [LIP process](./lip-0.md) and non-specification changes (e.g. bug fixes and performance improvements) do not need to go through it. All software changes are submitted through standard Github reviews and proceed through the code review process before being merged to master.
+Specification changes go through the [DIP process](./dip-0.md) and non-specification changes (e.g. bug fixes and performance improvements) do not need to go through it. All software changes are submitted through standard Github reviews and proceed through the code review process before being merged to master.
 
 In order to release a new version of software, Diem Networks (DN) needs to coordinate the release plan and timeline with all the validator operators. Validator operators are responsible for deploying the software release as per the provided instructions.
 
@@ -32,7 +32,7 @@ Some changes may require all validators to transition at the same blockchain hei
 On-chain state can only be updated via transactions. We propose three ways to effectuate changes to the DPN by directly mutating on-chain state, ordered by most frequent to least frequent: normal multi-sig transactions, multi-sig WriteSet transactions, and genesis transactions.
 
 ### Normal multi-sig transactions
-Normal transactions go through the VM and invoke Diem Framework modules (see [LIP-2](./lip-2.md)) to produce a Writeset that alters ledger-state. Both the resulting state change and the authenticating set of signatures are transparent and visible on-chain for auditing.
+Normal transactions go through the VM and invoke Diem Framework modules (see [DIP-2](./dip-2.md)) to produce a Writeset that alters ledger-state. Both the resulting state change and the authenticating set of signatures are transparent and visible on-chain for auditing.
 
 ### Multi-sig WriteSet transactions
 Writeset transactions are a special type of multi-sig transactions that prescribes an arbitrary state change. Unlike normal transactions, which must follow rules such as “the reserve is the only entity that can create or destroy money”, WriteSet transactions simply describe a state change rather than go through the Diem Framework modules. This type of transaction is only needed for situations such as updating immutable stdlib libraries due to critical bugs or reversing large scale fraud.
@@ -47,7 +47,7 @@ Note that, after Diem starts, we may need genesis transactions as a last resort 
 
 The decision flow chart below summarizes the building blocks and how they will be used.
 
-![Decision flow](../static/img/LIP-3-decision-flow.png)
+![Decision flow](../static/img/DIP-3-decision-flow.png)
 
 # Case study
 

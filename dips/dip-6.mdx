@@ -26,7 +26,7 @@ DN and DA will jointly manage the DiemRoot account.  The DiemRoot account determ
 # Framework Guide
 ## Terminology
 * *Validator Node* is a replica that runs the Diem consensus protocol to maintain and advance the blockchain state. A Validator Node processes transactions and interacts with other Validator Nodes to reach consensus on the ordering of transactions and the resulting state of the database after transaction execution.
-* *Validator Config* is an on-chain configuration or Move resource that contains configuration information of a Validator Node. This includes a *consensus public key* and [network addresses](https://github.com/libra/libra/blob/master/specifications/network/network-address.md).
+* *Validator Config* is an on-chain configuration or Move resource that contains configuration information of a Validator Node. This includes a *consensus public key* and [network addresses](https://github.com/diem/diem/blob/master/specifications/network/network-address.md).
 * *Consensus public key* verifies the digital signature authenticating the sender of a consensus message in the Diem consensus protocol.
 * *Network addresses* define endpoints and cryptographic credentials for establishing secure connections with other Validator Nodes as well as FullNodes and other participants.
 * *Validator Owner* is the entity responsible for the operation of a Validator Node and is a member of the Diem Association. Each Validator Owner has an account on the Diem Blockchain that stores the Validator Config Move resource (see [Move Tutorial](https://developers.diem.com/docs/technical-papers/move-paper/)).
@@ -36,16 +36,16 @@ DN and DA will jointly manage the DiemRoot account.  The DiemRoot account determ
 * *DiemRoot* is the sole account capable of adding or removing Validator Owner and Validator Operator accounts and specifying the current Validator Owners in the Validator Set. It may also submit an AdminScript.
 * *AdminScript* is a transaction script that can be sent by the DiemRoot on behalf of any other account. This includes key rotation enabling DiemRoot to support account recovery for both Validator Owners and Operators.
 
-For the aforementioned roles, Diem uses a variant of role-based access control as defined in [DIP2: Diem Roles and Permissions](useBaseUrl('lip-2')).
+For the aforementioned roles, Diem uses a variant of role-based access control as defined in [DIP2: Diem Roles and Permissions](useBaseUrl('dip-2')).
 
 <img alt="Validator Set" src={useBaseUrl('img/validators_set.png')} />
 
 ## Move modules
 Four move modules are involved in the validator configuration management
-* [`ValidatorConfig`](https://github.com/libra/libra/blob/master/language/stdlib/modules/ValidatorConfig.move): defines local consensus configuration for a Validator Node of a Validator Owner.
-* [`ValidatorOperatorConfig`](https://github.com/libra/libra/blob/master/language/stdlib/modules/ValidatorOperatorConfig.move): defines the configuration of the Validator Operator (it only contains a human-readable name).
-* [`DiemSystem`](https://github.com/libra/libra/blob/master/language/stdlib/modules/LibraSystem.move): publishes the Validator Set as a global on-chain config and enforces the rules for modifying it.
-* [`DiemConfig`](https://github.com/libra/libra/blob/master/language/stdlib/modules/LibraConfig.move): a generic module that manages all of the global on-chain configurations, including the Validator Set configurations.
+* [`ValidatorConfig`](https://github.com/diem/diem/blob/master/language/stdlib/modules/ValidatorConfig.move): defines local consensus configuration for a Validator Node of a Validator Owner.
+* [`ValidatorOperatorConfig`](https://github.com/diem/diem/blob/master/language/stdlib/modules/ValidatorOperatorConfig.move): defines the configuration of the Validator Operator (it only contains a human-readable name).
+* [`DiemSystem`](https://github.com/diem/diem/blob/master/language/stdlib/modules/DiemSystem.move): publishes the Validator Set as a global on-chain config and enforces the rules for modifying it.
+* [`DiemConfig`](https://github.com/diem/diem/blob/master/language/stdlib/modules/DiemConfig.move): a generic module that manages all of the global on-chain configurations, including the Validator Set configurations.
 
 ## Move resources
 
@@ -67,7 +67,7 @@ struct Config {
 }
 ```
 
-For Validator Operator the Diem Account has a *Validator Operator Role* (see [lip-2: Diem Roles and Permissions](https://github.com/libra/lip/blob/master/lips/lip-2.md)) and stores a `ValidatorOperatorConfig` resource managed by the `ValidatorOperatorConfig` module.
+For Validator Operator the Diem Account has a *Validator Operator Role* (see [dip-2: Diem Roles and Permissions](https://github.com/diem/dip/blob/master/dip/dip-2.md)) and stores a `ValidatorOperatorConfig` resource managed by the `ValidatorOperatorConfig` module.
 ```
 resource struct ValidatorOperatorConfig {
   human_name: vector<u8>,
@@ -94,21 +94,21 @@ struct ValidatorInfo {
 
 ## Transaction scripts
 The following transaction scripts can be run by the DiemRoot:
-* [`create_validator_account`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/create_validator_account.move) - creates a Validator Owner account (an account with Validator role)
-* [`create_validator_operator_account`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/create_validator_operator_account.move) - to create a Validator Operator account
-* [`add_validator_and_reconfigure`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/add_validator_and_reconfigure.move) - to add Validator Owner to the Validator Set with its current config and trigger reconfiguration
-* [`remove_validator_and_reconfigure`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/remove_validator_and_reconfigure.move) - to remove Validator Owner from the Validator Set and trigger reconfiguration
+* [`create_validator_account`](https://github.com/diem/diem/blob/master/language/stdlib/transaction_scripts/create_validator_account.move) - creates a Validator Owner account (an account with Validator role)
+* [`create_validator_operator_account`](https://github.com/diem/diem/blob/master/language/stdlib/transaction_scripts/create_validator_operator_account.move) - to create a Validator Operator account
+* [`add_validator_and_reconfigure`](https://github.com/diem/diem/blob/master/language/stdlib/transaction_scripts/add_validator_and_reconfigure.move) - to add Validator Owner to the Validator Set with its current config and trigger reconfiguration
+* [`remove_validator_and_reconfigure`](https://github.com/diem/diem/blob/master/language/stdlib/transaction_scripts/remove_validator_and_reconfigure.move) - to remove Validator Owner from the Validator Set and trigger reconfiguration
 
 The following transaction scripts can be run by the Validator Owner:
-* [`set_validator_operator`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/set_validator_operator.move) - to designate the Validator Operator
+* [`set_validator_operator`](https://github.com/diem/diem/blob/master/language/stdlib/transaction_scripts/set_validator_operator.move) - to designate the Validator Operator
 
 The following transaction scripts can be run by the Validator Operator:
-* [`set_validator_config_and_reconfigure`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/set_validator_config_and_reconfigure.move) - to change values of the Validator Config resource and update the config in the Validator Set (aborts if the Validator Owner is not in the Validator Set)
+* [`set_validator_config_and_reconfigure`](https://github.com/diem/diem/blob/master/language/stdlib/transaction_scripts/set_validator_config_and_reconfigure.move) - to change values of the Validator Config resource and update the config in the Validator Set (aborts if the Validator Owner is not in the Validator Set)
 
 The following script relevant to the operations of a Validator Owner and Validator Operator can also be run by any Diem Account's owner:
-* [`rotate_authentication_key`](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/rotate_authentication_key.move) - to rotate the authentication key of an account.
+* [`rotate_authentication_key`](https://github.com/diem/diem/blob/master/language/stdlib/transaction_scripts/rotate_authentication_key.move) - to rotate the authentication key of an account.
 
-More on these transaction scripts (their specifications, information about error-codes and emitted events) can be found in [Overview of Diem Transaction Scripts](https://github.com/libra/libra/blob/master/language/stdlib/transaction_scripts/doc/transaction_script_documentation.md).
+More on these transaction scripts (their specifications, information about error-codes and emitted events) can be found in [Overview of Diem Transaction Scripts](https://github.com/diem/diem/blob/master/language/stdlib/transaction_scripts/doc/transaction_script_documentation.md).
 
 # Workflows
 

@@ -25,7 +25,7 @@ important properties held in a currency's metadata is whether it is a Single Cur
 multiple other currencies registered on-chain, e.g., ≋XDX.
 
 On-chain, all assets with a value of `x` in a registered currency `C` are held as a "Diem Coin" resource
-of type [`Diem<C>`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-diem)
+of type [`Diem<C>`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-diem)
 with its `value` field set to `x`. Every Diem Coin has a certain set of
 operations that may be performed on it and other coins of the same
 currency[[2]](#general_currency_operations), and every registered currency possesses a
@@ -45,7 +45,7 @@ and assets in a registered currency (or "Diem Coins").
 The requirements for a currency in Diem are as follows:
 1. *Privileged Registration*: The registration of a Move type as a currency
    on-chain is restricted to accounts with the
-   [`RegisterNewCurrency` permission](https://github.com/libra/lip/blob/master/lips/lip-2.md#permissions).
+   [`RegisterNewCurrency` permission](https://github.com/diem/dip/blob/master/lips/lip-2.md#permissions).
 2. *Privileged minting and burning*: Every on-chain currency must have a way
    for new coins to minted and burned from the system. Additionally, minting
    and burning of Diem Coins of any currency type must be a privileged action
@@ -84,8 +84,8 @@ be used for any currency that ensures that these key properties are kept.
 Every currency on-chain is represented as a Move-defined type `C`. This type can be
 either a resource or struct type. In order for the system to view a type `C` as
 representing a currency on-chain, it must first be _registered_ as such. This may be done by
-calling one of either [`Diem::register_SCS_currency`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency)
-or [`Diem::register_currency`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency)
+calling one of either [`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency)
+or [`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency)
 instantiated with the type `C` that is to be registered as a new SCS or synthetic currency respectively.
 
 ## <a name="metadata_spec">Required information for registration of a currency and metadata</a>
@@ -107,11 +107,11 @@ provided at the time of registration:
 | can_mint                      | bool                                   | true         | Whether more value in this currency can be added to circulation                                                                                  |
 
 All of the metadata about a specific currency `C` is held as part of the
-[`CurrencyInfo<C>`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-currencyinfo)
-resource that is uniquely published for each registered currency type `C` under the [Diem Root](https://github.com/libra/lip/blob/master/lips/lip-2.md#roles) (see also the implementation of
-[`Diem::register_SCS_currency`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency)
+[`CurrencyInfo<C>`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-currencyinfo)
+resource that is uniquely published for each registered currency type `C` under the [Diem Root](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles) (see also the implementation of
+[`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency)
 and
-[`Diem::register_currency`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency))
+[`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency))
 account address. We now describe each of these data and their purpose.
 
 ### <a name="to_xdx_exchange_rate">`to_xdx_exchange_rate`</a>
@@ -129,8 +129,8 @@ approximate ≋XDX value so that their values may be compared. In particular:
 
 #### Mutability
 The initial exchange rate to ≋XDX must be provided at the time of registration. The
-exchange rate may be [updated](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-update_xdx_exchange_rate)
-by an account with the [Treasury Compliance role](https://github.com/libra/lip/blob/master/lips/lip-2.md#roles) to correspond to
+exchange rate may be [updated](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-update_xdx_exchange_rate)
+by an account with the [Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles) to correspond to
 fluctuations in the real-time exchange rate between the specified currency `C` and
 ≋XDX. Note that this is not meant to be an exact exchange rate and _should not_ be used for
 determining exchange rates for value transfer between different currencies.
@@ -138,9 +138,9 @@ determining exchange rates for value transfer between different currencies.
 ### `is_synthetic`
 
 This defines whether the given currency is synthetic or an SCS. In the case of
-[`Diem::register_SCS_currency`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency)
+[`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency)
 the function sets this to `false`. For
-[`Diem::register_currency`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency)
+[`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency)
 this must be provided to the function.
 
 #### Mutability
@@ -207,27 +207,27 @@ value of this field.
 #### Mutability
 
 This field is only updatable through the
-[`Diem::update_minting_ability`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-update_minting_ability)
-function, and must be done by an account with the [Treasury Compliance role](https://github.com/libra/lip/blob/master/lips/lip-2.md#roles).
+[`Diem::update_minting_ability`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-update_minting_ability)
+function, and must be done by an account with the [Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles).
 
 ## Capabilities Created at Registration
 
 Whenever a type `C` is registered as a currency, a
-[`MintCapability<C>`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-mintcapability)
+[`MintCapability<C>`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-mintcapability)
 and
-[`BurnCapability<C>`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-burncapability),
+[`BurnCapability<C>`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-burncapability),
 are created. If the currency is registered using the
-[`Diem::register_SCS_currency`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency)
+[`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency)
 function, both of these capabilities are stored under the Treasury Compliance account at address
-`0xB1E55ED`. In the case that the [`Diem::register_currency`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency)
+`0xB1E55ED`. In the case that the [`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency)
 is used to register the currency both of these capabilities are returned to the caller, which may store them in other structures.
-The `MintCapability` and `BurnCapability` for each currency are [unique](https://github.com/libra/lip/blob/master/lips/lip-2.md#permissions); after
+The `MintCapability` and `BurnCapability` for each currency are [unique](https://github.com/diem/dip/blob/master/lips/lip-2.md#permissions); after
 registration of a currency no future mint and burn capabilities for the currency may be created.
 
 ## On-chain list of registered currencies
 
 Whenever a currency is registered on chain, its currency code is added to the
-[`RegisteredCurrencies` on-chain config](https://github.com/libra/lip/blob/master/lips/lip-6.md#registered-currencies).
+[`RegisteredCurrencies` on-chain config](https://github.com/diem/dip/blob/master/lips/lip-6.md#registered-currencies).
 The list of currency codes registered on-chain is always a set, and attempting to
 register a currency with an already taken currency code will fail. There are some
 [restrictions on the format and length of currency codes](#operational_things)
@@ -278,9 +278,9 @@ responsible for burning the coins.
 To facilitate the burning process and prevent the re-introduction of Diem Coins into circulation whose backing
 assets have already been (or are in the process of being) transferred off-chain, any Diem Coins that are to be removed
 must first be placed into an association-controlled escrow, or
-[Preburn resource](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-preburn).
+[Preburn resource](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-preburn).
 Once Diem Coins have been [placed into such a preburn resource](#pre_burning) an account with the appropriate
-[`BurnCapability`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-burncapability)
+[`BurnCapability`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-burncapability)
 for the currency of the coins may then [remove them from the system](#burning) once the appropriate
 off-chain actions (if any) have been performed.
 
@@ -306,14 +306,14 @@ public fun mint<C>(value: u64): Diem<C>
 ```
 
 The `mint` function may only be called by an account with the
-[Treasury Compliance role](https://github.com/libra/lip/blob/master/lips/lip-2.md#roles)
+[Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles)
 that has a `MintCapability<C>` resource published under it. Recall that only
 one mint capability resource is created for a currency when it is
 registered.
 
 #### Reference Implementations
-1. [`Diem::mint_with_capability`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-mint_with_capability)
-2. [`Diem::mint`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-mint)
+1. [`Diem::mint_with_capability`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-mint_with_capability)
+2. [`Diem::mint`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-mint)
 
 ### <a name="pre_burning">Pre-burning</a>
 
@@ -322,7 +322,7 @@ The movement of coins to a specific preburn area will emit [events](#currency_ev
 that may be used to initiate the off-chain transfer of backing funds for those coins.
 
 Funds may be moved to a preburn area only by an account that has access to a
-[Preburn capability](https://github.com/libra/lip/blob/master/lips/lip-2.md#permissions)
+[Preburn capability](https://github.com/diem/dip/blob/master/lips/lip-2.md#permissions)
 resource for the currency in question. This action may be performed by calling either
 
 ```rust
@@ -338,7 +338,7 @@ public fun preburn_to<C>(account: &signer, coin: Diem<C>)
 where `account` has a `Preburn<C>` resource published under it.
 
 A `Preburn` resource can only be created by an account with the
-[Treasury Compliance role](https://github.com/libra/lip/blob/master/lips/lip-2.md#roles)
+[Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles)
 by calling either the `create_preburn` function
 
 ```rust
@@ -355,16 +355,16 @@ public fun publish_preburn_to_account<C>(account: &signer, tc_account: &signer)
 ```
 
 The `account` must have the
-[Designated Dealer role](https://github.com/libra/lip/blob/master/lips/lip-2.md#roles)
+[Designated Dealer role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles)
 and the `tc_account` account must have the
-[Treasury Compliance role](https://github.com/libra/lip/blob/master/lips/lip-2.md#roles).
+[Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles).
 
 
 #### Reference Implementations
-1. [`Diem::create_preburn`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-create_preburn)
-2. [`Diem::publish_preburn_to_account`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-publish_preburn_to_account)
-3. [`Diem::preburn_to`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-preburn_to)
-4. [`Diem::preburn_with_resource`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-preburn_with_resource)
+1. [`Diem::create_preburn`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-create_preburn)
+2. [`Diem::publish_preburn_to_account`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-publish_preburn_to_account)
+3. [`Diem::preburn_to`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-preburn_to)
+4. [`Diem::preburn_with_resource`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-preburn_with_resource)
 
 ### <a name="burning">Burning</a>
 
@@ -374,7 +374,7 @@ possible outcomes from this.
 
 1. If the off-chain transfer of the backing funds for the coins in the preburn resource
       held under `preburn_address` has completed successfully, an account with
-      the [Treasury Compliance role](https://github.com/libra/lip/blob/master/lips/lip-2.md#roles)
+      the [Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles)
       must then remove or "burn" these funds by calling either the
       ```rust
         public fun burn<C>(tc_account: &signer, preburn_address: address)
@@ -386,7 +386,7 @@ possible outcomes from this.
       function, and passing in a `BurnCapability` resource to prove authority to burn coins in that currency.
 
 2. If the off-chain transfer was not able to be completed successfully an
-      `account` with the [Treasury Compliance role](https://github.com/libra/lip/blob/master/lips/lip-2.md#roles)
+      `account` with the [Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles)
       may remove the funds in the `C` currency from the preburn area under
       `preburn_address`, and re-introduce them to circulation by using
       ```rust
@@ -398,10 +398,10 @@ possible outcomes from this.
       ```
 
 #### Reference Implementations
-1. [`Diem::burn`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-cancel_burn)
-2. [`Diem::burn_with_capability`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-cancel_burn_with_capability)
-3. [`Diem::cancel_burn`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-cancel_burn)
-4. [`Diem::cancel_burn_with_capability`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-cancel_burn_with_capability)
+1. [`Diem::burn`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-cancel_burn)
+2. [`Diem::burn_with_capability`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-cancel_burn_with_capability)
+3. [`Diem::cancel_burn`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-cancel_burn)
+4. [`Diem::cancel_burn_with_capability`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-cancel_burn_with_capability)
 
 ---
 # <a name="general_currency_operations">General Currency Operations</a>
@@ -411,7 +411,7 @@ possible outcomes from this.
 
 Any amount of value in a currency `C` in circulation on-chain will always be held in a value
 of type `Diem<C>`. The
-[`Diem`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md)
+[`Diem`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md)
 modules defines the set of operations that may be performed on values of this type. These
 operations are as follows, and may be called by anyone:
 
@@ -458,14 +458,14 @@ operations are as follows, and may be called by anyone:
       ```
 
 #### Reference Implementations
-* [`Diem::zero`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-zero)
-* [`Diem::value`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-value)
-* [`Diem::split`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-split)
-* [`Diem::withdraw`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-withdraw)
-* [`Diem::withdraw_all`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-withdraw_all)
-* [`Diem::join`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-join)
-* [`Diem::deposit`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-deposit)
-* [`Diem::destroy_zero`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-destroy_zero)
+* [`Diem::zero`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-zero)
+* [`Diem::value`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-value)
+* [`Diem::split`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-split)
+* [`Diem::withdraw`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-withdraw)
+* [`Diem::withdraw_all`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-withdraw_all)
+* [`Diem::join`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-join)
+* [`Diem::deposit`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-deposit)
+* [`Diem::destroy_zero`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-destroy_zero)
 
 ## <a name="currency_ops">Currency Operations</a>
 
@@ -510,30 +510,30 @@ and metadata](#metadata_spec)). They can be divided in to "getters" (non-mutativ
     ```
 
 #### Reference Implementations
-* [`Diem::preburn_value`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-preburn_value)
-* [`Diem::market_cap`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-market_cap)
-* [`Diem::approx_xdx_for_value`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-approx_xdx_for_value)
-* [`Diem::approx_xdx_for_coin`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-approx_xdx_for_coin)
-* [`Diem::scaling_factor`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-scaling_factor)
-* [`Diem::fractional_part`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-fractional_part)
-* [`Diem::currency_code`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-currency_code)
-* [`Diem::xdx_exchange_rate`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-xdx_exchange_rate)
+* [`Diem::preburn_value`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-preburn_value)
+* [`Diem::market_cap`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-market_cap)
+* [`Diem::approx_xdx_for_value`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-approx_xdx_for_value)
+* [`Diem::approx_xdx_for_coin`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-approx_xdx_for_coin)
+* [`Diem::scaling_factor`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-scaling_factor)
+* [`Diem::fractional_part`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-fractional_part)
+* [`Diem::currency_code`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-currency_code)
+* [`Diem::xdx_exchange_rate`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-xdx_exchange_rate)
 
 ### Mutative ("setters")
 1. Update the [`to_xdx_exchange_rate`](#to_xdx_exchange_rate) metadata field for `C` to `new_to_xdx_exchange_rate`.
-  Must be called by an `account` with a [Treasury Compliance role](https://github.com/libra/lip/blob/master/lips/lip-2.md#roles).
+  Must be called by an `account` with a [Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles).
     ```rust
         Diem::update_xdx_exchange_rate<C>(account: &signer, new_to_xdx_exchange_rate: FixedPoint32)
     ```
 2. Set the [`can_mint`](#can_mint) metadata field for `C` to the value of `can_mint`.
-  Must be called by an `account` with a [Treasury Compliance role](https://github.com/libra/lip/blob/master/lips/lip-2.md#roles).
+  Must be called by an `account` with a [Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles).
     ```rust
         Diem::update_minting_ability<C>(account: &signer, can_mint: bool)
     ```
 
 #### Reference Implementations
-* [`Diem::update_xdx_exchange_rate`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-update_xdx_exchange_rate)
-* [`Diem::update_minting_ability`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-update_minting_ability)
+* [`Diem::update_xdx_exchange_rate`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-update_xdx_exchange_rate)
+* [`Diem::update_minting_ability`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-update_minting_ability)
 
 ### Predicates
 1. Return if the type `C` represents a registered currency on-chain.
@@ -559,11 +559,11 @@ and metadata](#metadata_spec)). They can be divided in to "getters" (non-mutativ
 
 #### Reference Implementations
 
-* [`Diem::is_currency`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-is_currency)
-    - Related assertion [`Diem::assert_is_currency`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-assert_is_currency)
-* [`Diem::is_SCS_currency`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-is_SCS_currency)
-    - Related assertion [`Diem::assert_is_SCS_currency`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-assert_is_SCS_currency)
-* [`Diem::is_synthetic_currency`](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-is_synthetic_currency)
+* [`Diem::is_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-is_currency)
+    - Related assertion [`Diem::assert_is_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-assert_is_currency)
+* [`Diem::is_SCS_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-is_SCS_currency)
+    - Related assertion [`Diem::assert_is_SCS_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-assert_is_SCS_currency)
+* [`Diem::is_synthetic_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-is_synthetic_currency)
 
 ---
 # <a name="currency_events">Currency-Related Events</a>
@@ -575,11 +575,11 @@ the metadata for a currency is changed. These events are as follows:
 
 | Name                          | Type                                                                                                                                                     | Description                                                                                                 |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| mint_events                   | EventHandle\<[MintEvent](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#struct-mintevent)\>                             | Event emitted whenever SCSs are created on-chain                                                            |
-| burn_events                   | EventHandle\<[BurnEvent](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#struct-burnevent)\>                             | Event emitted whenever SCSs are removed on-chain                                                            |
-| preburn_events                | EventHandle\<[PreburnEvent](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#struct-preburnevent)\>                       | Event emitted whenever SCSs are moved to a preburn area                                                     |
-| cancel_burn_events            | EventHandle\<[CancelBurnEvent](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#struct-cancelburnevent)\>                 | Event emitted whenever SCSs in a preburn area are moved back to circulation                                 |
-| exchange_rate_update_events   | EventHandle\<[ExchangeRateUpdateEvent](https://github.com/libra/diem/blob/master/language/stdlib/modules/doc/Diem.md#struct-exchangerateupdateevent)\> | Event emitted whenever the `to_xdx_exchange_rate` metadata field is updated (for all registered currencies) |
+| mint_events                   | EventHandle\<[MintEvent](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#struct-mintevent)\>                             | Event emitted whenever SCSs are created on-chain                                                            |
+| burn_events                   | EventHandle\<[BurnEvent](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#struct-burnevent)\>                             | Event emitted whenever SCSs are removed on-chain                                                            |
+| preburn_events                | EventHandle\<[PreburnEvent](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#struct-preburnevent)\>                       | Event emitted whenever SCSs are moved to a preburn area                                                     |
+| cancel_burn_events            | EventHandle\<[CancelBurnEvent](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#struct-cancelburnevent)\>                 | Event emitted whenever SCSs in a preburn area are moved back to circulation                                 |
+| exchange_rate_update_events   | EventHandle\<[ExchangeRateUpdateEvent](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#struct-exchangerateupdateevent)\> | Event emitted whenever the `to_xdx_exchange_rate` metadata field is updated (for all registered currencies) |
 
 With each of these events there are certain properties with respect to the
 state of the blockchain that should be kept. These are:
