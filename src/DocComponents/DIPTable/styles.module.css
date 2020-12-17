@@ -1,0 +1,68 @@
+@value mobile-breakpoint-max-query from '~libra-docusaurus-components/src/variables.module.css';
+
+.table {
+  border-collapse: separate;
+  display: table;
+  font-size: 15px;
+  text-align: left;
+  margin-top: 0px;
+  margin-bottom: 60px;
+}
+
+.table tr:first-child th:first-child {
+  border-top-left-radius: 6px;
+}
+
+.table tr:first-child th:last-child {
+  border-top-right-radius: 6px;
+}
+
+.table tr:last-child td:first-child {
+  border-bottom-left-radius: 6px;
+}
+
+.table tr:last-child td:last-child {
+  border-bottom-right-radius: 6px;
+}
+
+.table th:not(:first-child) {
+  border-left: none
+}
+
+.table th:not(:last-child) {
+  border-right: none
+}
+
+.title {
+  width: 55%;
+}
+
+.table a {
+  color: #5092E6;
+}
+
+@media mobile-breakpoint-max-query {
+  .table th:first-child {
+    font-size: 0px; /* Cut out the header in order to make more space for title */
+    max-width: 40px;
+    word-break: inherit;
+  }
+
+  .table td {
+    word-break: break-all;
+  }
+}
+
+html:not[data-theme="dark"].table thead th {
+  background-color: #E3E8EE;
+  color: #737D8F;
+}
+
+html:not[data-theme="dark"].table tbody {
+  color: black;
+}
+
+html:not[data-theme="dark"].table tbody:nth(odd) {
+  background-color: #F7FAFC;
+}
+

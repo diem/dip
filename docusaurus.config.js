@@ -2,33 +2,34 @@ const darkCodeTheme = require("prism-react-renderer/themes/palenight");
 const lightCodeTheme = require("prism-react-renderer/themes/github");
 
 module.exports = {
-  title: 'Libra Improvement Proposals',
-  tagline: 'Libra Improvement Proposals',
-  url: 'https://lip.libra.org',
+  title: 'Diem Improvement Proposals',
+  tagline: 'Diem Improvement Proposals',
+  url: 'https://dip.diem.com',
   baseUrl: '/',
   favicon: 'img/favicon.ico',
-  organizationName: 'libra',
-  projectName: 'lip',
+  organizationName: 'diem',
+  projectName: 'dip',
   themeConfig: {
     algolia: {
-      apiKey: 'cf22f07a9b6b22b6b595b439878876f8',
-      indexName: 'libra-lips',
+      apiKey: '4358e9ae3fbcd8b296ea863bd8cd9456',
+      indexName: 'diem_improvement_proposals',
     },
     prism: {
       darkTheme: darkCodeTheme,
       theme: lightCodeTheme,
     },
     sidebarCollapsible: false,
-    siteID: 'lips',
+    siteID: 'dips',
     navbar: {
       title: 'Governance',
     },
   },
   plugins: [
     require.resolve('./plugins/alias/src'),
-    require.resolve('./plugins/lip-metadata/src'),
+    require.resolve('./plugins/dip-metadata/src'),
     require.resolve('./plugins/react-axe-ada-monitoring'),
-    require.resolve('./plugins/new-site-redirects'),
+    require.resolve('./plugins/seo-tags'),
+    require.resolve('libra-docusaurus-components/src/plugin-segment'),
   ],
   presets: [
     [
@@ -37,7 +38,7 @@ module.exports = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl:
-            'https://github.com/libra/lip/edit/master/',
+            'https://github.com/libra/dip/edit/master/',
           path: 'all-docs__GENERATED',
           routeBasePath: '',
         },
@@ -47,4 +48,12 @@ module.exports = {
       },
     ],
   ],
+  customFields: {
+    segment: {
+      productionKey: 'g7EJ7IBwqVHMlcE7LsibZgNyMVyZHRXU',
+      stagingKey: '4o1O3LLd7EvFJ2Cp3CbFfXk3yy8LeT5t',
+    },
+    trackingCookieConsent: 'diem-dips-cookies-allowed',
+    trackingCookieExpiration: 90, // in days
+  },
 };

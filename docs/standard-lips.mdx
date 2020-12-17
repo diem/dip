@@ -1,51 +1,51 @@
 ---
-id: standard-lips
-title: Standard LIPs
+id: standard-dips
+title: Standard DIPs
 title_toc_label: Intro
 ---
 
-import {LIP_TYPE, LIP_STATUS} from '../src/enums';
-import LIPTable from '../src/DocComponents/LIPTable';
+import {DIP_TYPE, DIP_STATUS} from '../src/enums';
+import DIPTable from '../src/DocComponents/DIPTable';
 const types = [
-  LIP_TYPE.CORE,
-  LIP_TYPE.NETWORKING,
-  LIP_TYPE.INTERFACE,
-  LIP_TYPE.APPLICATION,
+  DIP_TYPE.CORE,
+  DIP_TYPE.NETWORKING,
+  DIP_TYPE.INTERFACE,
+  DIP_TYPE.APPLICATION,
 ];
 
-<p className="description">Standard LIPs describe any change or addition that affects the Libra payment network, such as a change to the blockchain core, a change to transaction processing, proposed application standards or conventions, or any change or addition that affects the interoperability of applications built on the Libra Blockchain. There are four subcategories: core, networking, interface, or application.</p>
+<p className="description">Standard DIPs describe any change or addition that affects the Diem payment network, such as a change to the blockchain core, a change to transaction processing, proposed application standards or conventions, or any change or addition that affects the interoperability of applications built on the Diem Blockchain. There are four subcategories: core, networking, interface, or application.</p>
 
 ## Draft
 
-<LIPTable 
-  status={LIP_STATUS.DRAFT} 
-  types={types} 
+<DIPTable
+  status={DIP_STATUS.DRAFT}
+  types={types}
 />
 
 ## Last Call
 
-<LIPTable 
-  status={LIP_STATUS.LAST_CALL} 
-  types={types} 
+<DIPTable
+  status={DIP_STATUS.LAST_CALL}
+  types={types}
 />
 
 ## Accepted
 
-<LIPTable 
-  status={LIP_STATUS.ACCEPTED} 
-  types={types} 
+<DIPTable
+  status={DIP_STATUS.ACCEPTED}
+  types={types}
 />
 
 ## Final
 
-<LIPTable 
-  status={LIP_STATUS.FINAL} 
-  types={types} 
+<DIPTable
+  status={DIP_STATUS.FINAL}
+  types={types}
 />
 
 ## Rejected
 
-<LIPTable 
-  status={LIP_STATUS.REJECTED} 
-  types={types} 
+<DIPTable
+  status={DIP_STATUS.REJECTED}
+  types={types}
 />
