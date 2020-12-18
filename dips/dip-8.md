@@ -1,6 +1,6 @@
 ---
 dip: 8
-title: Off-chain API Version 1 Extensions
+title: Off-chain API Version 2 Extensions
 authors: Kevin Hurley (@kphfb)
 status: Draft
 type: Informational
@@ -15,14 +15,14 @@ An extension of the Off-Chain protocol to provide support for more advanced merc
 # Abstract / Motivation
 ---
 
-Version 0 of the Off-Chain Protocol is described in [DIP 1](https://dip.diem.com/dip-1/).  Version 1 as described here is an extension of the Off-Chain Protocol and adds features to support more advanced functionality - particularly targeted to support merchant use-cases.  This is inclusive of pull payments, recurring payments, and auth/capture flows.
+Versions 1/2 of the Off-Chain Protocol are described in [DIP 1](https://dip.diem.com/dip-1/).  Version 3 as described here is an extension of the Off-Chain Protocol and adds features to support more advanced functionality - particularly targeted to support merchant use-cases.  This is inclusive of pull payments, recurring payments, and auth/capture flows.
 
 ---
 # Specification
 ---
 
 # Fund Pull Pre-Approval
-### *VERSION SUPPORT: Supported only in version 1 of off-chain APIs*
+### *VERSION SUPPORT: Supported only in version 3 of off-chain APIs*
 
 Establishes a relationship between sender and recipient where the recipient can then pull funds from the sender without sender approving each transaction.  This allows recipient to bill the sender without sender approving each payment.  This relationship exists between a subaddress on the biller side and a subaddress on the sender side.  After this request is POSTed, the target VASP can use out-of-band methods to determine if this request should be granted.  If the target VASP chooses to allow the relationship to be established, the biller can create a payment object and POST to the billed party’s VASP to request funds.  The “funds_pull_approval_id” object must then match the ID established by this request.
 
@@ -36,10 +36,6 @@ All requests between VASPs are structured as [`CommandRequestObject`s](https://d
     "cid": "88b282d6181129f682be0421d0ee9887",
     "command": {
         "_ObjectType": "FundPullPreApprovalCommand",
-        "_reads": {},
-        "_writes": {
-            "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_5b8403c986f53fe072301fe950d030cb": "88b282d6181129f682be0421d0ee9887"
-        },
         "fund_pull_pre_approval": {
             "address": "lbr1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
             "biller_address": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pg9skzctpv9skzcg9kmwta",
@@ -82,17 +78,11 @@ For a fund pre-approval request, the [command_type](https://dip.diem.com/dip-1/#
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
 | _ObjectType   | str  | Y             | The fixed string `FundPullPreApprovalCommand` |
-| fund_pull_pre_approval| [`FundPullPreApprovalObject`](#fundpullpreapprovalobject) | Y | contains a `FundPullPreApprovalObject` that either creates a new pre-approval or updates an existing pre-approval. Note that strict validity checks apply when updating pre-approvals, that are listed in the section below describing these Objects. An invalid update or initial pre-approval object results in a Command error
-| _reads | JSON Object map |  Y | Must be an Object containing mappings of `reference_id` to latest Version as represented by the `cid` of the latest Command which successfully mutated the Object referenced by the `reference_id`. The value in this field must match a `cid` previously specified by a Command by the `_writes` parameter on a prior Command for this payment Object.  For a fund_pull_pre_approval Command, only zero or one `_reads` values should be specified since fund approvals are only dependent upon at most one prior Version of an Object. A list with any other number of items results in a Command error.  If the list is empty this fund_pull_pre_approval Command defines a new fund_pull_pre_approval. If the list contains one item, then this Command updates the shared [`FundPullPreApprovalObject`](#fundpullpreapprovalobject). |
-| _writes | JSON object map | Y | For a fund_pull_pre_approval Command, the `_writes` field may only be a single key-value pair since a fund_pull_pre_approval Command only operates upon one Object.  This field maps the `reference_id` of the Object being written to its new Version. |
+| fund_pull_pre_approval| [`FundPullPreApprovalObject`](#fundpullpreapprovalobject) | Y | contains a `FundPullPreApprovalObject` that either creates a new pre-approval or updates an existing pre-approval. Note that strict validity checks apply when updating pre-approvals, that are listed in the section below describing these Objects. An invalid update or initial pre-approval object results in a Command error|
 
 ```
 {
     "_ObjectType": "FundPullPreApprovalCommand",
-    "_reads": {},
-    "_writes": {
-        "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_5b8403c986f53fe072301fe950d030cb": "88b282d6181129f682be0421d0ee9887"
-    },
     "fund_pull_pre_approval": {
          FundPullPreApprovalObject(),
     }
@@ -166,12 +156,10 @@ Payment object remains the same as [PaymentObject](https://dip.diem.com/dip-1/#p
 |-------	    |------	|-----------	|-------------	|
 | funds_pre_approval_id | str | N | ID of the funds pre-approval previously created via a [FundPullPreApprovalCommand](#fundpullpreapprovalcommand-object).  Must match the value of "funds_pre_approval_id" in the already-created funds pre-approval.
 
-In addition, the "_reads" field of the PaymentObject must contain the latest version of the FundPullPreApprovalObject.
-
 ---
 
 # Auth/Capture
-### *VERSION SUPPORT: Supported only in version 1 of off-chain APIs*
+### *VERSION SUPPORT: Supported only in version 3 of off-chain APIs*
 
 Authorization allows the placing of holds on funds with the assurance that an amount up to the held amount can be captured at a later time.  An example of this is for delayed fulfillment or pre-authorizing an expected amount to ensure that an amount can be charged after services are rendered.
 
