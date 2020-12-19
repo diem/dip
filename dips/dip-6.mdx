@@ -2,7 +2,7 @@
 dip: 6
 title: Diem Validator Configuration Management
 authors: Valeria Nikolaenko (valerini), David Wolinsky (@davidiw), Dahlia Malkhi (dahliamalkhi)
-status: Last Call
+status: Final
 type: Informational
 created: 07/30/2020
 ---
@@ -10,18 +10,17 @@ created: 07/30/2020
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Summary
-This DIP describes the operation of the proof of authority consensus model that is used to establish consensus about the ledger state of the Diem Blockchain. In a proof of authority consensus model, known participants leverage cryptographical digital signatures to agree upon a set of transactions and their output to advance the blockchain's state. The set of potential entities that can participate in consensus are known as Validator Owners, while the active participants are known as the Validator Set.  The adding and removing of Validator Owners and specifying the current Validator Set is left to the sole discretion of the entity managing DiemRoot account.
+This DIP describes the operation of the proof of authority consensus model that is used to establish consensus about the ledger state of the Diem Blockchain. In a proof of authority consensus model, known participants leverage cryptographical digital signatures to agree upon a set of transactions and their output to advance the blockchain's state. For the Diem Blockchain the set of potential entities that can participate in consensus are known as Validator Owners, while the active participants are known as the Validator Set.  The adding and removing of Validator Owners and specifying the current Validator Set is left to the sole discretion of the entity managing DiemRoot account.
 
 # Background
 Diem Payment Network ("DPN") is a blockchain-backed payment platform and an infrastructure for stablecoins.
 
-The Diem Association ("DA" or the “Association”) is an independent membership organization that is responsible for the DPN technology and the development of the Diem project. The DA is governed by the Association Council, which is comprised of one representative per Association member. The Association Council manages the technology roadmap of the platform and oversees and maintains the Diem Improvement Proposal and Diem Upgrade Process, often through subcommittees of the Association Council such as the Technical Steering Committee (the “TSC”) and the Association Board.
-
+The Diem Association ("DA" or the “Association”) is an independent membership organization that is responsible for the DPN technology and the development of the Diem project.
 Diem Networks ("DN"), a wholly owned subsidiary of DA is in the process of applying for a license as a payment system operator from the Swiss Financial Market Supervisory Authority ("FINMA").  Once granted, DN will be responsible for ensuring that DPN operates in compliance with the payment system license from FINMA.
 
 Validator Owners are all members of the Association.
 
-DN and DA will jointly manage the DiemRoot account.  The DiemRoot account determines the composition of the Validator Set at any given time. Reasons for changing the Validator Set include new members joining the Association or existing members leaving the Association, possible suspension of Validator Owners for violating their Validator Agreement.
+DN and DA will jointly manage the DiemRoot account.  The DiemRoot account determines the composition of the Validator Set at any given time. Reasons for changing the Validator Set include new members joining the Association or existing members leaving the Association, or possible suspension of Validator Owners for breaching their obligations.
 
 # Framework Guide
 ## Terminology
@@ -30,7 +29,7 @@ DN and DA will jointly manage the DiemRoot account.  The DiemRoot account determ
 * *Consensus public key* verifies the digital signature authenticating the sender of a consensus message in the Diem consensus protocol.
 * *Network addresses* define endpoints and cryptographic credentials for establishing secure connections with other Validator Nodes as well as FullNodes and other participants.
 * *Validator Owner* is the entity responsible for the operation of a Validator Node and is a member of the Diem Association. Each Validator Owner has an account on the Diem Blockchain that stores the Validator Config Move resource (see [Move Tutorial](https://developers.diem.com/docs/technical-papers/move-paper/)).
-* *Validator Operator* is the entity, approved by DN, that operates a Validator Node. A Validator Operator could be run by a Validator Owner, or a Validator Operator could be a separate entity acting as an operator on behalf of one or more Validator Owners. A Validator Operator may run multiple Validator Nodes. The Validator Operator for a Validator Owner has permission to modify the Validator Config stored in the Validator Owner account and update its copy in the Validator Set.
+* *Validator Operator* is the entity, approved by DN, that operates a Validator Node. A Validator Operator could be run by a Validator Owner, or a Validator Operator could be a separate entity acting as an operator on behalf of one or more Validator Owners. A Validator Operator may run multiple Validator Nodes up to a maximum established by DN. The Validator Operator for a Validator Owner has permission to modify the Validator Config stored in the Validator Owner account and update its copy in the Validator Set.
 * *Validator Set* is an on-chain Move resource represented by a vector containing the active set of Validator Owners. There exists a one-to-one relationship between a Validator Owner in the Validator Set and a Validator Node. The entries within the Validator Set consist of the Validator Owner's address as well as a copy of its Validator Config. Each Validator Owner address must appear only once in the Validator Set. Validator Nodes run according to the configuration defined in the Validator Set. Validator Set changes come in two ways: a change in the set of Validator Owners or a change in the configuration of some Validator Owners. Both cases result in a Reconfiguration.
 * *Reconfiguration* is an on-chain configuration change. Reconfigurations are separated by epochs signified by a NewEpochEvent. If a transaction causes a Reconfiguration, that transaction is the last transaction within the current epoch. Subsequent transactions will be executed in the new epoch with the configuration change that triggered the Reconfiguration.
 * *DiemRoot* is the sole account capable of adding or removing Validator Owner and Validator Operator accounts and specifying the current Validator Owners in the Validator Set. It may also submit an AdminScript.
@@ -43,7 +42,7 @@ For the aforementioned roles, Diem uses a variant of role-based access control a
 ## Move modules
 Four move modules are involved in the validator configuration management
 * [`ValidatorConfig`](https://github.com/diem/diem/blob/master/language/stdlib/modules/ValidatorConfig.move): defines local consensus configuration for a Validator Node of a Validator Owner.
-* [`ValidatorOperatorConfig`](https://github.com/diem/diem/blob/master/language/stdlib/modules/ValidatorOperatorConfig.move): defines the configuration of the Validator Operator (it only contains a human-readable name).
+* [`ValidatorOperatorConfig`](https://github.com/diem/diem/blob/master/language/stdlib/modules/ValidatorOperatorConfig.move): defines the configuration of the Validator Operator (it only contains a human-readable name identifying the Validator Operator).
 * [`DiemSystem`](https://github.com/diem/diem/blob/master/language/stdlib/modules/DiemSystem.move): publishes the Validator Set as a global on-chain config and enforces the rules for modifying it.
 * [`DiemConfig`](https://github.com/diem/diem/blob/master/language/stdlib/modules/DiemConfig.move): a generic module that manages all of the global on-chain configurations, including the Validator Set configurations.
 
@@ -133,4 +132,4 @@ If a Validator Owner is in the Validator Set, the `operator_account` may update 
 ## Validator Owner to be added/removed from the Validator Set
 A Validator Node is consensus-ready once the Validator Operator sets the config and the node is operational. At which point, AOS can submit a transaction from the DiemRoot account: `add_validator_and_reconfigure`. Once this transaction executes, it triggers the Reconfiguration, other Validator Operators connect to the Validator Node and the Validator Operator starts participating in the protocol. Note that the size of the Validator Set and hence the size of the quorum for consensus decisions increases.
 
-Under certain circumstances, such as, members leaving the Association or a Validator Owner breaching its Validator Agreement, the DiemRoot may remove or suspend a Validator Owner from the Validator Set. It does so by calling the `remove_validator_and_reconfigure` transaction script, which triggers the Reconfiguration. Note, that the size of the Validator Set and hence the size of the consensus quorum decreases.
+Under certain circumstances, such as, members leaving the Association or a Validator Owner violating its obligations, the DiemRoot may remove or suspend a Validator Owner from the Validator Set. It does so by calling the `remove_validator_and_reconfigure` transaction script, which triggers the Reconfiguration. Note, that the size of the Validator Set and hence the size of the consensus quorum decreases.
