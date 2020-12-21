@@ -5,13 +5,13 @@ The Libra LIP website is built using [Docusaurus 2](https://v2.docusaurus.io/).
 ### Clone this repo
 
 ```
-git clone git@github.com:libra/lip.git
+git clone git@github.com:diem/dip.git
 ```
 
 or 
 
 ```
-git clone https://github.com/libra/lip.git
+git clone https://github.com/diem/dip.git
 ```
 
 ### Install website dependencies
