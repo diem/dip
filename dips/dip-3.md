@@ -2,7 +2,8 @@
 dip: 3
 title: Diem Upgrade Management
 authors: Zekun Li (@zekun000)
-status: Draft
+dip manager: Avery Ching (aching)
+status: Last Call
 type: Informational
 created: 06/09/2020
 ---
