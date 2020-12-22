@@ -37,7 +37,7 @@ Even though WriteSet transactions prescribe an arbitrary state change, they are 
 ### Genesis transactions
 Genesis transactions can be either normal or WriteSet transactions without the typical corresponding signatures. As the name suggests, the process of applying such a transaction is similar to how the very first genesis transaction works. The genesis transaction applies on top of a specific snapshot of a Diem blockchain (might be empty). DN is responsible for picking the appropriate snapshot and building the genesis transactions. Users of Diem, including validators, use the genesis transaction to authenticate the blockchain. If a validator fails to acquire the correct genesis transaction, it will vote on an irrelevant blockchain, but not otherwise impact the system. If a user of the system such as a full node or blockchain observer acquires the incorrect genesis transaction, they will see an incorrect state.
 
-Note that, after DPN launches, DN would use genesis transactions as a last resort for extremely unlikely catastrophic scenarios such as losing more than a third of the validators.
+Note that, after DPN launches, DN could use genesis transactions as a last resort for extremely unlikely catastrophic scenarios such as losing more than a third of the validators.
 
 The decision flow chart below summarizes the building blocks and how they will be used.
 
