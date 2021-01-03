@@ -42,7 +42,7 @@ Note that, after DPN launches, DN could use genesis transactions as a last resor
 
 The decision flow chart below summarizes the building blocks and how they will be used.
 
-![Decision flow](../static/img/DIP-3-decision-flow.png)
+<!-- ![Decision flow](../static/img/DIP-3-decision-flow.png) -->
 
 # Case study
 

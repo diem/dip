@@ -2,6 +2,7 @@
 
 .table {
   border-collapse: separate;
+  border-spacing: 0;
   display: table;
   font-size: 15px;
   text-align: left;

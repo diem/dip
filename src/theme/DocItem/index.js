@@ -69,16 +69,6 @@ function DocItem(props) {
   const {siteConfig = {}} = useDocusaurusContext();
   const {url: siteUrl, title: siteTitle} = siteConfig;
   const {content: DocContent} = props;
-  const {metadata} = DocContent;
-  const {
-    description,
-    title,
-    permalink,
-    editUrl,
-    lastUpdatedAt,
-    lastUpdatedBy,
-    version,
-  } = metadata;
   const {
     frontMatter: {
       authors,
@@ -94,11 +84,21 @@ function DocItem(props) {
       title: frontMatterTitle,
       type,
     },
+    metadata,
+    toc,
   } = DocContent;
+  const {
+    description,
+    title,
+    permalink,
+    editUrl,
+    lastUpdatedAt,
+    lastUpdatedBy,
+  } = metadata;
 
   const displayDipTable = dip !== undefined;
   const headings = getHeadings(
-    DocContent.rightToc,
+    toc,
     titleTOCLabel || title,
     displayDipTable,
   );
@@ -147,44 +147,37 @@ function DocItem(props) {
         <div className={classnames(styles.docItemCol)}>
           <div className={styles.docItemContainer}>
             <article>
-                {version && (
-                  <div>
-                    <span className="badge badge--secondary">
-                      Version: {version}
-                    </span>
-                  </div>
+              <header className={styles.header} id={HEADER_ID}>
+                {!hideTitle && (
+                  <Title className={styles.docTitle} id={title}>{title}</Title>
                 )}
-                <header className={styles.header} id={HEADER_ID}>
-                  {!hideTitle && (
-                    <Title className={styles.docTitle} id={title}>{title}</Title>
-                  )}
-                </header>
-                {displayDipTable &&
-                  <div id={METADATA_TABLE_ID}>
-                    <MetadataTable
-                      rows={[
-                        ["DIP", dip],
-                        ["Title", title],
-                        ["Author", Authors],
-                        ["Discussions-to", discussionsTo, discussionsTo],
-                        ["Status", toTitleCase(status)],
-                        ["Type", toTitleCase(type)],
-                        ["Created", created],
-                      ]}
-                    />
-                  </div>
-                }
-                <div className="markdown">
-                  <DocContent />
+              </header>
+              {displayDipTable &&
+                <div id={METADATA_TABLE_ID}>
+                  <MetadataTable
+                    rows={[
+                      ["DIP", dip],
+                      ["Title", title],
+                      ["Author", Authors],
+                      ["Discussions-to", discussionsTo, discussionsTo],
+                      ["Status", toTitleCase(status)],
+                      ["Type", toTitleCase(type)],
+                      ["Created", created],
+                    ]}
+                  />
                 </div>
-                <div className="margin-bottom--lg margin-top--xl">
-                  <div className={styles.copyright}>
-                    Copyright Notice: This documentation is made available
-                    under the Creative Commons Attribution 4.0 International
-                    (CC BY 4.0) license (available at
-                      <a href="https://creativecommons.org/licenses/by/4.0/" target="blank"> https://creativecommons.org/licenses/by/4.0/</a>).
-                  </div>
+              }
+              <div className="markdown">
+                <DocContent />
+              </div>
+              <div className="margin-bottom--lg margin-top--xl">
+                <div className={styles.copyright}>
+                  Copyright Notice: This documentation is made available
+                  under the Creative Commons Attribution 4.0 International
+                  (CC BY 4.0) license (available at
+                    <a href="https://creativecommons.org/licenses/by/4.0/" target="blank"> https://creativecommons.org/licenses/by/4.0/</a>).
                 </div>
+              </div>
             </article>
           </div>
         </div>

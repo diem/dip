@@ -1,9 +1,12 @@
 const darkCodeTheme = require("prism-react-renderer/themes/palenight");
 const lightCodeTheme = require("prism-react-renderer/themes/github");
+const objectAssignDeep = require('object-assign-deep');
+const universalConfig = require('libra-docusaurus-components/src/universal-config');
 
-module.exports = {
+module.exports = objectAssignDeep(universalConfig, {
   title: 'Diem Improvement Proposals',
   tagline: 'Diem Improvement Proposals',
+  onBrokenLinks: 'ignore',
   url: 'https://dip.diem.com',
   baseUrl: '/',
   favicon: 'img/favicon.ico',
@@ -20,9 +23,6 @@ module.exports = {
     },
     sidebarCollapsible: false,
     siteID: 'dips',
-    navbar: {
-      title: 'Governance',
-    },
   },
   plugins: [
     require.resolve('./plugins/alias/src'),
@@ -33,14 +33,14 @@ module.exports = {
   ],
   presets: [
     [
-      require.resolve('./temp-preset'),
+      '@docusaurus/preset-classic',
       {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl:
             'https://github.com/diem/dip/edit/master/',
           path: 'all-docs__GENERATED',
-          routeBasePath: '',
+          routeBasePath: '/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -49,6 +49,9 @@ module.exports = {
     ],
   ],
   customFields: {
+    navbar: {
+      title: 'Governance',
+    },
     segment: {
       productionKey: 'g7EJ7IBwqVHMlcE7LsibZgNyMVyZHRXU',
       stagingKey: '4o1O3LLd7EvFJ2Cp3CbFfXk3yy8LeT5t',
@@ -56,4 +59,4 @@ module.exports = {
     trackingCookieConsent: 'diem-dips-cookies-allowed',
     trackingCookieExpiration: 90, // in days
   },
-};
+});

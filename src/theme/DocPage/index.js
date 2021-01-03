@@ -16,14 +16,15 @@ import styles from './styles.module.css';
 const MDXComponents = Object.assign(ThemeComponents, DocComponents);
 
 function DocPage(props) {
-  const {route: baseRoute, docsMetadata, location} = props;
+  const {route: baseRoute, versionMetadata, location} = props;
   // case-sensitive route such as it is defined in the sidebar
   const currentRoute =
     baseRoute.routes.find(route => {
       return matchPath(location.pathname, route);
     }) || {};
-  const {permalinkToSidebar, docsSidebars, version} = docsMetadata;
-  const sidebar = permalinkToSidebar[currentRoute.path] || 'main';
+  const {permalinkToSidebar, docsSidebars, version} = versionMetadata;
+  const sidebarName = permalinkToSidebar[currentRoute.path] || 'main';
+  const sidebar = docsSidebars[sidebarName];
   const {
     siteConfig: {themeConfig = {}} = {},
     isClient,

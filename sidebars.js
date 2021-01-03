@@ -4,7 +4,7 @@ const globalClass = className => ({
 });
 
 const backToHome = {
-  extra: {
+  customProps: {
     classNames: ['backToHome', globalClass('back-to-home')],
     icon: 'img/shared/arrow-left.svg',
     iconHover: 'img/shared/arrow-left-hover.svg',
@@ -20,7 +20,7 @@ module.exports = {
     {
       type: 'doc',
       id: 'overview',
-      extra: {
+      customProps: {
         classNames: ['home', globalClass('home'), globalClass('main-sidebar-icon')],
         icon: 'img/overview.png',
         iconDark: 'img/overview-dark.png',
@@ -28,14 +28,14 @@ module.exports = {
     },
     {
       label: 'DIPS',
-      extra: {
+      customProps: {
         classNames: [globalClass('dip-category')],
       },
       items: [
         {
           type: 'ref',
           id: 'all-dips',
-          extra: {
+          customProps: {
             classNames: [
               globalClass('main-sidebar-icon'),
               globalClass('background-contain'),
@@ -48,7 +48,7 @@ module.exports = {
         {
           type: 'ref',
           id: 'standard-dips',
-          extra: {
+          customProps: {
             classNames: [globalClass('main-sidebar-icon')],
             icon: 'img/standard-dips.svg',
             iconDark: 'img/standard-dips-dark.png',
@@ -57,7 +57,7 @@ module.exports = {
         {
           type: 'ref',
           id: 'process-dips',
-          extra: {
+          customProps: {
             classNames: [globalClass('main-sidebar-icon'), globalClass('background-contain')],
             icon: 'img/process-dips.png',
             iconDark: 'img/process-dips-dark.png',
@@ -66,7 +66,7 @@ module.exports = {
         {
           type: 'ref',
           id: 'info-dips',
-          extra: {
+          customProps: {
             classNames: [
               globalClass('main-sidebar-icon'),
               globalClass('dip-info-icon'),
@@ -84,7 +84,7 @@ module.exports = {
     {
       type: 'doc',
       id: 'all-dips',
-      extra: {
+      customProps: {
         classNames: [
           'categoryLabel',
           globalClass('background-contain'),
@@ -99,7 +99,7 @@ module.exports = {
     {
       type: 'doc',
       id: 'standard-dips',
-      extra: {
+      customProps: {
         classNames: ['categoryLabel', globalClass('icon-indented')],
         icon: 'img/standard-dips.svg',
         iconDark: 'img/standard-dips-dark.png',
@@ -111,7 +111,7 @@ module.exports = {
     {
       type: 'doc',
       id: 'info-dips',
-      extra: {
+      customProps: {
         classNames: ['categoryLabel',
           globalClass('icon-indented'),
           globalClass('dip-info-icon'),
@@ -126,7 +126,7 @@ module.exports = {
     {
       type: 'doc',
       id: 'process-dips',
-      extra: {
+      customProps: {
         classNames: ['categoryLabel'],
         icon: 'img/process-dips.png',
         iconDark: 'img/process-dips-dark.png',
