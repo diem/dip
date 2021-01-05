@@ -1,7 +1,7 @@
 ---
 dip: 0
 title: Diem Improvement Proposals
-authors: libra
+authors: diem
 status: final
 type: Informational
 created: 2/26/20
