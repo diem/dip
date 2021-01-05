@@ -32,7 +32,7 @@ Mathematically, we can view Diem role/permissions as a pair of relations over th
 * Sets: Role, Permission, Address
 * Relations: Permission -> Role (a many-many relation) and Address -> Role (a partial function)
 
-This LIP focuses on defining the Roles and Permissions sets and the Permissions -> Role relation because these are fairly static. The relations only change when we add new roles/permissions or update the existing allocation of permissions. By contrast, the Address -> Role function is highly dynamic--it is updated by any transaction that creates a new account.
+This DIP focuses on defining the Roles and Permissions sets and the Permissions -> Role relation because these are fairly static. The relations only change when we add new roles/permissions or update the existing allocation of permissions. By contrast, the Address -> Role function is highly dynamic--it is updated by any transaction that creates a new account.
 
 
 ## Roles

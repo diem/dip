@@ -45,7 +45,7 @@ and assets in a registered currency (or "Diem Coins").
 The requirements for a currency in Diem are as follows:
 1. *Privileged Registration*: The registration of a Move type as a currency
    on-chain is restricted to accounts with the
-   [`RegisterNewCurrency` permission](https://github.com/diem/dip/blob/master/lips/lip-2.md#permissions).
+   [`RegisterNewCurrency` permission](https://github.com/diem/dip/blob/master/dips/dip-2.md#permissions).
 2. *Privileged minting and burning*: Every on-chain currency must have a way
    for new coins to minted and burned from the system. Additionally, minting
    and burning of Diem Coins of any currency type must be a privileged action
@@ -108,7 +108,7 @@ provided at the time of registration:
 
 All of the metadata about a specific currency `C` is held as part of the
 [`CurrencyInfo<C>`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-currencyinfo)
-resource that is uniquely published for each registered currency type `C` under the [Diem Root](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles) (see also the implementation of
+resource that is uniquely published for each registered currency type `C` under the [Diem Root](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles) (see also the implementation of
 [`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency)
 and
 [`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency))
@@ -130,7 +130,7 @@ approximate ≋XDX value so that their values may be compared. In particular:
 #### Mutability
 The initial exchange rate to ≋XDX must be provided at the time of registration. The
 exchange rate may be [updated](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-update_xdx_exchange_rate)
-by an account with the [Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles) to correspond to
+by an account with the [Treasury Compliance role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles) to correspond to
 fluctuations in the real-time exchange rate between the specified currency `C` and
 ≋XDX. Note that this is not meant to be an exact exchange rate and _should not_ be used for
 determining exchange rates for value transfer between different currencies.
@@ -208,7 +208,7 @@ value of this field.
 
 This field is only updatable through the
 [`Diem::update_minting_ability`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-update_minting_ability)
-function, and must be done by an account with the [Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles).
+function, and must be done by an account with the [Treasury Compliance role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles).
 
 ## Capabilities Created at Registration
 
@@ -221,13 +221,13 @@ are created. If the currency is registered using the
 function, both of these capabilities are stored under the Treasury Compliance account at address
 `0xB1E55ED`. In the case that the [`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency)
 is used to register the currency both of these capabilities are returned to the caller, which may store them in other structures.
-The `MintCapability` and `BurnCapability` for each currency are [unique](https://github.com/diem/dip/blob/master/lips/lip-2.md#permissions); after
+The `MintCapability` and `BurnCapability` for each currency are [unique](https://github.com/diem/dip/blob/master/dips/dip-2.md#permissions); after
 registration of a currency no future mint and burn capabilities for the currency may be created.
 
 ## On-chain list of registered currencies
 
 Whenever a currency is registered on chain, its currency code is added to the
-[`RegisteredCurrencies` on-chain config](https://github.com/diem/dip/blob/master/lips/lip-6.md#registered-currencies).
+[`RegisteredCurrencies` on-chain config](https://github.com/diem/dip/blob/master/dips/dip-6.md#registered-currencies).
 The list of currency codes registered on-chain is always a set, and attempting to
 register a currency with an already taken currency code will fail. There are some
 [restrictions on the format and length of currency codes](#operational_things)
@@ -306,7 +306,7 @@ public fun mint<C>(value: u64): Diem<C>
 ```
 
 The `mint` function may only be called by an account with the
-[Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles)
+[Treasury Compliance role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles)
 that has a `MintCapability<C>` resource published under it. Recall that only
 one mint capability resource is created for a currency when it is
 registered.
@@ -322,7 +322,7 @@ The movement of coins to a specific preburn area will emit [events](#currency_ev
 that may be used to initiate the off-chain transfer of backing funds for those coins.
 
 Funds may be moved to a preburn area only by an account that has access to a
-[Preburn capability](https://github.com/diem/dip/blob/master/lips/lip-2.md#permissions)
+[Preburn capability](https://github.com/diem/dip/blob/master/dips/dip-2.md#permissions)
 resource for the currency in question. This action may be performed by calling either
 
 ```rust
@@ -338,7 +338,7 @@ public fun preburn_to<C>(account: &signer, coin: Diem<C>)
 where `account` has a `Preburn<C>` resource published under it.
 
 A `Preburn` resource can only be created by an account with the
-[Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles)
+[Treasury Compliance role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles)
 by calling either the `create_preburn` function
 
 ```rust
@@ -355,9 +355,9 @@ public fun publish_preburn_to_account<C>(account: &signer, tc_account: &signer)
 ```
 
 The `account` must have the
-[Designated Dealer role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles)
+[Designated Dealer role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles)
 and the `tc_account` account must have the
-[Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles).
+[Treasury Compliance role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles).
 
 
 #### Reference Implementations
@@ -374,7 +374,7 @@ possible outcomes from this.
 
 1. If the off-chain transfer of the backing funds for the coins in the preburn resource
       held under `preburn_address` has completed successfully, an account with
-      the [Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles)
+      the [Treasury Compliance role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles)
       must then remove or "burn" these funds by calling either the
       ```rust
         public fun burn<C>(tc_account: &signer, preburn_address: address)
@@ -386,7 +386,7 @@ possible outcomes from this.
       function, and passing in a `BurnCapability` resource to prove authority to burn coins in that currency.
 
 2. If the off-chain transfer was not able to be completed successfully an
-      `account` with the [Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles)
+      `account` with the [Treasury Compliance role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles)
       may remove the funds in the `C` currency from the preburn area under
       `preburn_address`, and re-introduce them to circulation by using
       ```rust
@@ -521,12 +521,12 @@ and metadata](#metadata_spec)). They can be divided in to "getters" (non-mutativ
 
 ### Mutative ("setters")
 1. Update the [`to_xdx_exchange_rate`](#to_xdx_exchange_rate) metadata field for `C` to `new_to_xdx_exchange_rate`.
-  Must be called by an `account` with a [Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles).
+  Must be called by an `account` with a [Treasury Compliance role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles).
     ```rust
         Diem::update_xdx_exchange_rate<C>(account: &signer, new_to_xdx_exchange_rate: FixedPoint32)
     ```
 2. Set the [`can_mint`](#can_mint) metadata field for `C` to the value of `can_mint`.
-  Must be called by an `account` with a [Treasury Compliance role](https://github.com/diem/dip/blob/master/lips/lip-2.md#roles).
+  Must be called by an `account` with a [Treasury Compliance role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles).
     ```rust
         Diem::update_minting_ability<C>(account: &signer, can_mint: bool)
     ```

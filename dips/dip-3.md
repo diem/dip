@@ -59,7 +59,7 @@ Example: New bytecode added.
 
 Category: Spec change + require coordination => Software upgrade + Multi-sig transaction
 ## Consensus protocol upgrade
-Example: Switching consensus algorithm from LibraBFTv3 to LibraBFTv4.
+Example: Switching consensus algorithm from DiemBFTv3 to DiemBFTv4.
 
 Category: Spec change + require coordination => Software upgrade + Multi-sig transaction
 ## Signature scheme change

@@ -38,7 +38,7 @@ module.exports = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl:
-            'https://github.com/libra/dip/edit/master/',
+            'https://github.com/diem/dip/edit/master/',
           path: 'all-docs__GENERATED',
           routeBasePath: '',
         },

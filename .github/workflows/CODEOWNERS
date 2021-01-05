@@ -1,6 +1,0 @@
-# Info about CODEOWNERS
-# https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners
-
-# Global owners - the current maintainers
-# https://libra.org/en-US/blog/lip-maintainers/
-*   @dahliamalkhi @kphfb @sblackshear @davidiw @aching

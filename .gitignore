@@ -1,6 +1,5 @@
 # Dependencies
 /node_modules
-/all-docs__generated
 
 # Production
 /build
@@ -9,7 +8,7 @@
 # Generated files
 .docusaurus
 .cache-loader
-LIPMetadata.json
+DIPMetadata.json
 
 # Misc
 .DS_Store
@@ -23,5 +22,4 @@ yarn-debug.log*
 yarn-error.log*
 
 .now
-
 .vercel
