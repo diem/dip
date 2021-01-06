@@ -53,6 +53,8 @@ Example: `andrey$novi`
 ## Diem ID domains
 Each Diem ID domain is associated with a single VASP. This information is stored on the block chain in a `DiemIdDomains` resource published in a parent VASP's on-chain account.
 
+# On-chain data
+
 ```
 resource struct DiemIdDomains {
     domains: vector<DiemIdDomain>,
@@ -72,6 +74,32 @@ struct DiemIdDomain {
 * In order to register a Diem Id domain, a VASP needs to submit a request to Diem Association. LA will perform certain checks (out of scope of this document) before issuing an on-chain transaction to register a Diem Id Domain. These checks intend to mitigate irrelevant claims and enforce uniqueness
 * The Diem ID domain can be created as part of creating a `ParentVASP` account.
 * An entity (potentially the Association) may at some point choose to expose an open source application(*Indexer*) that will allow indexing available Diem IDs and could provide a convenient REST API for applications to fetch information about the domains. The API of such an indexer is out of scope of this RFC.
+
+## Diem ID domain events
+
+The Move contract that manages Diem ID domains must emit an event every time Diem ID domain is created, removed or updated. Those events are critical for applications to be able to efficiently index existing Diem ID domains.
+
+While Diem ID domains are published into VASP accounts, Diem ID domain events are published under the Treasury Compliance account. We consolidate events under single account to allow indexers to follow single event stream.
+
+To store events, `DiemIdDomainManager` resource is published under the Treasure Compliance account(address `0xB1E55ED`).
+
+```
+resource struct DiemIdDomainManager {
+    /// Events are emmitted 
+    diem_id_domain_events: Event::EventHandle<Self::DiemIdDomainEvent>,
+}
+
+struct DiemIdDomainEvent {
+    removed: bool,
+    domain: DiemIdDomain,
+    address: address,
+}
+```  
+
+* Fields definition:
+  * `removed` - `true`, if DiemIdDomain was removed, `false` if it was created or updated
+  * `domain` - exact copy of `DiemIdDomain` that was added/removed from `DiemIdDomains` resource of a VASP account
+  * `address` - address of an account where `DiemIdDomain` was added or removed
 
 # Off-chain protocol
 
