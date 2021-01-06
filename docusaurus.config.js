@@ -1,7 +1,7 @@
-const darkCodeTheme = require("prism-react-renderer/themes/palenight");
-const lightCodeTheme = require("prism-react-renderer/themes/github");
+const darkCodeTheme = require('prism-react-renderer/themes/palenight');
+const lightCodeTheme = require('prism-react-renderer/themes/github');
 const objectAssignDeep = require('object-assign-deep');
-const universalConfig = require('libra-docusaurus-components/src/universal-config');
+const universalConfig = require('@libra-opensource/diem-docusaurus-components/src/universal-config');
 
 module.exports = objectAssignDeep(universalConfig, {
   title: 'Diem Improvement Proposals',
@@ -29,7 +29,9 @@ module.exports = objectAssignDeep(universalConfig, {
     require.resolve('./plugins/dip-metadata/src'),
     require.resolve('./plugins/react-axe-ada-monitoring'),
     require.resolve('./plugins/seo-tags'),
-    require.resolve('libra-docusaurus-components/src/plugin-segment'),
+    require.resolve(
+      '@libra-opensource/diem-docusaurus-components/src/plugin-segment',
+    ),
   ],
   presets: [
     [

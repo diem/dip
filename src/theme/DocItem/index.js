@@ -1,5 +1,5 @@
 import React from 'react';
-import {RightSidebar} from 'libra-docusaurus-components';
+import {RightSidebar} from 'diem-docusaurus-components';
 
 import Head from '@docusaurus/Head';
 import Heading from '@theme/Heading';
