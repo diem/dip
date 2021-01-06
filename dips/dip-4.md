@@ -182,7 +182,7 @@ RawTransaction {
 
 For transactions under the travel rule threshold, transaction metadata inclusive of both to_subaddress and from_subaddress should be composed.
 
-For transactions over the travel rule limit, custodial to custodial transactions must exchange travel rule compliance data off-chain, so the suggested way to exchange the metadata is during this off-chain exchange. This information should not be exchanged using subaddressing.  An example of this data exchange can be seen in LIP-1.  Once the off-chain APIs have been utilized, there will be an off-chain reference ID which represents this transaction.  The on-chain transaction is now constructed.
+For transactions over the travel rule limit, custodial to custodial transactions must exchange travel rule compliance data off-chain, so the suggested way to exchange the metadata is during this off-chain exchange. This information should not be exchanged using subaddressing.  An example of this data exchange can be seen in DIP-1.  Once the off-chain APIs have been utilized, there will be an off-chain reference ID which represents this transaction.  The on-chain transaction is now constructed.
 
 User A who is on a custodial wallet (where the C wallet has a public address of 0x7777 and user A has a sub-account of 'alice') wishes to send 100 microdiem to merchant B who is on a C wallet (where the C wallet has a public address of 0x1234 and merchant B has a sub-account of 'bob').  User A's wallet then composes a transaction via (note that the to/from subaddresses are not included since they were shared via the off-chain API):
 
@@ -197,7 +197,7 @@ bcs_metadata = bcs.serialize(metadata, Metadata);
 
 
 // receiver_signature is passed to the sender via the off-chain APIs as per
-// https://github.com/diem/dip/blob/master/lips/lip-1.mdx#recipient-signature
+// https://github.com/diem/dip/blob/master/dips/dip-1.mdx#recipient-signature
 
 program = encode_peer_to_peer_with_metadata_script(
     "XDX" /*currency*/,

@@ -49,10 +49,10 @@ const getHeadings = (initialHeadings, titleLabel, includeMetadataTable) =>
 
 /**
  * This is necessary right now because we are transferring
- * all doc files and lips to an artifical folder that does
+ * all doc files and dips to an artifical folder that does
  * not reflect the actual github location.
  */
-const getEditUrl = (originalUrl, isLip) => {
+const getEditUrl = (originalUrl, isDip) => {
   if (!originalUrl) {
     return undefined;
   }
@@ -60,7 +60,7 @@ const getEditUrl = (originalUrl, isLip) => {
   const urlArr = originalUrl.split('/');
   const sourceIndex = urlArr.length - 2;
   // replaces the build folder with the original
-  urlArr[sourceIndex] = isLip ? 'lips' : 'docs';
+  urlArr[sourceIndex] = isDip ? 'dips' : 'docs';
   return urlArr.join('/');
 }
 
@@ -88,7 +88,7 @@ function DocItem(props) {
       keywords,
       hide_title: hideTitle,
       hide_table_of_contents: hideTableOfContents,
-      lip,
+      dip,
       status,
       title_toc_label: titleTOCLabel,
       title: frontMatterTitle,
@@ -96,11 +96,11 @@ function DocItem(props) {
     },
   } = DocContent;
 
-  const displayLipTable = lip !== undefined;
+  const displayDipTable = dip !== undefined;
   const headings = getHeadings(
     DocContent.rightToc,
     titleTOCLabel || title,
-    displayLipTable,
+    displayDipTable,
   );
 
   const metaTitle = title ? `${title} | ${siteTitle}` : siteTitle;
@@ -109,11 +109,11 @@ function DocItem(props) {
     metaImageUrl = metaImage;
   }
 
-  const githubEditURL = getEditUrl(editUrl, lip !== undefined);
+  const githubEditURL = getEditUrl(editUrl, dip !== undefined);
 
   const Title = Heading('h2');
 
-  const Authors = displayLipTable
+  const Authors = displayDipTable
     ? parseAuthors(authors).map(({title, username}, i) =>
         <Author title={title} username={username} index={i} />
       )
@@ -159,11 +159,11 @@ function DocItem(props) {
                     <Title className={styles.docTitle} id={title}>{title}</Title>
                   )}
                 </header>
-                {displayLipTable &&
+                {displayDipTable &&
                   <div id={METADATA_TABLE_ID}>
                     <MetadataTable
                       rows={[
-                        ["LIP", lip],
+                        ["DIP", dip],
                         ["Title", title],
                         ["Author", Authors],
                         ["Discussions-to", discussionsTo, discussionsTo],

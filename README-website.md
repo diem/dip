@@ -1,4 +1,4 @@
-The Libra LIP website is built using [Docusaurus 2](https://v2.docusaurus.io/).
+The Diem DIP website is built using [Docusaurus 2](https://v2.docusaurus.io/).
 
 ## Setup
 
@@ -8,7 +8,7 @@ The Libra LIP website is built using [Docusaurus 2](https://v2.docusaurus.io/).
 git clone git@github.com:diem/dip.git
 ```
 
-or 
+or
 
 ```
 git clone https://github.com/diem/dip.git

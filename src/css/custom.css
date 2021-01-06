@@ -49,7 +49,7 @@ a.back-to-home,
   padding-left: calc( var(--icon-size) + .65em ) !important;
 }
 
-.lip-category > li:first-child {
+.dip-category > li:first-child {
   margin-bottom: .35em !important;
 }
 
@@ -61,11 +61,11 @@ a.main-sidebar-icon,
   padding-left: calc( var(--icon-size) + 21px ) !important;
 }
 
-.lip-category > .main-sidebar-icon {
+.dip-category > .main-sidebar-icon {
   margin: .45em 0 !important;
 }
 
-.lip-info-icon a {
+.dip-info-icon a {
   background-position: 7px center !important;
 }
 
@@ -77,7 +77,7 @@ a.main-sidebar-icon,
   background-size: contain !important;
 }
 
-.main-sidebar-all-lips a {
+.main-sidebar-all-dips a {
   background-position: 5px center !important;
 }
 

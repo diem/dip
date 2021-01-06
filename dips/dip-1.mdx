@@ -19,7 +19,7 @@ The Off-Chain Protocol allows two entities to define payments off-chain and priv
 | Version | Revision | Link      |
 |---------|----------|-----------|
 | v2      | current  | n/a       |
-| v1      | e82a0eb8a9dd5d498fc89bf84565cc7adae3d8ef | https://github.com/diem/dip/blob/e82a0eb8a9dd5d498fc89bf84565cc7adae3d8ef/lips/lip-1.mdx  |
+| v1      | e82a0eb8a9dd5d498fc89bf84565cc7adae3d8ef | https://github.com/diem/dip/blob/e82a0eb8a9dd5d498fc89bf84565cc7adae3d8ef/dips/dip-1.mdx  |
 
 V2 changes:
 
@@ -87,7 +87,7 @@ The base url value should be the url without path `/<protocol_version>/command`,
 All HTTP requests must contain:
 
 * A header `X-REQUEST-ID` with a unique UUID (according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included) for the request, used for tracking requests and debugging. Responses must have the same string in the `X-REQUEST-ID` header value as the requests they correspond to.
-* A header `X-REQUEST-SENDER-ADDRESS` with the HTTP request sender's VASP [DIP-5](https://dip.diem.com/dip-5/) address used in the command object. The HTTP request sender must use the compliance key of the VASP account linked with this address to sign the request JWS body, and the request receiver uses this address to find the request sender's compliance key to verify the JWS signature. For example: VASP A transfers funds to VASP B. The HTTP request A sends to B contains `X-REQUEST-SENDER-ADDRESS` as VASP A's address. An HTTP request B sends to A should contain VASP B's address as X-REQUEST-SENDER-ADDRESS. 
+* A header `X-REQUEST-SENDER-ADDRESS` with the HTTP request sender's VASP [DIP-5](https://dip.diem.com/dip-5/) address used in the command object. The HTTP request sender must use the compliance key of the VASP account linked with this address to sign the request JWS body, and the request receiver uses this address to find the request sender's compliance key to verify the JWS signature. For example: VASP A transfers funds to VASP B. The HTTP request A sends to B contains `X-REQUEST-SENDER-ADDRESS` as VASP A's address. An HTTP request B sends to A should contain VASP B's address as X-REQUEST-SENDER-ADDRESS.
 
 All HTTP responses must contain:
 
@@ -332,7 +332,7 @@ A `PaymentActorObject` represents a participant in a payment - either sender or 
 
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
-| address | str | Y | Address of the sender/receiver account. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Diem addresses, refer to the "account identifier" section in LIP-5 for format. |
+| address | str | Y | Address of the sender/receiver account. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Diem addresses, refer to the "account identifier" section in DIP-5 for format. |
 | kyc_data | [KycDataObject](#kycdataobject) | N | The KYC data for this account. This field is optional but immutable once it is set. |
 | status | [StatusObject](#statusobject) | Y | Status of the payment from the perspective of this actor. This field can only be set by the respective sender/receiver VASP and represents the status on the sender/receiver VASP side. This field is mandatory by this respective actor (either sender or receiver side) and mutable. Note that in the first request (which is initiated by the sender), the receiver status should be set to `None`. |
 | metadata | list of str | N | Can be specified by the respective VASP to hold metadata that the sender/receiver VASP wishes to associate with this payment. It may be set to an empty list (i.e. `[]`). New `metadata` elements may be appended to the `metadata` list via subsequent commands on an object.|
@@ -494,7 +494,7 @@ A star (`*`) denotes _any_ value, `is-provided` denotes the field value is provi
 
 **Protocol Flow Illustration & VASP logic**. Below is a high level illustration of the commands and internal processes a sender and receiver VASPs to define a payment, and update it until it reaches a final state. Light blue blocks represent successful PaymentCommand requests and responses that create or update the PaymentObject. Each is labelled from 1-9, and we will reference these labels when discussing each step in details below.
 
-<img alt="Command Exchange" src={useBaseUrl('img/LIP1-PaymentBusinessFlow.png')} />
+<img alt="Command Exchange" src={useBaseUrl('img/DIP1-PaymentBusinessFlow.png')} />
 
 ## Steps of the protocol: The KYC Exchange Flow
 
