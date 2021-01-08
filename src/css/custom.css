@@ -28,6 +28,14 @@ body h2 .hash-link {
   --sidebar-horizontal-padding: 32px;
 }
 
+.break-word {
+  word-break: break-all;
+}
+
+.snippet-container {
+  margin-top: 5px;
+}
+
 /* Sidebar icon classes */
 
 a.icon-indented,
