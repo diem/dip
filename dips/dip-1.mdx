@@ -211,7 +211,7 @@ Represents an error that occurred in response to a Command.
 {
     "type": "command_error",
     "field": "payment.sender.kyc_data.surname",
-    "code": "missing_data",
+    "code": "missing_field",
     "message": "",
 }
 ```
@@ -228,9 +228,7 @@ Represents an error that occurred in response to a Command.
 * Could not find the compliance key of the onchain account found by the `X-REQUEST-SENDER-ADDRESS` header value.
 * The compliance key found from the onchain account is not a valid ED25519 public key.
 
-`missing_http_header`
-* `X-REQUEST-ID`
-* `X-REQUEST-SENDER-ADDRESS`
+`missing_http_header`: missing HTTP header `X-REQUEST-ID` or `X-REQUEST-SENDER-ADDRESS`.
 
 ##### JWS Validation Error Codes
 
