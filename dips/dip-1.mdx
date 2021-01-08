@@ -215,8 +215,61 @@ Represents an error that occurred in response to a Command.
     "message": "",
 }
 ```
-`command_error` occurs in response to a Command failing to be applied - for example, a high level validation error.  `protocol_error` occurs in response to a failure related to the lower-level protocol.  Note: Additional information detailing all errors will be added.
 
+`command_error` occurs in response to a Command failing to be applied - for example, a high level validation error.  `protocol_error` occurs in response to a failure related to the lower-level protocol.
+
+#### List of Error Codes
+
+**HTTP Header Validation**
+
+`invalid_x_request_sender_address`:
+* `X-REQUEST-SENDER-ADDRESS` header value is not the request sender’s address in the command object. All command objects should have a field that is the request sender’s address. For payment object, it is `sender#address` or `receiver#address`.
+* Could not find Diem's onchain account by the `X-REQUEST-SENDER-ADDRESS` header value.
+* Could not find the compliance key of the onchain account found by the `X-REQUEST-SENDER-ADDRESS` header value.
+* The compliance key found from the onchain account is not a valid ED25519 public key.
+`missing_http_header`
+* `X-REQUEST-ID`
+* `X-REQUEST-SENDER-ADDRESS`
+
+**JWS Validation**
+
+`invalid_jws`: invalid JWS format (compact) or protected header
+`invalid_jws_signature`: JWS signature verification failed
+
+**Object Data / Logic Validation**
+
+`invalid_json`: decoded JWS body is not json.
+`invalid_object`: command request/response object json is not object, or the command object type does not match `command_type`.
+`invalid_overwrite`:
+* Overwrite a field that can only be written once.
+* Overwrite an immutable field (field can only be set in initial command object), e.g. `original_payment_reference_id`).
+* Overwrite opponent payment actor's fields.
+`missing_field`:
+* Missing required field.
+* An optional field is required to be set for a specific state, e.g. PaymentObject requires sender's `kyc_data` (which is an optional field for `PaymentActorObject`) when sender init the `PaymentObject`.
+`unknown_field`: field is unknown for an object.
+`unknown_command_type`: invalid/unsupported `command_type`.
+`invalid_field_value`:
+* Invalid / unknown enum field values.
+* UUID field value does not match UUID format.
+* Payment actor address is not a valid DIP-5 account identifier.
+* Currency field value is not a valid Diem currency code for the connected network.
+`invalid_command_producer`: The HTTP request sender is not the right actor to send the payment object. For example, if the actor receiver sends a new command with payment object change that should be done by actor sender.
+`invalid_transition`: as we only allow one actor action at a time, and the next states for a given command object state are limited to specific states. This error indicates the new payment object state is not valid according to the current object state. For example: VASP A sends RSOFT to VASP B, VASP B should send the next payment object with ABORT, or SSOFTSEND; VASP A should respond to this error code if VASP B sends payment object state SSOFT.
+`invalid_initial_or_prior_not_found`: could not find command by reference_id for a non-initial state command object; for example, actor receiver received a payment command object that actor sender status is `ready_for_settlement`, but receiver could not find any command object by the reference id.
+`no_kyc_needed`: payment action amount is under travel rule limit.
+`invalid_recipient_signature`:
+* Field `recipient_signature` value is not hex-encoded bytes.
+* Field `recipient_signature` value is an invalid signature.
+`unknown_address`:
+* The DIP-5 account identifier address in the command object is not HTTP request sender’s address or receiver’s address. For payment object it is `sender#address` or `receiver#address`.
+* Could not find on-chain account by an DIP-5 account identifier address in command object address.
+`missing_dependency`: one of dependency objects is not found by the id provided in the command object. For example, if the payment object `original_payment_reference_id` field is set, the receiver should return this error code if it could not find the data by the `original_payment_reference_id`.
+`invalid_dependency`: one of dependency objects is found, but it is not valid for the command object. For example, the dependency payment object status is `aborted` instead of `ready_for_settlement`.
+`conflict`:
+* Command object is in conflict with another different command object by cid, likely a cid is reused for different command object.
+* Failed to acquire lock by for the command object by the `reference_id`.
+`unsupported_currency`: field `payment#action#currency` value is a valid Diem currency code, but it is not supported / acceptable by the receiver VASP.
 
 # Travel Rule Data Exchange
 
