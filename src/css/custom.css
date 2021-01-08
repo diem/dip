@@ -36,6 +36,12 @@ body h2 .hash-link {
   margin-top: 5px;
 }
 
+@media (max-width: 600px) {
+  .break-word-mobile {
+    word-break: break-all;
+  }
+}
+
 /* Sidebar icon classes */
 
 a.icon-indented,
