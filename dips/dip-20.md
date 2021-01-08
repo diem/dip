@@ -1,7 +1,7 @@
 ---
 dip: 20
 title: Diem On-Chain Currency Management
-authors: Tim Zakian, Sam Blackshear
+authors: Tim Zakian, Sam Blackshear, Dahlia Malkhi
 status: Draft
 type: Informational
 created: 08/28/2020
@@ -11,121 +11,155 @@ created: 08/28/2020
 # Summary
 ---
 
-This DIP describes the conceptual model and implementation of currencies on the Diem
-blockchain. Currencies in Diem are represented statically at the type level, each
-currency with a unique Move type. A type is treated as a currency in Diem
-if and only if it has previously been registered as a currency on-chain. Once a currency
-is registered it remains registered forever.
+This DIP describes the conceptual model and implementation of currencies on
+the Diem blockchain. Currencies in Diem are represented statically at the
+type level, each currency with a unique Move type.
 
-Every currency that is registered on-chain has metadata
-associated with it at the time of registration. That metadata includes the currency code, value
-held on-chain in the currency, and other relevant information[[1]](#registration_and_metadata). One of the most
-important properties held in a currency's metadata is whether it is a Single Currency Stablecoin
-(SCS), i.e., a fiat currency, or a synthetic currency that may consist of one or
-multiple other currencies registered on-chain, e.g., ≋XDX.
+The Diem currency implementation maintains coin safety rules through two
+principal mechanisms of the Move language, permissions and types.
+Permissions guarantee coin scarcity, in that a coin can be created
+("minted") or destroyed ("burned") only through explicit "treasury"
+operations that require special privileges. Type safety guarantees that
+operations on currencies cannot duplicate, lose, or otherwise mishandle
+coins.
 
-On-chain, all assets with a value of `x` in a registered currency `C` are held as a "Diem Coin" resource
-of type [`Diem<C>`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-diem)
-with its `value` field set to `x`. Every Diem Coin has a certain set of
-operations that may be performed on it and other coins of the same
-currency[[2]](#general_currency_operations), and every registered currency possesses a
-specific set of metadata about itself[[3]](#metadata_spec) that may be
-queried[[4]](#currency_ops). All operations must be performed on a registered
-currency type, with the exception of registration.
+In order for a Move type to be considered a Diem currency, a specific
+resource instantiated with that type must be registered at the [DiemRoot
+account
+address](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles) as
+defined by the top-level [Diem
+module](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md)
+and [DIP-2](https://github.com/diem/dip/blob/master/dips/dip-2.md). The
+Diem module is responsible for defining the representation of Diem
+currencies, the set of operations that can be performed on Diem coins
+(e.g., splitting, minting, burning) and their corresponding permissions,
+and the registration process of a Move type as representing a Diem
+currency.
+
+Once a currency is registered it remains registered forever.
+
+Every Diem currency has metadata associated with it at the time of
+registration. That metadata includes the currency code, a total value held
+on-chain in the currency and other relevant information. One of the most
+important properties held in a currency's metadata is whether it is a
+Single Currency Stablecoin (SCS), i.e., a fiat currency like  ≋XUS, or a
+synthetic currency that may consist of one or multiple other currencies
+registered on-chain, e.g., ≋XDX. These metadata and their meaning are
+detailed in the
+[section on Diem currency metadata](https://github.com/diem/dip/blob/master/dips/dip-20.md#metadata_spec).
+
+On-chain, a currency asset  is held as a "Diem Coin" resource
+[`Diem<C>`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-diem); a
+Move resource with a generic currency type `C`  and a `value` field indicating
+the amount held in the coin. The Diem Coin resource type has a statically
+defined set of operations that may be performed on it and other coins of
+the same currency by the public functions of the [Diem
+module](https://github.com/diem/dip/blob/master/dips/dip-20.md#general_currency_operations). All
+operations must be performed on a registered currency type, with the
+exception of registration.
 
 ---
 # <a name="requirements">Requirements</a>
 ---
 
-This DIP describes the definition of currencies on-chain and their registration
-process (in a technical setting), the representation of assets in a given
-currency, and the operations that may be performed with registered currencies
-and assets in a registered currency (or "Diem Coins").
-
 The requirements for a currency in Diem are as follows:
+
 1. *Privileged Registration*: The registration of a Move type as a currency
    on-chain is restricted to accounts with the
-   [`RegisterNewCurrency` permission](https://github.com/diem/dip/blob/master/dips/dip-2.md#permissions).
-2. *Privileged minting and burning*: Every on-chain currency must have a way
-   for new coins to minted and burned from the system. Additionally, minting
-   and burning of Diem Coins of any currency type must be a privileged action
-   and tightly controlled yet also flexible in its specification for each
-   currency that is defined. This is so that it can be used, e.g., to grant
-   specific designated addresses the ability to mint coins of a specific
-   currency, or to ensure that certain preconditions are met before coins are
-   minted or burned.
-3. *Explicit representation*: The representation of value in a currency is
-   explicitly represented at the type level in Move. Move values that have a
-   Diem Coin type of a given currency cannot be accidentally or purposefully
-   misinterpreted as anything other than a coin in the given value and
-   currency.
+   [`RegisterNewCurrency`
+   permission](https://github.com/diem/dip/blob/master/dips/dip-2.md#permissions).
+   Once a Move type has been registered as a currency, it remains
+   registered forever.
+2. *Privileged minting and burning*: Every on-chain currency must have a
+   way for new coins to be minted and burned in the system. Minting and
+   burning of Diem Coins must be a privileged action yet customizable per
+   currency. This can be used, e.g., to grant specific designated addresses
+   the ability to mint coins of a specific currency, or to ensure that
+   certain preconditions are met before coins are minted or burned.
+3. *Explicit representation*: Value in a currency is explicitly represented
+   at the type level in Move. Values that have a Diem Coin type of a given
+   currency cannot be accidentally or purposefully misinterpreted as
+   anything other than a coin in the given value and currency.
 4. *Fungibility and correctness*: The way currencies may interact and be
-   interchanged must always be well-defined. Any undefined or invalid behaviors
-   such as trying to combine coins of different currency types must never be
-   allowed, and error conditions well specified.
+   interchanged must be well-defined. Any undefined or invalid behaviors
+   such as trying to combine coins of different currency types must never
+   be allowed, and error conditions well specified.
 5. *Conservation, and encapsulation of value*: The value of a coin in
-   circulation can never be accidentally or purposefully altered except through
-   the specified operations defined in this document. Additionally, the
-   `total_value` of all coins minted in a currency must equal the sum of the
-   values of all coins in circulation in that currency no matter the operations
-   performed, with the exception of minting and burning operations.
-6. *Value normalization*: Every currency must have a way to _roughly_ normalize
-   its value to a specified currency so that values expressed across different
-   currencies may be compared for use in the system. In Diem, this specified
-   currency is ≋XDX.
+   circulation can never be accidentally or purposefully altered except
+   through the specified operations defined in this document. In addition,
+   the `total_value` of all coins minted in a currency must be equal to the
+   sum of the values of all coins in circulation in that currency no matter
+   the operations performed, with the exception of minting and burning
+   operations that will increase or decrease this value by the value of the
+   coins being minted or burned respectively.
+6. *Value normalization*: Every currency must have a way to *roughly*
+   normalize its value to a specified currency so that values expressed
+   across different currencies may be compared for use in the system. In
+   Diem, this specified currency is ≋XDX.
 
 The Diem currency management on-chain is designed to provide a common interface that can
 be used for any currency that ensures that these key properties are kept.
+
 
 ---
 # <a name="registration_and_metadata">Registration of Currencies and Currency Metadata</a>
 ---
 
-Every currency on-chain is represented as a Move-defined type `C`. This type can be
-either a resource or struct type. In order for the system to view a type `C` as
-representing a currency on-chain, it must first be _registered_ as such. This may be done by
-calling one of either [`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency)
-or [`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency)
-instantiated with the type `C` that is to be registered as a new SCS or synthetic currency respectively.
+Every currency on-chain is represented as a Move-defined type `C`. This type
+can be either a resource or struct type. In order for the system to view a
+type `C` as representing a currency on-chain, it must first be registered by
+calling either
+[`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency) or
+[`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency)
+instantiated with the type `C`. The first call registers a new SCS, the
+second a synthetic currency.
+
+The registration of a type `C` as a Diem currency publishes a unique
+resource instantiated with the
+type---[`Diem::CurrencyInfo<C>`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-currencyinfo)---containing
+metadata about the currency being registered under the
+[DiemRoot](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles)
+account address (see the implementation of
+[`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency)
+and
+[`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency)).
 
 ## <a name="metadata_spec">Required information for registration of a currency and metadata</a>
 
-When a currency is registered using these functions, a number of metadata need to be
-provided about the currency that is being registered. In particular, every registered
-currency on-chain contains the following data, names in bold are metadata that must be
-provided at the time of registration:
+Every registered currency on-chain contains the information listed below.
+When a currency is registered, the "Mandatory" parameters must be provided
+at the time of registration, other fields are optional or cannot be set at
+registration, e.g., the `total_value` field can only be changed through the
+minting and burning of coins:
 
-| Name                          | Type                                   | Mutable      | Description                                                                                                                                      |
-| ----------------------------- | -------------------------------------- | ------------ | -----------------------------------------------------------------------------------------------------------------------                          |
-| **to_xdx_exchange_rate**      | FixedPoint32                           | true         | The _rough_ exchange rate from `C` to XDX. Used only for dual attestation threshold and mempool gas price normalization                          |
-| **is_synthetic**              | bool                                   | false        | Whether `C` is a synthetic currency or not (if false, then it is an SCS currency). Informational only with the except for its effects on events. |
-| **scaling_factor**            | u64                                    | false        | The scaling factor that a coin's value in `C` should be multiplied by to arrive at the off-chain "real world" value                              |
-| **fractional_part**           | u64                                    | false        | The smallest fractional part (number of decimal places) to be used in the human-readable representation of the currency                          |
-| **currency_code**             | vector\<u8\>                           | false        | The currency code (e.g., "XDX") for `C`                                                                                                          |
-| total_value                   | u128                                   | true         | The total value of all currency in circulation on-chain, initialized to zero                                                                     |
-| preburn_value                 | u64                                    | true         | The total value of all coins in this currency waiting to be burned                                                                               |
-| can_mint                      | bool                                   | true         | Whether more value in this currency can be added to circulation                                                                                  |
 
-All of the metadata about a specific currency `C` is held as part of the
-[`CurrencyInfo<C>`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-currencyinfo)
-resource that is uniquely published for each registered currency type `C` under the [Diem Root](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles) (see also the implementation of
-[`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency)
-and
-[`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency))
-account address. We now describe each of these data and their purpose.
+| Name                          | Type                                   | Mutable      | Description                                                                                                                             | Mandatory |
+| ----------------------------- | -------------------------------------- | ------------ | -----------------------------------------------------------------------------------------------------------------------                 | --------  |
+| to_xdx_exchange_rate          | FixedPoint32                           | Yes          | The _rough_ exchange rate from `C` to XDX. Used only for dual attestation threshold and mempool gas price normalization                 | Yes       |
+| is_synthetic                  | bool                                   | No           | Whether `C` is a synthetic currency or not (if false, then it is an SCS currency). Informational only except for its effects on events. | Yes       |
+| scaling_factor                | u64                                    | No           | The scaling factor that a coin's value in `C` should be multiplied by to arrive at the off-chain "real world" value                     | Yes       |
+| fractional_part               | u64                                    | No           | The smallest fractional part (number of decimal places) to be used in the human-readable representation of the currency                 | Yes       |
+| currency_code                 | vector\<u8\>                           | No           | The currency code (e.g., "XDX") for `C`                                                                                                 | Yes       |
+| total_value                   | u128                                   | Yes          | The total value of all currency in circulation on-chain, initialized to zero at time of registration                                    | No        |
+| preburn_value                 | u64                                    | Yes          | The total value of all coins in this currency waiting to be burned                                                                      | No        |
+| can_mint                      | bool                                   | Yes          | Whether more value in this currency can be added to circulation                                                                         | No        |
+
+We now describe each of these data and their purpose.
 
 ### <a name="to_xdx_exchange_rate">`to_xdx_exchange_rate`</a>
 
 There are certain cases where values in two different currencies need to be
-compared against each other. This exchange rate is used to normalize both values to their
-approximate ≋XDX value so that their values may be compared. In particular:
-* Transactions can set their gas price in different currencies, however transactions
-  need to be ranked against each other based upon their gas prices. This field is used by
-  the rest of the system to normalize gas prices to one single "unit" for comparison and
-  ranking purposes.
-* The dual attestation threshold needs to apply to payments in all currencies. This limit is set in
-  terms of ≋XDX, transfers are first normalized using this exchange rate and then compared
-  against the limit.
+compared against each other. This exchange rate is used to normalize both
+values to their approximate ≋XDX value so that their values may be
+compared. In particular:
+
+* Transactions can set their gas price in different currencies, however
+  transactions need to be ranked against each other based upon their gas
+  prices. This field is used to normalize gas prices to one single "unit"
+  for comparison and ranking purposes.
+* The dual attestation threshold needs to apply to payments in all
+  currencies. This limit is set in terms of ≋XDX, transfers are first
+  normalized using this exchange rate and then compared against the limit.
 
 #### Mutability
 The initial exchange rate to ≋XDX must be provided at the time of registration. The
@@ -149,29 +183,33 @@ Immutable
 ### <a name="scaling_factor">`scaling_factor`</a>
 
 This defines what fraction each unit of value on-chain represents in the
-off-chain representation of the currency. As an example, if the on-chain
-unit of value in a currency `C` is one millionth of `C`'s smallest real-world
-unit of value, `C`'s `scaling_factor` would be `1,000,000`, since each on-chain
-unit of value is `1/1,000,000` of the smallest real-world unit of value
-representation for `C`.
+currency. As an example, the on-chain unit of value for XUS is
+one-millionth of an XUS, therefore XUS's `scaling_factor` is 1,000,000.
+
+#### Mutability
+Immutable
 
 ### `fractional_part`
 
-This defines the rounding that needs to be performed when transferring from the on-chain
-representation to the smallest denomination real-world coin for that currency off-chain.
-For example, if an SCS `C` has a scaling factor of `1,000,000` but the smallest
-denomination real-world coin for `C` is 100'th of a `C`, then the
-`fractional_part` for `C` would be `100`.
+This defines the truncation that needs to be performed when transferring
+from the on-chain representation to the smallest denomination real-world
+coin for that currency off-chain. For example, for XUS the smallest
+off-chain denomination coin is one cent (1/100th of an XUS), so the
+`fractional_part` for XUS would be 100. If you wanted to translate from an
+on-chain value `v` to a number in XUS's currency units, you would multiply
+by 1,000,000 (XUS's `scaling_factor`) and then truncate all digits after the
+hundredths place.
 
 #### Mutability
 Immutable
 
 ### `currency_code`
 
-The currency code is specified at the time of registration of the currency. In addition to
-being recorded here for use by clients to determine the correct (human readable) currency code to use to
-display the currency, this is also registered in a global set of registered currency codes
-for off-chain use.
+The currency code specified at the time of registration of the currency.
+This is an ASCII field holding a human-readable code, e.g., "XDX". The code
+is also registered in a global set of registered currency codes for
+off-chain use as an on-chain configuration defined in the
+[`RegisteredCurrencies` module](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/RegisteredCurrencies.md).
 
 #### Mutability
 Immutable
@@ -182,25 +220,24 @@ This field holds the current value of all coins in circulation on-chain in the g
 
 #### Mutability
 
-This field's value remains constant with the exception of minting and burning operations from the
-system. Details on these operations and how they effect the `total_value` for the currency
-are given in the section on [minting and burning of value](#minting_and_burning) from the
-system.
+This field's value remains constant with the exception of minting and burning operations.
+Details on these operations and how they effect the `total_value` for the currency
+are given in the section on [minting and burning of value](#minting_and_burning).
 
 ### `preburn_value`
 
-This field holds the value of all coins currently slated to be burned from the
-system as detailed in the [Preburning](#pre_burning) section.
+This field holds the value of all coins currently slated to be burned
+as detailed in the [Preburning](#pre_burning) section.
 
 #### Mutability
 
-This field's value remains constant with the exception of burning operations as detailed in the section
-on [minting and burning of value](#minting_and_burning) from the system.
+This field's value remains constant with the exception of preburning and burning operations as detailed in the sections
+on [minting and burning of value](#minting_and_burning) and [Preburning](#pre_burning).
 
 ### <a name="can_mint">`can_mint`</a>
 
 This specifies whether additional value in the specified currency may be added
-to the system. Coins in the currency can be burned from the system, accounts may hold balances
+to the system. Coins in the currency can be burned, accounts may hold balances
 in the currency, and payments can be made in the currency regardless of the
 value of this field.
 
@@ -212,24 +249,24 @@ function, and must be done by an account with the [Treasury Compliance role](htt
 
 ## Capabilities Created at Registration
 
-Whenever a type `C` is registered as a currency, a
+When a type `C` is registered as a currency a
 [`MintCapability<C>`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-mintcapability)
 and
-[`BurnCapability<C>`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-burncapability),
+[`BurnCapability<C>`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-burncapability)
 are created. If the currency is registered using the
 [`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency)
-function, both of these capabilities are stored under the Treasury Compliance account at address
-`0xB1E55ED`. In the case that the [`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency)
+function, both of these capabilities are stored under and controlled by the Treasury Compliance account at address
+`0xB1E55ED`. In the case that [`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency)
 is used to register the currency both of these capabilities are returned to the caller, which may store them in other structures.
 The `MintCapability` and `BurnCapability` for each currency are [unique](https://github.com/diem/dip/blob/master/dips/dip-2.md#permissions); after
 registration of a currency no future mint and burn capabilities for the currency may be created.
 
 ## On-chain list of registered currencies
 
-Whenever a currency is registered on chain, its currency code is added to the
+When a currency is registered on chain, its currency code is added to the
 [`RegisteredCurrencies` on-chain config](https://github.com/diem/dip/blob/master/dips/dip-6.md#registered-currencies).
-The list of currency codes registered on-chain is always a set, and attempting to
-register a currency with an already taken currency code will fail. There are some
+The list of currency codes registered on-chain is set, and attempting to
+register an existing currency code will fail. There are some
 [restrictions on the format and length of currency codes](#operational_things)
 that need to be considered from the on-chain perspective when choosing a
 currency code.
@@ -253,46 +290,44 @@ the [`scaling_factor`](#scaling_factor) for `Currency`.
 It is important to note that in the system any value of type `Diem<Currency>` is considered a
 valid asset in the `Currency` currency with its value given by the `value` field.  Therefore the
 minting of any non-zero value of this type needs to be considered a privileged operation
-since it represents minting of value on-chain. Additionally, this is an if-and-only-if
-relation; a value represents a specific amount `v` in a given currency `Currency`, if, and only
-if the value has the type `Diem<Currency>`.
+as it represents minting of value on-chain. Additionally, this is an if-and-only-if
+relation; a Move value represents a specific amount `v` in a given currency `Currency`, if, and only
+if the Move value has the type `Diem<Currency>` with a `value` field equal to `v`.
 
 ---
 # <a name="minting_and_burning">Minting and Burning of Value</a>
 ---
 
-Since the minting and burning of Diem Coins on-chain represent the changes to
-the total value held on the network, any changes to the total on-chain "market
-capitalization" are considered highly privileged operations. Additionally, the total
-on-chain capitalization of the system for a specific currency is recorded on-chain in the
-[`total_value`](#total_value) metadata field for each currency.
+The minting and burning of Diem Coins on-chain represent changes to the
+total value held on the network. These operations are designed to support a
+system of single-currency stablecoins (SCS) backed by reserves. Hence, they
+require special privileges dedicated for reserve management, e.g.,
+[MintCurrency, BurnCurrency, and PreburnCurrency](https://github.com/diem/dip/blob/master/dips/dip-2.md#permissions).
 
-Recall that the [minting of coins needs to be tightly controlled](#minting). The burning of coins
-the network similarly needs to be controlled to reduce off-chain counterparty risk between any off-chain
-reserves, and the owner of the coins that are to be burned. In particular, the burning process
-needs to ensure that once the transfer of assets off-chain has begun between the any off-chain reserve
-and the owner of the Diem Coins to be burned, that the Diem Coins in question cannot be
-re-introduced to circulation on-chain without the authorization of the party
-responsible for burning the coins.
+The total on-chain value of all coins in a Diem currency are recorded
+on-chain in the
+[`total_value`](https://github.com/diem/dip/blob/master/dips/dip-20.md#total_value)
+metadata field. Generally, Diem Coin operations are designed to support a
+reserve guarantee that the total value for a stablecoin should never exceed
+the value held in the reserve for the coin.
 
-To facilitate the burning process and prevent the re-introduction of Diem Coins into circulation whose backing
-assets have already been (or are in the process of being) transferred off-chain, any Diem Coins that are to be removed
-must first be placed into an association-controlled escrow, or
-[Preburn resource](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-preburn).
-Once Diem Coins have been [placed into such a preburn resource](#pre_burning) an account with the appropriate
-[`BurnCapability`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-burncapability)
-for the currency of the coins may then [remove them from the system](#burning) once the appropriate
-off-chain actions (if any) have been performed.
+In order to support inflight redemption orders, Diem Coins that are to be
+removed are placed in a [Preburn
+resource](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-preburn).
+Moving coins from a preburn resource requires a [BurnCurrency
+privilege](https://github.com/diem/dip/blob/master/dips/dip-2.md#permissions)
+for the currency of the coins being moved--granted to the currency's
+reserve management--removing them once a redemption has been completed.
 
-The specific set of operations that may be performed that relate to minting, preburning,
-and burning of Diem Coins are as follows:
+The specific set of operations that may be performed that relate to
+minting, preburning, and burning of Diem Coins are as follows.
 
 ### <a name="minting">Minting</a>
 
 Diem Coins in a currency `C` with a non-zero value may be created by calling
 
 ```rust
-public fun mint_with_capability<C>(value: u64, capability: MintCapability<C>): Diem<C>
+Diem::mint_with_capability<C>(value: u64, capability: MintCapability<C>): Diem<C>
 ```
 
 A reference to the `MintCapability<C>` resource for the currency being minted
@@ -302,7 +337,7 @@ coins in the specific currency.
 Additionally, non-zero-value coins for SCS currencies can be minted by calling
 
 ```rust
-public fun mint<C>(value: u64): Diem<C>
+Diem::mint<C>(value: u64): Diem<C>
 ```
 
 The `mint` function may only be called by an account with the
@@ -315,24 +350,25 @@ registered.
 1. [`Diem::mint_with_capability`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-mint_with_capability)
 2. [`Diem::mint`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-mint)
 
-### <a name="pre_burning">Pre-burning</a>
+### <a name="pre_burning">Preburning</a>
 
-In order to remove coins from circulation, they must first be moved to a preburn area.
-The movement of coins to a specific preburn area will emit [events](#currency_events)
-that may be used to initiate the off-chain transfer of backing funds for those coins.
+In order to remove coins from circulation, they must first be moved to a
+preburn area. The movement of coins to a specific preburn area will emit
+[events](#currency_events) that may be used by the reserve management to initiate transfer of
+backing funds for those coins.
 
 Funds may be moved to a preburn area only by an account that has access to a
 [Preburn capability](https://github.com/diem/dip/blob/master/dips/dip-2.md#permissions)
 resource for the currency in question. This action may be performed by calling either
 
 ```rust
-public fun preburn_with_resource<C>(coin: Diem<C>, preburn: &mut Preburn<C>, preburn_address: address)
+Diem::preburn_with_resource<C>(coin: Diem<C>, preburn: &mut Preburn<C>, preburn_address: address)
 ```
 
-where the passed in `Preburn<C>` resource is stored under `preburn_address`, or calling
+where the `Preburn<C>` resource is stored under `preburn_address`, or calling
 
 ```rust
-public fun preburn_to<C>(account: &signer, coin: Diem<C>)
+Diem::preburn_to<C>(account: &signer, coin: Diem<C>)
 ```
 
 where `account` has a `Preburn<C>` resource published under it.
@@ -342,21 +378,21 @@ A `Preburn` resource can only be created by an account with the
 by calling either the `create_preburn` function
 
 ```rust
-public fun create_preburn<C>(account: &signer): Preburn<C>
+Diem::create_preburn<C>(account: &signer): Preburn<C>
 ```
 
 and storing the `Preburn` resource returned by this function in a different module's resource. Or, by
 calling the `publish_preburn_to_account` function and passing in the signer for
-the `account` under which the created preburn resource will be stored along with a
+the `account` under which the created preburn resource will be stored, along with a
 signer proving authority to create a preburn resource
 
 ```rust
-public fun publish_preburn_to_account<C>(account: &signer, tc_account: &signer)
+Diem::publish_preburn_to_account<C>(account: &signer, tc_account: &signer)
 ```
 
 The `account` must have the
 [Designated Dealer role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles)
-and the `tc_account` account must have the
+and the `tc_account` must have the
 [Treasury Compliance role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles).
 
 
@@ -368,33 +404,34 @@ and the `tc_account` account must have the
 
 ### <a name="burning">Burning</a>
 
-Once the preburn process has started and coins have been deposited in the
-preburn area, an off-chain transfer of funds is initiated. There are two
-possible outcomes from this.
+Once coins are placed in the preburn area, there are two supported
+operations representing two possible outcomes of coin redemption by the
+reserve.
 
-1. If the off-chain transfer of the backing funds for the coins in the preburn resource
-      held under `preburn_address` has completed successfully, an account with
-      the [Treasury Compliance role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles)
-      must then remove or "burn" these funds by calling either the
+1.  If the transfer of the backing funds for the coins in the preburn
+    resource held under `preburn_address` has completed successfully, an
+    account with the [Treasury Compliance role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles) must then remove or "burn"
+    these funds by calling either the
       ```rust
-        public fun burn<C>(tc_account: &signer, preburn_address: address)
+        Diem::burn<C>(tc_account: &signer, preburn_address: address)
       ```
       function, or by calling the
       ```rust
-        public fun burn_with_capability<C>(preburn_address: address, burn_capability: &BurnCapability<C>)
+        Diem::burn_with_capability<C>(preburn_address: address, burn_capability: &BurnCapability<C>)
       ```
-      function, and passing in a `BurnCapability` resource to prove authority to burn coins in that currency.
+      function, and passing a `BurnCapability<C>` resource to prove authority to burn coins in that currency.
 
-2. If the off-chain transfer was not able to be completed successfully an
-      `account` with the [Treasury Compliance role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles)
-      may remove the funds in the `C` currency from the preburn area under
-      `preburn_address`, and re-introduce them to circulation by using
+2.  If the transfer was not able to be completed successfully an account
+    with the [Treasury Compliance
+    role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles) may
+    remove the funds in the `C` currency from the preburn area under
+    `preburn_address`, and re-introduce them to circulation by using
       ```rust
-        public fun cancel_burn<C>(account: &signer, preburn_address: address)
+        Diem::cancel_burn<C>(account: &signer, preburn_address: address): Diem<C>
       ```
       or by using a capability-based version and passing the `BurnCapability` for `C`
       ```rust
-        public fun cancel_burn_with_capability<C>(burn_capability: &BurnCapability<C>, preburn_address: address)
+        Diem::cancel_burn_with_capability<C>(burn_capability: &BurnCapability<C>, preburn_address: address): Diem<C>
       ```
 
 #### Reference Implementations
@@ -411,50 +448,50 @@ possible outcomes from this.
 
 Any amount of value in a currency `C` in circulation on-chain will always be held in a value
 of type `Diem<C>`. The
-[`Diem`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md)
-modules defines the set of operations that may be performed on values of this type. These
+[`Diem` module](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md)
+module defines the set of operations that may be performed on values of this type. These
 operations are as follows, and may be called by anyone:
 
 1. Create a coin with zero value in currency `C`
       ```rust
-          public fun zero<C>(): Diem<C>
+          Diem::zero<C>(): Diem<C>
       ```
 2. Get the underlying value of a coin in a currency `C` as an integer
       ```rust
-        public fun value<C>(coin: &Diem<C>): u64
+        Diem::value<C>(coin: &Diem<C>): u64
       ```
-3. Split the passed in `coin` in currency `C` into two coins. The first coin
+3. Split the `coin` in currency `C` into two coins. The first coin
   contains the remaining value after `amount` has been removed, and the second
-  coin has a value of `amount`.
+  coin has a value of `amount`
     ```rust
-        public fun split<C>(coin: Diem<C>): (Diem<C>, Diem<C>)
+        Diem::split<C>(coin: Diem<C>, amount: u64): (Diem<C>, Diem<C>)
     ```
 4. Withdraw `amount` of value from the `coin` in-place and return a coin of the
-  same currency with value equal to `amount`.
+  same currency with value equal to `amount`
     ```rust
-        public fun withdraw<C>(coin: &mut Diem<C>, amount: u64): Diem<C>
+        Diem::withdraw<C>(coin: &mut Diem<C>, amount: u64): Diem<C>
     ```
 5. Withdraw all of the value from `coin` in-place and return a coin with the
   same value as `coin` before this function was called. Equivalent to
-  `withdraw(&mut coin, value(&coin))`.
+  `withdraw(&mut coin, value(&coin))`
     ```rust
-        public fun withdraw_all<C>(coin: &mut Diem<C>): Diem<C>
+        Diem::withdraw_all<C>(coin: &mut Diem<C>): Diem<C>
     ```
 6. Combine the value of two coins. Returns a coin in the same currency with
-  value equal to the sum of the passed-in coins values.
+  value equal to the sum of the passed-in coins values
     ```rust
-        public fun join<C>(coin1: Diem<C>, coin2: Diem<C>): Diem<C>
+        Diem::join<C>(coin1: Diem<C>, coin2: Diem<C>): Diem<C>
     ```
 7. Deposit the `check` coin into the passed-in `coin`. The value of `coin` after
   this call is equal to the sum of the `check` value and the previous value of
-  `coin`.
+  `coin`
       ```rust
-        public fun deposit<C>(coin: &mut Diem<C>, check: Diem<C>)
+        Diem::deposit<C>(coin: &mut Diem<C>, check: Diem<C>)
       ```
 8. Destroys a coin with a value of zero. Attempting to destroy a non-zero value
   coin will result in an error and the passed in `coin` will not be destroyed.
       ```rust
-        public fun destroy_zero<C>(coin: Diem<C>)
+        Diem::destroy_zero<C>(coin: Diem<C>)
       ```
 
 #### Reference Implementations
@@ -471,15 +508,15 @@ operations are as follows, and may be called by anyone:
 
 There are a number of different operations that may be performed to view and update the
 metadata for a given currency (viz. [Required information for registration of a currency
-and metadata](#metadata_spec)). They can be divided in to "getters" (non-mutative),
-"setters" (mutative), and predicate operations, and are as follows.
+and metadata](#metadata_spec)). They can be divided into "getters" (non-mutative),
+"setters" (mutative), and predicate operations. They are as follows:
 
 ### Non-Mutative ("getters")
 1. Get the sum of values for all coins of currency `C` held in preburn resources across the system.
     ```rust
         Diem::preburn_value<C>(): u64
     ```
-2. Get the sum all values for all coins of currency `C` currently in existence
+2. Get the sum of all values for all coins of currency `C` currently in existence
   in the system (including coins in preburn areas).
     ```rust
         Diem::market_cap<C>(): u128
