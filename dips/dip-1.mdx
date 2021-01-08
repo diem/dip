@@ -236,16 +236,11 @@ Represents an error that occurred in response to a Command.
 
 `invalid_jws_signature`: JWS signature verification failed
 
-##### Object Data / Logic Validation Error Codes
+##### Request Object Validation Error Codes
 
 `invalid_json`: decoded JWS body is not json.
 
 `invalid_object`: command request/response object json is not object, or the command object type does not match `command_type`.
-
-`invalid_overwrite`:
-* Overwrite a field that can only be written once.
-* Overwrite an immutable field (field can only be set in initial command object), e.g. `original_payment_reference_id`).
-* Overwrite opponent payment actor's fields.
 
 `missing_field`:
 * Missing required field.
@@ -263,8 +258,6 @@ Represents an error that occurred in response to a Command.
 
 `invalid_command_producer`: The HTTP request sender is not the right actor to send the payment object. For example, if the actor receiver sends a new command with payment object change that should be done by actor sender.
 
-`invalid_transition`: as we only allow one actor action at a time, and the next states for a given command object state are limited to specific states. This error indicates the new payment object state is not valid according to the current object state. For example: VASP A sends RSOFT to VASP B, VASP B should send the next payment object with ABORT, or SSOFTSEND; VASP A should respond to this error code if VASP B sends payment object state SSOFT.
-
 `invalid_initial_or_prior_not_found`: could not find command by reference_id for a non-initial state command object; for example, actor receiver received a payment command object that actor sender status is `ready_for_settlement`, but receiver could not find any command object by the reference id.
 
 `no_kyc_needed`: payment action amount is under travel rule limit.
@@ -277,21 +270,29 @@ Represents an error that occurred in response to a Command.
 * The DIP-5 account identifier address in the command object is not HTTP request sender’s address or receiver’s address. For payment object it is `sender#address` or `receiver#address`.
 * Could not find on-chain account by an DIP-5 account identifier address in command object address.
 
-`missing_dependency`: one of dependency objects is not found by the id provided in the command object. For example, the receiver should return this error code if it could not find the data by the `original_payment_reference_id` if the sender set it.
-
-`invalid_dependency`: one of dependency objects is found, but it is not valid for the command object. For example, the dependency payment object status is `aborted` instead of `ready_for_settlement`.
-
 `conflict`:
 * Command object is in conflict with another different command object by cid, likely a cid is reused for different command object.
 * Failed to acquire lock by for the command object by the `reference_id`.
 
 `unsupported_currency`: field `payment#action#currency` value is a valid Diem currency code, but it is not supported / acceptable by the receiver VASP.
 
+`missing_dependency`: One of dependency objects is not found by the id provided in the command object. For example, the receiver should return this error code if it could not find the data by the `original_payment_reference_id` if the sender set it.
+
+`invalid_dependency`: One of dependency objects is found, but it is not valid for the command object. For example, the dependency payment object status is `aborted` instead of `ready_for_settlement`.
+
+`invalid_overwrite`:
+* Overwrite a field that can only be written once.
+* Overwrite an immutable field (field can only be set in initial command object), e.g. `original_payment_reference_id`).
+* Overwrite opponent payment actor's fields.
+
+`invalid_transition`: As we only allow one actor action at a time, and the next states for a given command object state are limited to specific states. This error indicates the new payment object state is not valid according to the current object state. For example: VASP A sends RSOFT to VASP B, VASP B should send the next payment object with ABORT, or SSOFTSEND; VASP A should respond to this error code if VASP B sends payment object state SSOFT.
+
 # Travel Rule Data Exchange
 
 In the initial version of the off-chain APIs, the usage is intended as a means of transferring travel-rule information between VASPs.  The following will detail the request and response payloads utilized for this purpose.
 
 ## Request/Response Payload
+
 All requests between VASPs are structured as [`CommandRequestObject`s](#commandrequestobject) and all responses are structured as [`CommandResponseObject`s](#commandresponseobject).  For a travel-rule data exchange, the resulting request takes a form of the following:
 
 ```
