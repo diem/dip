@@ -279,7 +279,7 @@ Represents an error that occurred in response to a Command.
 * The DIP-5 account identifier address in the command object is not HTTP request sender’s address or receiver’s address. For payment object it is `sender#address` or `receiver#address`.
 * Could not find on-chain account by an DIP-5 account identifier address in command object address.
 
-`missing_dependency`: one of dependency objects is not found by the id provided in the command object. For example, if the payment object `original_payment_reference_id` field is set, the receiver should return this error code if it could not find the data by the `original_payment_reference_id`.
+`missing_dependency`: one of dependency objects is not found by the id provided in the command object. For example, the receiver should return this error code if it could not find the data by the `original_payment_reference_id` if the sender set it.
 
 `invalid_dependency`: one of dependency objects is found, but it is not valid for the command object. For example, the dependency payment object status is `aborted` instead of `ready_for_settlement`.
 
