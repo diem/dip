@@ -42,6 +42,10 @@
   color: #5092E6;
 }
 
+.num {
+  min-width: 45px;
+}
+
 @media mobile-breakpoint-max-query {
   .table th:first-child {
     font-size: 0px; /* Cut out the header in order to make more space for title */
