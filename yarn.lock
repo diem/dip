@@ -1434,10 +1434,10 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@libra-opensource/diem-docusaurus-components@^0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@libra-opensource/diem-docusaurus-components/-/diem-docusaurus-components-0.1.5.tgz#9388cb87a5fc01614a80687a48d84f0a88f9d13e"
-  integrity sha512-EkDN419AZuPn6Feua7VM+LDqhy20lcArCk2zv4anD4ZBETVCv3UeNSYvG2nYD4sC6jeYKPllHlmDnTJL1wzfaw==
+"@libra-opensource/diem-docusaurus-components@^0.1.7":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@libra-opensource/diem-docusaurus-components/-/diem-docusaurus-components-0.1.7.tgz#3febbd82fcf3d195b18c193560b75e412e909c9c"
+  integrity sha512-5ZPVv/Hh6dlZ7lryquVYP8v5A5Qd8HoQp5zutGmcbTNyhEHy9FF7GAadfi+aPumq0dneVTbvb4pzEhIch6RNGg==
   dependencies:
     docsearch.js "^2.6.3"
     prism-react-renderer "^1.1.1"
