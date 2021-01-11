@@ -277,11 +277,11 @@ The following sections list all error codes for various validations when process
 * Command object is in conflict with another different command object by cid, likely a cid is reused for different command object.
 * Failed to acquire lock for the command object by the `reference_id`.
 
-`unsupported_currency`: field `payment.action.currency` value is a valid Diem currency code, but it is not supported / acceptable by the receiver VASP.
+`unsupported_currency`: Field `payment.action.currency` value is a valid Diem currency code, but it is not supported / acceptable by the receiver VASP.
 
 `missing_dependency`: One of dependency objects is not found by the id provided in the command object. For example, the receiver should return this error code if it could not find the data by the `original_payment_reference_id` if the sender set it.
 
-`invalid_dependency`: One of dependency objects is found, but it is not valid for the command object. For example, the dependency payment object status is `aborted` instead of `ready_for_settlement`.
+`invalid_dependency`: One of dependency objects is found, but it is not valid for the command object. For example, the status of the  dependency payment object found by `original_payment_reference_id` is `aborted` instead of `ready_for_settlement`.
 
 `invalid_overwrite`:
 * Overwrite a field that can only be written once.
