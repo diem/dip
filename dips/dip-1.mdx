@@ -224,11 +224,12 @@ The following sections list all error codes for various validations when process
 
 ##### HTTP Header Validation Error Codes
 
-`invalid_x_request_sender_address`:
+`invalid_http_header`:
 * `X-REQUEST-SENDER-ADDRESS` header value is not the request sender’s address in the command object. All command objects should have a field that is the request sender’s address. For payment object, it is `sender.address` or `receiver.address`.
 * Could not find Diem's onchain account by the `X-REQUEST-SENDER-ADDRESS` header value.
 * Could not find the compliance key of the onchain account found by the `X-REQUEST-SENDER-ADDRESS` header value.
-* The compliance key found from the onchain account is not a valid ED25519 public key.
+* The compliance key found from the onchain account by `X-REQUEST-SENDER-ADDRESS` is not a valid ED25519 public key.
+* `X-REQUEST-ID` is not a valid UUID format.
 
 `missing_http_header`: missing HTTP header `X-REQUEST-ID` or `X-REQUEST-SENDER-ADDRESS`.
 
