@@ -220,10 +220,12 @@ Represents an error that occurred in response to a Command.
 
 #### List of Error Codes
 
+The following sections list all error codes for various validations when processing an inbound command request. Depending on implementation, some validations are optional; we recommend use the error code for the validation implemented.
+
 ##### HTTP Header Validation Error Codes
 
 `invalid_x_request_sender_address`:
-* `X-REQUEST-SENDER-ADDRESS` header value is not the request sender’s address in the command object. All command objects should have a field that is the request sender’s address. For payment object, it is `sender#address` or `receiver#address`.
+* `X-REQUEST-SENDER-ADDRESS` header value is not the request sender’s address in the command object. All command objects should have a field that is the request sender’s address. For payment object, it is `sender.address` or `receiver.address`.
 * Could not find Diem's onchain account by the `X-REQUEST-SENDER-ADDRESS` header value.
 * Could not find the compliance key of the onchain account found by the `X-REQUEST-SENDER-ADDRESS` header value.
 * The compliance key found from the onchain account is not a valid ED25519 public key.
@@ -267,14 +269,14 @@ Represents an error that occurred in response to a Command.
 * Field `recipient_signature` value is an invalid signature.
 
 `unknown_address`:
-* The DIP-5 account identifier address in the command object is not HTTP request sender’s address or receiver’s address. For payment object it is `sender#address` or `receiver#address`.
+* The DIP-5 account identifier address in the command object is not HTTP request sender’s address or receiver’s address. For payment object it is `sender.address` or `receiver.address`.
 * Could not find on-chain account by an DIP-5 account identifier address in command object address.
 
 `conflict`:
 * Command object is in conflict with another different command object by cid, likely a cid is reused for different command object.
-* Failed to acquire lock by for the command object by the `reference_id`.
+* Failed to acquire lock for the command object by the `reference_id`.
 
-`unsupported_currency`: field `payment#action#currency` value is a valid Diem currency code, but it is not supported / acceptable by the receiver VASP.
+`unsupported_currency`: field `payment.action.currency` value is a valid Diem currency code, but it is not supported / acceptable by the receiver VASP.
 
 `missing_dependency`: One of dependency objects is not found by the id provided in the command object. For example, the receiver should return this error code if it could not find the data by the `original_payment_reference_id` if the sender set it.
 
@@ -576,17 +578,17 @@ The Sender issues `PaymentCommand` to create the initial payment object.
 
 The sender creates a payment object that they believe requires KYC information exchange. The payment command includes a full payment object including all mandatory fields and the following optional fields populated as:
 
-* `Sender.Status.Status` = `need_kyc_data`.
-* `Sender.kyc_data` = The `KycDataObject` representing the sender.
-* `Receiver.Status.Status` = `none`
+* `sender.status.status` = `need_kyc_data`.
+* `sender.kyc_data` = The `KycDataObject` representing the sender.
+* `receiver.status.status` = `none`
 
 ### SINIT -> RSEND (Step 4)
 The Receiver issues `PaymentCommand` to update an existing payment.
 
-The receiver VASP examines the `Sender.kyc_data` object, and is satisfied that given the sender information the payment can proceed. It responds with a Payment Command that includes:
+The receiver VASP examines the `sender.kyc_data` object, and is satisfied that given the sender information the payment can proceed. It responds with a Payment Command that includes:
 
-* `Receiver.Status.Status` = `ready_for_settlement`
-* `Receiver.kyc_data` = The `KycDataObject` representing the receiver.
+* `receiver.status.status` = `ready_for_settlement`
+* `receiver.kyc_data` = The `KycDataObject` representing the receiver.
 * `recipient_signature` = a valid recipient signature.
 
 ### SINIT -> RABORT (Step 9)
@@ -594,8 +596,8 @@ The Receiver issues `PaymentCommand` to update an existing payment.
 
 The receiver VASP examines the sender KYC information and is either not satisfied the payment can proceed, needs more time to process the KYC information, or requires additional information to determine if the payment can proceed. It includes a command to abort the payment with an appropriate error code.
 
-* `Receiver.Status.Status`: `abort`
-* `Receiver.Status.abort_code`: one of `no-kyc-needed` or `rejected`.
+* `receiver.status.status`: `abort`
+* `receiver.status.abort_code`: one of `no-kyc-needed` or `rejected`.
 
 The sender can initiate a payment on-chain in case of an abort with `no-kyc-needed`.
 
@@ -605,7 +607,7 @@ The Sender issues `PaymentCommand` to update an existing payment.
 
 The Sender VASP examines the KYC information from the Receiver and is satisfied the payment can proceed.
 
-* `Sender.Status.Status`: `ready_for_settlement`
+* `sender.status.status`: `ready_for_settlement`
 
 The payment should be executed on-chain by the sender (or settled in any other way) following the success of the command.
 
@@ -615,8 +617,8 @@ The Sender issues `PaymentCommand` to update an existing payment.
 
 The sender VASP receives the Receiver KYC information and decides it cannot proceed with the payment. It issues an abort command:
 
-* `Sender.Status.Status`: `abort`
-* `Sender.Status.abort_code`: `rejected`.
+* `sender.status.status`: `abort`
+* `sender.status.abort_code`: `rejected`.
 
 ## Steps of the protocol: The soft-match states and flows
 
@@ -626,11 +628,11 @@ The flows below allow the Receiver VASP and the Sender VASP to request additiona
 
 ### Receiver soft-match (SINIT -> RSOFT -> SSOFTSEND)
 
-After the Sender initiates a payment by providing KYC information (SINIT), the Receiver may determine they require more information to disambiguate a match. In that case they commit a command to set `Receiver.Status.Status` to `soft-match` (state RSOFT) (Step 5) or abort (step 9). The sender may respond with a command that populates the `Sender.additional_kyc_data` (Step 6), which sets the field `Sender.additional_kyc_data` (state SSOFTSEND) or abort (SABORT, Step not shown in diagram). Finally, if the Receiver is satisfied with the additional information they move to provide all information necessary to go to RSEND (Step 4, see above. This includes receiver KYC information and recipient signature). Otherwise, the receiver can abort to state RABORT (Step 8).
+After the Sender initiates a payment by providing KYC information (SINIT), the Receiver may determine they require more information to disambiguate a match. In that case they commit a command to set `receiver.status.status` to `soft-match` (state RSOFT) (Step 5) or abort (step 9). The sender may respond with a command that populates the `sender.additional_kyc_data` (Step 6), which sets the field `sender.additional_kyc_data` (state SSOFTSEND) or abort (SABORT, Step not shown in diagram). Finally, if the Receiver is satisfied with the additional information they move to provide all information necessary to go to RSEND (Step 4, see above. This includes receiver KYC information and recipient signature). Otherwise, the receiver can abort to state RABORT (Step 8).
 
 ### Sender soft-match (RSEND -> SSOFT -> RSOFTSEND)
 
-Similarly to the flow above, the Sender at state (RSEND) may decide they need information about the receiver of the payment to disambiguate a soft-match. They set their status `Sender.Status.Status` to `soft-match` (state SSOFT) (Step 5). The receiver can abort (RABORT) (Step not shown in diagram) or provide the additional KYC in `Receiever.additional_kyc_data` (state RSOFTSEND, Step 6). The sender may then abort (SABORT, Step 8) or move to READY (Step 7), and settle the payment.
+Similarly to the flow above, the Sender at state (RSEND) may decide they need information about the receiver of the payment to disambiguate a soft-match. They set their status `sender.status.status` to `soft-match` (state SSOFT) (Step 5). The receiver can abort (RABORT) (Step not shown in diagram) or provide the additional KYC in `receiever.additional_kyc_data` (state RSOFTSEND, Step 6). The sender may then abort (SABORT, Step 8) or move to READY (Step 7), and settle the payment.
 
 # Details of JWS signature scheme
 
