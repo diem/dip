@@ -24,7 +24,7 @@ In order to release a new version of the DPN software, DN will coordinate the re
 Some changes may require all validators to transition at the same blockchain height, which is implemented by an [on-chain state update](#on-chain-state-upgrade).
 
 ## On-chain state upgrade
-The on-chain state can only be updated via transactions that are submitted to DPN and validated. There are three ways to effectuate changes to the DPN by directly mutating the on-chain state, ordered by most likely to occur to least likely to occur: normal multi-sig transactions, multi-sig WriteSet transactions, and genesis transactions.
+The on-chain state can only be updated via transactions that are submitted to DPN and validated. There are three ways to effectuate changes to the DPN by directly mutating the on-chain state, ordered by most likely to occur to least likely to occur: normal multi-sig transactions, multi-sig WriteSet transactions, and waypoint transactions.
 
 ### Normal multi-sig transactions
 Normal transactions go through the DPN Virtual Machine and invoke Diem Framework modules (see [DIP-2](./dip-2.md)) to produce a Writeset that alters the ledger-state. Both the resulting state change and the authenticating set of signatures are transparent and visible on-chain.
@@ -35,10 +35,11 @@ Writeset transactions are a special type of multi-sig transactions that prescrib
 The use of WriteSet transactions follows the spirit of transparency — WriteSet transactions allow an arbitrary change to the state of the blockchain without altering the history of past transactions.
 Even though WriteSet transactions prescribe an arbitrary state change, they are authenticated with the same multi-sig mechanism as normal transactions which means both the change and multi-sig are transparent and visible on-chain.
 
-### Genesis transactions
-Genesis transactions can be either normal or WriteSet transactions without the typical corresponding signatures. As the name suggests, the process of applying such a transaction is similar to how the very first genesis transaction works. The genesis transaction applies on top of a specific snapshot of a Diem blockchain (might be empty). DN is responsible for picking the appropriate snapshot and building the genesis transactions. Users of Diem, including validators, use the genesis transaction to authenticate the blockchain. If a validator fails to acquire the correct genesis transaction, it will vote on an irrelevant blockchain, but not otherwise impact the system. If a user of the system such as a full node or blockchain observer acquires the incorrect genesis transaction, they will see an incorrect state.
+### Waypoint transactions
+Waypoint encapsulates a specific snapshot of the Diem blockchain and is used to authenticate the blockchain when validator signatures are not applicable, e.g. the genesis. (See [this](https://github.com/diem/diem/blob/master/documentation/tech-papers/lbft-verification/lbft-verification.pdf) for more details)
+Waypoint transactions can be either normal or WriteSet transactions but without typical corresponding signatures. As the name suggests, the process of applying such a transaction will need a waypoint for authentication, similar to how the first genesis transaction works. The waypoint transaction applies on top of a specific snapshot of a Diem blockchain (might be empty). DN is responsible for picking the appropriate snapshot and building the waypoint transactions and calculating the waypoint. Users of Diem, including validators, use the waypoint to authenticate the blockchain. If a validator fails to acquire the correct waypoint transaction, it will vote on an irrelevant blockchain, but not otherwise impact the system. If a user of the system such as a full node or blockchain observer acquires the incorrect waypoint transaction, they will see an incorrect state.
 
-Note that, after DPN launches, DN could use genesis transactions as a last resort for extremely unlikely catastrophic scenarios such as losing more than a third of the validators.
+Note that, after DPN launches, DN could use waypoint transactions as a last resort for extremely unlikely catastrophic scenarios such as losing more than a third of the validators.
 
 The decision flow chart below summarizes the building blocks and how they will be used.
 
@@ -77,4 +78,4 @@ Category: On-chain state change + SmartContract incapable => Multi-sig WriteSet 
 ## Quorum Loss
 Example: F+1 validators fail across multiple fault isolation zones and will not be able to recover within any reasonable time period.
 
-Category: State change and consensus is dead. => Genesis transaction
+Category: State change and consensus is dead. => Waypoint transaction
