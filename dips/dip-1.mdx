@@ -18,8 +18,15 @@ The Off-Chain Protocol allows two entities to define payments off-chain and priv
 
 | Version | Revision | Link      |
 |---------|----------|-----------|
-| v2      | current  | n/a       |
-| v1      | e82a0eb8a9dd5d498fc89bf84565cc7adae3d8ef | https://github.com/diem/dip/blob/e82a0eb8a9dd5d498fc89bf84565cc7adae3d8ef/dips/dip-1.mdx  |
+| v3      | current  | n/a       |
+| v2	  | 90af9435e933a5ff46031d254acb3a52bf81f67f | https://github.com/diem/dip/blob/90af9435e933a5ff46031d254acb3a52bf81f67f/dips/dip-1.mdx  |
+| v1      | e82a0eb8a9dd5d498fc89bf84565cc7adae3d8ef | https://github.com/diem/dip/blob/e82a0eb8a9dd5d498fc89bf84565cc7adae3d8ef/lips/lip-1.mdx  |
+
+V3 changes:
+
+* Remove subaddresses and use only VASP account-addresses
+* Sender retrieves the reference id from the recipient using a DIP-4 Payment URI
+* Changed reference_id to use a 64 bit identifier so that it replaces subaddresses
 
 V2 changes:
 
@@ -69,7 +76,7 @@ The remainder of this document details the specifications for Commands, Objects 
 
 **Shared Object**: All Objects contained within a Command are logically shared, meaning that each VASP has a copy of the Object and may create a new Command to modify it. For example, during the lifecycle of a `KycDataObject`, both VASPs will add information to it. The protocol does not support simultaneous updates to Objects. Rather, VASPs must take turns updating the Object - with turns specified as per the [command sequence](#paymentobject-protocol-command-sequence).
 
-**Reference ID**: Every Object type contains a `reference_id` field which is a globally unique reference ID for the Object. The reference ID is always specified by the payment initiator VASP (the VASP which originally created the Object). The value must be a 128 bit long UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included.
+**Reference ID**: Every Object type contains a 64-bit `reference_id` field. The (sender account, recipient account, and `reference_id`) is a globally unique identifier for this Object. This value should be obtained via a [Diem Account Identifier](https://dip.diem.com/dip-5/) that the sender requests from the recipient before submitting payment.
 
 ### On-Chain Account Setup
 
@@ -86,7 +93,7 @@ The base url value should be the url without path `/<protocol_version>/command`,
 
 All HTTP requests must contain:
 
-* A header `X-REQUEST-ID` with a unique UUID (according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included) for the request, used for tracking requests and debugging. Responses must have the same string in the `X-REQUEST-ID` header value as the requests they correspond to.
+* A header `X-REQUEST-ID` with a unique 64-bit identifier for the request, used for tracking requests and debugging. Responses must have the same string in the `X-REQUEST-ID` header value as the requests they correspond to.
 * A header `X-REQUEST-SENDER-ADDRESS` with the HTTP request sender's VASP [DIP-5](https://dip.diem.com/dip-5/) address used in the command object. The HTTP request sender must use the compliance key of the VASP account linked with this address to sign the request JWS body, and the request receiver uses this address to find the request sender's compliance key to verify the JWS signature. For example: VASP A transfers funds to VASP B. The HTTP request A sends to B contains `X-REQUEST-SENDER-ADDRESS` as VASP A's address. An HTTP request B sends to A should contain VASP B's address as X-REQUEST-SENDER-ADDRESS.
 
 All HTTP responses must contain:
@@ -140,7 +147,7 @@ All requests between VASPs are structured as a [`CommandRequestObject`](#command
     "_ObjectType": "CommandRequestObject",
     "command_type": "PaymentCommand", // Command type
     "command": CommandObject(), // Object of type as specified by command_type
-    "cid": "12ce83f6-6d18-0d6e-08b6-c00fdbbf085a",
+    "cid": "7d513b8747d3e103",
 
 }
 ```
@@ -150,7 +157,7 @@ A response would look like the following:
 {
     "_ObjectType": "CommandResponseObject",
     "status": "success",
-    "cid": "12ce83f6-6d18-0d6e-08b6-c00fdbbf085a"
+    "cid": "7d513b8747d3e103"
 }
 ```
 
@@ -163,7 +170,7 @@ All requests between VASPs are structured as `CommandRequestObject`s.
 | _ObjectType  | str    | Y | Fixed value: `CommandRequestObject`|
 | command_type | str    | Y | A string representing the type of Command contained in the request. |
 | command      | Command object | Y | The Command to sequence. |
-| cid | str    | Y     | A unique identifier for the Command. Must be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included. |
+| cid | str    | Y     | A unique 64-bit identifier for the Command. |
 
 
 ```
@@ -183,7 +190,7 @@ All responses to a CommandRequestObject are in the form of a CommandResponseObje
 | _ObjectType    | str      | Y             | The fixed string `CommandResponseObject`. |
 | status         | str      | Y             | Either `success` or `failure`. |
 | error          | [OffChainErrorObject](#offchainerrorobject) | N | Details of the error when status == "failure" |
-| cid            | str      | N | The Command identifier to which this is a response. Must be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included and should match the 'cid' of the CommandRequestObject. |
+| cid            | str      | N | The 64-bit Command identifier to which this is a response. Should match the 'cid' of the CommandRequestObject. |
 
 
 ```
@@ -263,7 +270,7 @@ All requests between VASPs are structured as [`CommandRequestObject`s](#commandr
 		    "receiver": {
 			    "address": "885095C0EBD5A8167D1766D31A6B15DF",
 			},
-		    "reference_id": "5b8403c9-86f5-3fe0-7230-1fe950d030cb",
+		    "reference_id": "226138874660da92",
 		    "action": {
 			    "amount": 100,
 			    "currency": "USD",
@@ -308,7 +315,7 @@ The structure in this Object can be a full payment or just the fields of an exis
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
 | sender/receiver | [`PaymentActorObject`](#paymentactorobject) | Required for payment creation | Information about the sender/receiver in this payment |
-| reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value should be globally unique. This field is mandatory on payment creation and immutable after that. This must be a 128 bits long UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included. |
+| reference_id | str | Y | 64-bit reference ID of this payment. |
 | original_payment_reference_id | str | N | Used for updates to a payment after it has been committed on chain. For example, used for refunds. The reference ID of the original payment will be placed into this field. This value is optional on payment creation and invalid on updates. |
 | recipient_signature | str | N | Signature of the recipient of this transaction encoded in hex. The is signed with the compliance key of the recipient VASP and is used for on-chain attestation from the recipient party.  This may be omitted on blockchains which do not require on-chain attestation. Generated via [Recipient Signature](#recipient-signature) |
 | action | [`PaymentActionObject`](#paymentactionobject) | Y | Number of cryptocurrency + currency type (XUS, etc.)<a href="#note1" id="note1ref"><sup>1</sup></a> + type of action to take. This field is mandatory and immutable |
@@ -318,8 +325,8 @@ The structure in this Object can be a full payment or just the fields of an exis
 {
     "sender": PaymentActorObject(),
     "receiver": PaymentActorObject(),
-    "reference_id": "d4115900-aad6-5d81-4123-6b464f1315f5",
-    "original_payment_reference_id": "5b8403c9-86f5-3fe0-7230-1fe950d030cb",
+    "reference_id": "47f248e1e3039868",
+    "original_payment_reference_id": "67d95f3453f4f558",
     "recipient_signature": "...",
     "action": PaymentActionObject(),
     "description": "A free form or structured description of the payment.",
@@ -596,7 +603,7 @@ Valid JWS Compact Signature (str, utf8):
 Once the receiver side is comfortable that it has received appropriate information and is ready for the transaction to go on-chain (Step 4), it provides a signature in order to support dual attestation of the on-chain transaction. The receiver VASP signs with the receiver compliance private key.
 
 * The algorithm used to generate the signature is `EdDSA` as specified in RFC 8032.
-* The signature is over the Diem Canonical Serialization of a Metadata structure including a 16-byte `reference_id`, a 16-byes Diem on-chain `address`, the payment `amount` (u64), and a domain separator `DOMAIN_SEPARATOR` (with value in ascii `@@$$DIEM_ATTEST$$@@`).
+* The signature is over the Diem Canonical Serialization of a Metadata structure including a 64-bit `reference_id`, a 16-byes Diem on-chain `address`, the payment `amount` (u64), and a domain separator `DOMAIN_SEPARATOR` (with value in ascii `@@$$DIEM_ATTEST$$@@`).
 * The output is a hex encoded 64-byte string representing the raw byte representation of the EdDSA signature.
 
 ## Test Vector for compliance signature
