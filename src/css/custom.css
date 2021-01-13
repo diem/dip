@@ -1,3 +1,8 @@
+.main-content {
+  flex: 1;
+  max-width: calc( 100% - var(--right-sidebar-width) );
+}
+
 main article header h1 {
   margin-bottom: 20px;
 }
@@ -10,10 +15,6 @@ main article h2 {
 
 main .markdown > h2 {
   margin-bottom: 15px;
-}
-
-body h2 .hash-link {
-  margin-left: -1.5rem;
 }
 
 .menu__link {

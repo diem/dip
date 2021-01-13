@@ -144,7 +144,7 @@ function DocItem(props) {
           styles.docItemWrapper,
         )}
       >
-        <div className={classnames(styles.docItemCol)}>
+        <div className={classnames('main-content', styles.docItemCol)}>
           <div className={styles.docItemContainer}>
             <article>
               <header className={styles.header} id={HEADER_ID}>
