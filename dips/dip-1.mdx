@@ -77,7 +77,7 @@ A VASP's on-chain account must be created and set up in accordance with the stan
 
 Of particular note for off-chain APIs is the compliance key and base url values. The compliance key value is the Ed25519 key with which a VASP signs travel rule statements which are verified on-chain and all off-chain requests and responses. During account creation, a VASP will set their compliance key and base url which will be stored under the primary VASP account (Parent VASP account).
 
-### HTTP end-point
+### HTTP End-point
 
 Each VASP exposes an HTTPS POST end point at `https://<hostname>:<port>/<protocol_version>/command`. The `protocol_version` is `v2` for this iteration of the off-chain APIs.
 The base url value should be the url without path `/<protocol_version>/command`, e.g. `https://<hostname>:<port>`.
@@ -291,7 +291,7 @@ For a travel rule data exchange, the [command_type](#commandrequestobject) field
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
 | _ObjectType   | str  | Y             | The fixed string `PaymentCommand` |
-| payment| [`PaymentObject`](#paymentobject) | Y | contains a `PaymentObject` that either creates a new payment or updates an existing payment. Note that strict validity checks apply when updating payments, that are listed in the section below describing these Objects. An invalid update or initial payment Object results in a Command error
+| payment| [`PaymentObject`](#paymentobject) | Y | contains a `PaymentObject`
 ```
 {
     "_ObjectType": "PaymentCommand",
@@ -303,13 +303,13 @@ For a travel rule data exchange, the [command_type](#commandrequestobject) field
 
 ### PaymentObject
 
-The structure in this Object can be a full payment or just the fields of an existing payment Object that need to be changed. Some fields are immutable after they are defined once (see below). Others can be updated multiple times. Updating immutable fields with a different value results in a Command error, but it is acceptable to resend the same value.
+Some fields are immutable after they are defined once. Others can be updated multiple times (see below). Updating immutable fields with a different value results in a Command error.
 
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
-| sender/receiver | [`PaymentActorObject`](#paymentactorobject) | Required for payment creation | Information about the sender/receiver in this payment |
+| sender/receiver | [`PaymentActorObject`](#paymentactorobject) | Y | Information about the sender/receiver in this payment |
 | reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value should be globally unique. This field is mandatory on payment creation and immutable after that. We recommend using a 128 bits long UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included. |
-| original_payment_reference_id | str | N | Used for updates to a payment after it has been committed on chain. For example, used for refunds. The reference ID of the original payment will be placed into this field. This value is optional on payment creation and invalid on updates. |
+| original_payment_reference_id | str | N | Used for updates to a payment after it has been committed on chain. For example, used for refunds. The reference ID of the original payment will be placed into this field. |
 | recipient_signature | str | N | Signature of the recipient of this transaction encoded in hex. The is signed with the compliance key of the recipient VASP and is used for on-chain attestation from the recipient party.  This may be omitted on blockchains which do not require on-chain attestation. Generated via [Recipient Signature](#recipient-signature) |
 | action | [`PaymentActionObject`](#paymentactionobject) | Y | Number of cryptocurrency + currency type (XUS, etc.)<a href="#note1" id="note1ref"><sup>1</sup></a> + type of action to take. This field is mandatory and immutable |
 | description | str | N | Description of the payment. To be displayed to the user. Unicode utf-8 encoded max length of 255 characters. This field is optional but can only be written once.
