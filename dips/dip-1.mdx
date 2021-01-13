@@ -616,22 +616,19 @@ The data that contributes to the compliance recipient signature.
 
 Metadata is serialized using  LCS (including encoding of `reference_id`) and appended to the fixed length byte sequences representing `address`, `amount`, and `DOMAIN_SEPARATOR`. For example the byte sequence that is signed for the transaction data above is (in hex-encoded bytes):
 
-     "02000120626239393164386533653630313165623865616561636465343830303131323253414d504c4552454641444452455353802d4e0000000000404024244449454d5f41545445535424244040" (len=158)
+     "02004257855C8410735AC58E2B5C422C479453414d504c4552454641444452455353802d4e0000000000404024244449454d5f41545445535424244040" (len=122)
 
 The above serialized byte array represents:
 
         "0200"                                      - Metadata type and version (2 bytes, constant value)
-        "0120"                                      - uleb128 encoded reference_id length (variable)
-        "6262 ... 3232"                             - Bytes of reference_id (variable)
+        "4257855C8410735AC58E2B5C422C4794"          - Bytes of reference_id (16 bytes)
         "53414d504c4552454641444452455353"          - Bytes of Diem address (16 bytes)
         "802d4e0000000000"                          - Bytes of amount (8 bytes)
         "404024244449454d5f41545445535424244040"    - DOMAIN_SEPARATOR (20 bytes)
 
-For information on uleb128 encoding of a u32 length integer see: https://en.wikipedia.org/wiki/LEB128
-
 A valid compliance Signature output is (in hex-encoded bytes):
 
-    "8d5cc08a01e2f9634505af0c2ffca980fb824c1c56f83593b3f35bf0f52d717dad7087c7980b9c3e00009d604f1a0953e79fb7dce48fb1ea5201d93130d62d0e" (len=128)
+    "f34b69120821f97639cb81ad1221a1730baf0c6db27bd167a97f3bb9195e480ac11b221bec3186610ed1d55eb4ee21196f5974792b44dcef7aae202a66e1b401" (len=128)
 
 ## Sample code to generate the compliance signature
 
