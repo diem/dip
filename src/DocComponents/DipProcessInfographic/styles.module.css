@@ -1,4 +1,4 @@
-@value mobile-breakpoint-max-query from '~libra-docusaurus-components/src/variables.module.css';
+@value mobile-breakpoint-max-query from '~diem-docusaurus-components/src/variables.module.css';
 
 .root {
   background-color: #F6F9FC;

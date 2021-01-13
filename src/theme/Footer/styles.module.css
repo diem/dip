@@ -1,6 +1,6 @@
-@value medium-tablet-breakpoint-query from '~libra-docusaurus-components/src/variables.module.css';
+@value medium-tablet-breakpoint-query from '~diem-docusaurus-components/src/variables.module.css';
 
-/* Custom */ 
+/* Custom */
 .copyright {
   color: hsla(0,0%,100%,.4);
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import DiemComponents from 'libra-docusaurus-components';
+import DiemComponents from 'diem-docusaurus-components';
 
 export const OVERFLOW_CONTAINER_CLASS = DiemComponents.OVERFLOW_CONTAINER_CLASS;
 

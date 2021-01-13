@@ -1,4 +1,5 @@
 import React from 'react';
+import classnames from 'classnames';
 
 const getChildren = (child, index = 0) => {
   if (child === undefined) {
@@ -12,16 +13,24 @@ const getChildren = (child, index = 0) => {
     });
   }
 
-  return child.split(' ').map((word, index) => {
-    const wordWithSpace = index === 0 ? word : ' ' + word;
+  return child.split(" ").map((word, index) => {
+    const wordWithSpace = index === 0 ? word : " " + word;
+    const classes = classnames({
+      "break-word": word.length > 25,
+      "break-word-mobile": word.length > 17,
+    });
 
-    return word.length > 25
-      ? <span className="break-word" key={index}>{wordWithSpace}</span>
-      : wordWithSpace;
+    return classes.length ? (
+      <span className={classes} key={index}>
+        {wordWithSpace}
+      </span>
+    ) : (
+      wordWithSpace
+    );
   });
-}
+};
 
-const DefaultTableData = props => {
+const DefaultTableData = (props) => {
   return <td {...props}>{getChildren(props.children)}</td>;
 };
 

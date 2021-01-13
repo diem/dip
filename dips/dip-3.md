@@ -8,6 +8,8 @@ type: Informational
 created: 06/09/2020
 ---
 
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # Introduction
 Diem Payment Network ("DPN") is a blockchain-backed payment platform and an infrastructure for stablecoins. Diem Networks ("DN") is a whole subsidiary of the Diem Association. DN is in the process of applying for an DPN payment system license from the Swiss Financial Market Supervisory Authority ("FINMA"). Once granted, DN will be responsible for ensuring that DPN operates in compliance with the payment system license from FINMA.
 
@@ -42,7 +44,7 @@ Note that, after DPN launches, DN could use genesis transactions as a last resor
 
 The decision flow chart below summarizes the building blocks and how they will be used.
 
-![Decision flow](../static/img/DIP-3-decision-flow.png)
+<img alt="Decision flow" src={useBaseUrl('img/DIP-3-decision-flow.png')} />
 
 # Case study
 

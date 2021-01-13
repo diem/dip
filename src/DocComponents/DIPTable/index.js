@@ -22,7 +22,7 @@ const DIPRow = ({ authors, num, title }) => {
 
   return (
     <tr>
-      <td>{num}</td>
+      <td className={styles.num}>{num}</td>
       <td><a href={useBaseUrl(`/dip-${num}`)}>{title}</a></td>
       <td>
         {parsedAuthors.map(({title, username}, i) =>

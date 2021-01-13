@@ -1,7 +1,8 @@
-@value mobile-breakpoint-max-query from '~libra-docusaurus-components/src/variables.module.css';
+@value mobile-breakpoint-max-query from '~diem-docusaurus-components/src/variables.module.css';
 
 .table {
   border-collapse: separate;
+  border-spacing: 0;
   display: table;
   font-size: 15px;
   text-align: left;
@@ -39,6 +40,10 @@
 
 .table a {
   color: #5092E6;
+}
+
+.num {
+  min-width: 45px;
 }
 
 @media mobile-breakpoint-max-query {

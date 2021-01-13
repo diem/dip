@@ -1,3 +1,8 @@
+.main-content {
+  flex: 1;
+  max-width: calc( 100% - var(--right-sidebar-width) );
+}
+
 main article header h1 {
   margin-bottom: 20px;
 }
@@ -12,10 +17,6 @@ main .markdown > h2 {
   margin-bottom: 15px;
 }
 
-body h2 .hash-link {
-  margin-left: -1.5rem;
-}
-
 .menu__link {
   font-family: var(--font-bold);
 }
@@ -26,6 +27,20 @@ body h2 .hash-link {
 
 .menu {
   --sidebar-horizontal-padding: 32px;
+}
+
+.break-word {
+  word-break: break-all;
+}
+
+.snippet-container {
+  margin-top: 5px;
+}
+
+@media (max-width: 600px) {
+  .break-word-mobile {
+    word-break: break-all;
+  }
 }
 
 /* Sidebar icon classes */
