@@ -69,7 +69,7 @@ The remainder of this document details the specifications for Commands, Objects 
 
 **Shared Object**: All Objects contained within a Command are logically shared, meaning that each VASP has a copy of the Object and may create a new Command to modify it. For example, during the lifecycle of a `KycDataObject`, both VASPs will add information to it. The protocol does not support simultaneous updates to Objects. Rather, VASPs must take turns updating the Object - with turns specified as per the [command sequence](#paymentobject-protocol-command-sequence).
 
-**Reference ID**: Every Object type contains a `reference_id` field which is a unique reference ID for the Object. The reference ID is always specified by the payment initiator VASP (the VASP which originally created the Object). This value should be globally unique. It is recommended to use a 128 bit long UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included.
+**Reference ID**: Every Object type contains a `reference_id` field which is a globally unique reference ID for the Object. The reference ID is always specified by the payment initiator VASP (the VASP which originally created the Object). The value must be a 128 bit long UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included.
 
 ### On-Chain Account Setup
 
@@ -163,7 +163,7 @@ All requests between VASPs are structured as `CommandRequestObject`s.
 | _ObjectType  | str    | Y | Fixed value: `CommandRequestObject`|
 | command_type | str    | Y | A string representing the type of Command contained in the request. |
 | command      | Command object | Y | The Command to sequence. |
-| cid | str    | Y     | A unique identifier for the Command. Should be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included. |
+| cid | str    | Y     | A unique identifier for the Command. Must be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included. |
 
 
 ```
@@ -183,7 +183,7 @@ All responses to a CommandRequestObject are in the form of a CommandResponseObje
 | _ObjectType    | str      | Y             | The fixed string `CommandResponseObject`. |
 | status         | str      | Y             | Either `success` or `failure`. |
 | error          | [OffChainErrorObject](#offchainerrorobject) | N | Details of the error when status == "failure" |
-| cid            | str      | N | The Command identifier to which this is a response. Should be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included and should match the 'cid' of the CommandRequestObject. |
+| cid            | str      | N | The Command identifier to which this is a response. Must be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included and should match the 'cid' of the CommandRequestObject. |
 
 
 ```
@@ -234,7 +234,7 @@ All requests between VASPs are structured as [`CommandRequestObject`s](#commandr
 	    "_ObjectType": "PaymentCommand",
 	    "payment": {
 		    "sender": {
-			    "address": "dm1pg9q5zs2pg9q5zs2pg9q5zs2pg9skzctpv9skzcg9kmwta",
+			    "address": "617B6BCCDF90B69B8427F07D711DB88F",
 			    "kyc_data": {
 				    "payload_version": 1,
 				    "type": "individual",
@@ -261,7 +261,7 @@ All requests between VASPs are structured as [`CommandRequestObject`s](#commandr
 			    	}
 			},
 		    "receiver": {
-			    "address": "dm1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
+			    "address": "885095C0EBD5A8167D1766D31A6B15DF",
 			},
 		    "reference_id": "5b8403c9-86f5-3fe0-7230-1fe950d030cb",
 		    "action": {
@@ -308,7 +308,7 @@ The structure in this Object can be a full payment or just the fields of an exis
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
 | sender/receiver | [`PaymentActorObject`](#paymentactorobject) | Required for payment creation | Information about the sender/receiver in this payment |
-| reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value should be globally unique. This field is mandatory on payment creation and immutable after that. We recommend using a 128 bits long UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included. |
+| reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value should be globally unique. This field is mandatory on payment creation and immutable after that. This must be a 128 bits long UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included. |
 | original_payment_reference_id | str | N | Used for updates to a payment after it has been committed on chain. For example, used for refunds. The reference ID of the original payment will be placed into this field. This value is optional on payment creation and invalid on updates. |
 | recipient_signature | str | N | Signature of the recipient of this transaction encoded in hex. The is signed with the compliance key of the recipient VASP and is used for on-chain attestation from the recipient party.  This may be omitted on blockchains which do not require on-chain attestation. Generated via [Recipient Signature](#recipient-signature) |
 | action | [`PaymentActionObject`](#paymentactionobject) | Y | Number of cryptocurrency + currency type (XUS, etc.)<a href="#note1" id="note1ref"><sup>1</sup></a> + type of action to take. This field is mandatory and immutable |
@@ -332,7 +332,7 @@ A `PaymentActorObject` represents a participant in a payment - either sender or 
 
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
-| address | str | Y | Address of the sender/receiver account. Addresses may be single use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Diem addresses, refer to the "account identifier" section in DIP-5 for format. |
+| address | str | Y | The 16-byte on-chain address of the sender/receiver account in case-insensitive, hex encoding. |
 | kyc_data | [KycDataObject](#kycdataobject) | N | The KYC data for this account. This field is optional but immutable once it is set. |
 | status | [StatusObject](#statusobject) | Y | Status of the payment from the perspective of this actor. This field can only be set by the respective sender/receiver VASP and represents the status on the sender/receiver VASP side. This field is mandatory by this respective actor (either sender or receiver side) and mutable. Note that in the first request (which is initiated by the sender), the receiver status should be set to `None`. |
 | metadata | list of str | N | Can be specified by the respective VASP to hold metadata that the sender/receiver VASP wishes to associate with this payment. It may be set to an empty list (i.e. `[]`). New `metadata` elements may be appended to the `metadata` list via subsequent commands on an object.|
@@ -341,7 +341,7 @@ A `PaymentActorObject` represents a participant in a payment - either sender or 
 
 ```
 {
-    "address": "dm1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
+    "address": "617B6BCCDF90B69B8427F07D711DB88F",
     "kyc_data": KycDataObject(),
     "status": StatusObject(),
     "metadata": [],
@@ -349,7 +349,7 @@ A `PaymentActorObject` represents a participant in a payment - either sender or 
 ```
 
 ### KYCDataObject
-A `KYCDataObject` represents the required information for a single subaddress.  Proof of non-repudiation is provided by the signatures included in the JWS payloads.  The only mandatory fields are `payload_version` and `type`. All other fields are optional from the point of view of the protocol -- however they may need to be included for another VASP to be ready to settle the payment.
+A `KYCDataObject` represents the required information for a single participant in a payment.  Proof of non-repudiation is provided by the signatures included in the JWS payloads.  The only mandatory fields are `payload_version` and `type`. All other fields are optional from the point of view of the protocol -- however they may need to be included for another VASP to be ready to settle the payment.
 
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
@@ -361,7 +361,7 @@ A `KYCDataObject` represents the required information for a single subaddress.  
 | dob | str | N | Date of birth for the holder of this account.  Specified as an ISO 8601 calendar date format: https://en.wikipedia.org/wiki/ISO_8601 |
 | place_of_birth | [AddressObject](#addressobject) | N | Place of birth for this user.  line1 and line2 fields should not be populated for this usage of the address Object |
 | national_id | [NationalIdObject](#nationalidobject) | N | National ID information for the holder of this account |
-| legal_entity_name | str | N | Name of the legal entity.  Used when subaddress represents a legal entity rather than an individual. KYCDataObject should only include one of legal_entity_name OR given_name/surname |
+| legal_entity_name | str | N | Name of the legal entity.  Used when the participant represents a legal entity rather than an individual. KYCDataObject should only include one of legal_entity_name OR given_name/surname |
 
 ```
 {
@@ -462,7 +462,7 @@ Represents a national ID.
 
 Valid values are the unicode strings:
 * `none` - No status is yet set from this actor.
-* `needs_kyc_data` - KYC data about the subaddresses is required by this actor.
+* `needs_kyc_data` - KYC data about the participant is required by this actor.
 * `ready_for_settlement` - Transaction is ready for settlement according to this actor (i.e. the required signatures/KYC data have been provided)
 * `abort` - Indicates the actor wishes to abort this payment, instead of settling it.
 * `soft_match` - Actor's KYC data resulted in a soft-match. It is suggested that soft matches are resolved within 24 hours.
@@ -596,7 +596,7 @@ Valid JWS Compact Signature (str, utf8):
 Once the receiver side is comfortable that it has received appropriate information and is ready for the transaction to go on-chain (Step 4), it provides a signature in order to support dual attestation of the on-chain transaction. The receiver VASP signs with the receiver compliance private key.
 
 * The algorithm used to generate the signature is `EdDSA` as specified in RFC 8032.
-* The signature is over the Diem Canonical Serialization of a Metadata structure including `reference_id` (bytes, ASCII), a 16-byes Diem on-chain `address`, the payment `amount` (u64), and a domain separator `DOMAIN_SEPARATOR` (with value in ascii `@@$$DIEM_ATTEST$$@@`).
+* The signature is over the Diem Canonical Serialization of a Metadata structure including a 16-byte `reference_id`, a 16-byes Diem on-chain `address`, the payment `amount` (u64), and a domain separator `DOMAIN_SEPARATOR` (with value in ascii `@@$$DIEM_ATTEST$$@@`).
 * The output is a hex encoded 64-byte string representing the raw byte representation of the EdDSA signature.
 
 ## Test Vector for compliance signature
@@ -614,7 +614,7 @@ The data that contributes to the compliance recipient signature.
 
     amount (u64) = "5123456" (Hex "802d4e0000000000")
 
-Metadata is serialized using  LCS (including encoding of `reference_id`) and appended to the fixed length byte sequences representing `address`, `amount`, and `DOMAIN_SEPARATOR`. For example the byte sequence that is signed for the transaction data above is (bytes, hex):
+Metadata is serialized using  LCS (including encoding of `reference_id`) and appended to the fixed length byte sequences representing `address`, `amount`, and `DOMAIN_SEPARATOR`. For example the byte sequence that is signed for the transaction data above is (in hex-encoded bytes):
 
      "02000120626239393164386533653630313165623865616561636465343830303131323253414d504c4552454641444452455353802d4e0000000000404024244449454d5f41545445535424244040" (len=158)
 
@@ -629,7 +629,7 @@ The above serialized byte array represents:
 
 For information on uleb128 encoding of a u32 length integer see: https://en.wikipedia.org/wiki/LEB128
 
-A valid compliance Signature output is (bytes, hex):
+A valid compliance Signature output is (in hex-encoded bytes):
 
     "8d5cc08a01e2f9634505af0c2ffca980fb824c1c56f83593b3f35bf0f52d717dad7087c7980b9c3e00009d604f1a0953e79fb7dce48fb1ea5201d93130d62d0e" (len=128)
 
