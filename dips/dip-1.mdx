@@ -614,7 +614,7 @@ The data that contributes to the compliance recipient signature.
 
     amount (u64) = "5123456" (Hex "802d4e0000000000")
 
-Metadata is serialized using  LCS (including encoding of `reference_id`) and appended to the fixed length byte sequences representing `address`, `amount`, and `DOMAIN_SEPARATOR`. For example the byte sequence that is signed for the transaction data above is (in hex-encoded bytes):
+Metadata is serialized using BCS, which includes a fixed length byte sequence representing the `reference_id`, `address`, `amount`, and `DOMAIN_SEPARATOR`. For example the byte sequence that is signed for the transaction data above is (in hex-encoded bytes):
 
      "02004257855C8410735AC58E2B5C422C479453414d504c4552454641444452455353802d4e0000000000404024244449454d5f41545445535424244040" (len=122)
 
