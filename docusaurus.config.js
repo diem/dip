@@ -14,7 +14,7 @@ module.exports = objectAssignDeep(universalConfig, {
   projectName: 'dip',
   themeConfig: {
     algolia: {
-      apiKey: '4358e9ae3fbcd8b296ea863bd8cd9456',
+      apiKey: 'cf22f07a9b6b22b6b595b439878876f8',
       indexName: 'diem_improvement_proposals',
     },
     prism: {
