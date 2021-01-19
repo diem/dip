@@ -279,9 +279,9 @@ The following sections list all error codes for various validations when process
 
 `unsupported_currency`: Field `payment.action.currency` value is a valid Diem currency code, but it is not supported / acceptable by the receiver VASP.
 
-`missing_dependency`: One of dependency objects is not found by the id provided in the command object. For example, the receiver should return this error code if it could not find the data by the `original_payment_reference_id` if the sender set it.
-
-`invalid_dependency`: One of dependency objects is found, but it is not valid for the command object. For example, the status of the  dependency payment object found by `original_payment_reference_id` is `aborted` instead of `ready_for_settlement`.
+`invalid_original_payment_reference_id`:
+* Could not find data by the `original_payment_reference_id` if the sender set it.
+* The status of the original payment object found by `original_payment_reference_id` is `aborted` instead of `ready_for_settlement`.
 
 `invalid_overwrite`:
 * Overwrite a field that can only be written once.
