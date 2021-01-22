@@ -633,7 +633,7 @@ After the Sender initiates a payment by providing KYC information (SINIT), the R
 
 ### Sender soft-match (RSEND -> SSOFT -> RSOFTSEND)
 
-Similarly to the flow above, the Sender at state (RSEND) may decide they need information about the receiver of the payment to disambiguate a soft-match. They set their status `sender.status.status` to `soft-match` (state SSOFT) (Step 5). The receiver can abort (RABORT) (Step not shown in diagram) or provide the additional KYC in `receiever.additional_kyc_data` (state RSOFTSEND, Step 6). The sender may then abort (SABORT, Step 8) or move to READY (Step 7), and settle the payment.
+Similarly to the flow above, the Sender at state (RSEND) may decide they need information about the receiver of the payment to disambiguate a soft-match. They set their status `sender.status.status` to `soft-match` (state SSOFT) (Step 5). The receiver can abort (RABORT) (Step not shown in diagram) or provide the additional KYC in `receiver.additional_kyc_data` (state RSOFTSEND, Step 6). The sender may then abort (SABORT, Step 8) or move to READY (Step 7), and settle the payment.
 
 # Details of JWS signature scheme
 
