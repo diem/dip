@@ -14,9 +14,9 @@ Diem Payment Network wallets benefit from consistent standards for serializing a
 
 * **subaddress**: Accounts on-chain are represented by an address.  To allow multiplexing of a single address into multiple wallets, custodial wallets may use “subaddresses” under the on-chain address for each underlying user.  While custodians can keep an internal ledger for mapping subaddresses, these mapping ledgers are not stored as resources on the Diem blockchain. It is a best practice for VASPs on Diem to use subaddresses as a single-use address to remove linkability.  In this way, subaddresses serve as a many-to-one mapping between subaddresses and a user - where subaddresses are not re-used for more than one payment.
 
-* **account identifier**:  An account identifier is a base-32 encoded string that captures 1) the network version the address is intended for, 2) the address type (with or without subaddress) and 3) the underlying address components. This identifier uses the bech32 encoding which consists of a human readable prefix, delimiter, serialized payload (account address, subaddress) and checksum. An example of an account identifier is `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`.
+* **account identifier**:  An account identifier is a base-32 encoded string that captures 1) the network version the address is intended for, 2) the address type (with or without subaddress) and 3) the underlying address components. This identifier uses the bech32 encoding which consists of a human readable prefix, delimiter, serialized payload (account address, subaddress) and checksum. An example of an account identifier is `dm1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4us2vfufk`.
 
-* **intent identifier**: An intent identifier is a URI-serialized string that couples an *account identifier* with optional query parameters that specify preferences for an on-chain action. Initially, intent identifiers will be used for specifying transaction requests. In the fullness of time, we can expect using intent identifiers for sharing richer transaction metadata or identity information. an example of an intent identifier is `diem://lbr11q8mjtzdhrl6035feva9r7umfc6du7ezz300tv2hj7v5pyg?am=1000000&c=XDX`
+* **intent identifier**: An intent identifier is a URI-serialized string that couples an *account identifier* with optional query parameters that specify preferences for an on-chain action. Initially, intent identifiers will be used for specifying transaction requests. In the fullness of time, we can expect using intent identifiers for sharing richer transaction metadata or identity information. an example of an intent identifier is `diem://dm1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4us2vfufk?am=1000000&c=XDX`
 
 # Abstract / Motivation
 For a range of peer-to-peer and peer-to-merchant use cases, merchants and wallets will need to coordinate an information exchange about the intended recipient and transaction payload. Standardizing the format of this payment envelope promotes interoperability across the client ecosystem. This proposal covers standards for several related identifiers.
@@ -27,7 +27,7 @@ A common pattern to a cross-wallet transaction would be:
 2) The recipient shares this information with a would-be sender over some communication channel (e.g., SMS, Email, QR code)
 3) The sender's wallet deserializes this information and populates a transaction for the sending user to authorize
 4) The sending user authorizes the request and their wallet submits the transaction to the Diem blockchain
-5) The recipient wallet monitors on-chain events for its accounts. Upon seeing relevant events, the recipient wallet can filter by the sender information and whether a unique recipient subaddress was passed in the transaction's metadata fields. When such an event is detected, both parties can confirm the funds have been transferred successfully. 
+5) The recipient wallet monitors on-chain events for its accounts. Upon seeing relevant events, the recipient wallet can filter by the sender information and whether a unique recipient subaddress was passed in the transaction's metadata fields. When such an event is detected, both parties can confirm the funds have been transferred successfully.
 
 Examples of cross-wallet payment scenarios include:
 
@@ -57,9 +57,9 @@ For communicating account identity, we propose using a compact, versioned and ca
 ### Format
 The Diem Account Identifier consists of
 * A prefix (also known as hrp (human readable part) which identifies the network version this address is intended for
-  * “lbr” for Mainnet addresses
-  * “tlb” for Testnet addresses
-  * "plb" for Pre-Mainnet addresses
+  * “dm” for Mainnet addresses
+  * “tdm” for Testnet addresses
+  * "pdm" for Pre-Mainnet addresses
 * A Bech32 delimiter
   * The character “1” (one)
 * A Bech32 version identifier
@@ -68,31 +68,33 @@ The Diem Account Identifier consists of
   * For version 1, is Diem account address + subaddress (16 + 8 bytes)
 * The last 6 characters correspond to the Bech32 checksum
 
+The Diem Account Identifier shall not be mixed-cases. It shall be all uppercases, or all lowercases. For example, `dm1pptdxvfjck4jyw3rkfnm2mnd2t5qqqqqqqqqqqqq305frg` or `DM1PPTDXVFJCK4JYW3RKFNM2MND2T5QQQQQQQQQQQQQ305FRG` are valid but `dm1pptdXVFJCK4JYW3RKFNM2MND2t5qqqqqqqqqqqqq305frg` is not.
+
 Overall address format: *prefix* | *delimiter* | *version* | *encoded payload* | *checksum*
 
 ### Example with explicit subaddress
 Identifier information
 * Prefix (string)
-  * Network: `lbr`
+  * Network: `dm`
 * Address type (version prefix): `01` (letter p in Bech32 alphabet)
 * Address payload (in hex)
   * Address: `0xf72589b71ff4f8d139674a3f7369c69b`
   * Subaddress: `0xcf64428bdeb62af2`
-* Checksum: `w5p72t`
+* Checksum: `2vfufk`
 
-**Result**: `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`
+**Result**: `dm1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4us2vfufk`
 
 ### Example without explicit subaddress (root account)
 Identifier information
 * Prefix (string)
-  * Network: `lbr`
+  * Network: `dm`
 * Address type (version prefix): `01` (letter p in Bech32 alphabet)
 * Address payload (in hex)
   * Address: `0xf72589b71ff4f8d139674a3f7369c69b`
   * Subaddress: `0x0000000000000000`
-* Checksum: `flf8ma`
+* Checksum: `d8p9cq`
 
-**Result**: `lbr1p7ujcndcl7nudzwt8fglhx6wxnvqqqqqqqqqqqqqflf8ma`
+**Result**: `dm1p7ujcndcl7nudzwt8fglhx6wxnvqqqqqqqqqqqqqd8p9cq`
 
 ### Looking ahead
 In the future, we plan to define additional Account Identifier versions to support other forms of identity, such as more compact subaddress formats. These would leverage a similar overall structure but would have a different version identifier, preventing naming collisions.
@@ -125,11 +127,11 @@ Identifier information
 * Prefix
   * `diem://`
 * Base URI
-  * Account Identifier: `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`
+  * Account Identifier: `dm1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4us2vfufk`
 * Query parameters
   * none
 
-**Result**: `diem://lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`
+**Result**: `diem://dm1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4us2vfufk`
 
 ### Example of request intent with currency specified
 This intent represents a request to receive funds in a specific currency at a given address. The amount is defined by the sender.
@@ -138,11 +140,11 @@ Identifier information
 * Prefix
   * `diem://`
 * Base URI
-  * Account Identifier: `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`
+  * Account Identifier: `dm1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4us2vfufk`
 * Query parameters
   * `c=XDX` (currency preference is XDX composite token)
 
-**Result**: `diem://lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t?c=XDX`
+**Result**: `diem://dm1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4us2vfufk?c=XDX`
 
 ### Example of request intent with currency and amount specified
 This intent represents a request to receive a specific amount in a specific currency for a given address.
@@ -151,11 +153,11 @@ Identifier information
 * Prefix
   * `diem://`
 * Base URI
-  * Address: `lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t`
+  * Address: `dm1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4us2vfufk`
 * Query parameters
   * `c=XDX&am=1000000` (request for 1 XDX, currency preference is XDX composite token, amount is 1000000 µ-units)
 
-**Result**: `diem://lbr1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4usw5p72t?c=XDX&am=1000000`
+**Result**: `diem://dm1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4us2vfufk?c=XDX&am=1000000`
 
 ### Looking ahead
 We expect to evolve the Intent Identifier to support a broader range of payment and identity scenarios. These may range from sharing stable identity information to supporting richer payment metadata.
