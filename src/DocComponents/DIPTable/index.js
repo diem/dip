@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import Link from "@docusaurus/Link";
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
@@ -23,7 +24,7 @@ const DIPRow = ({ authors, num, title }) => {
   return (
     <tr>
       <td className={styles.num}>{num}</td>
-      <td><a href={useBaseUrl(`/dip-${num}`)}>{title}</a></td>
+      <td><Link href={useBaseUrl(`/dip-${num}/`)}>{title}</Link></td>
       <td>
         {parsedAuthors.map(({title, username}, i) =>
           <Author index={i} title={title} username={username} />
