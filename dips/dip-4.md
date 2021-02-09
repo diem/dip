@@ -39,6 +39,7 @@ enum Metadata {
   GeneralMetadata(GeneralMetadata),
   TravelRuleMetadata(TravelRuleMetadata),
   UnstructuredBytesMetadata(UnstructuredBytesMetadata),
+  RefundMetadata(RefundMetadat),
 }
 
 // Used for versioning of general metadata
@@ -71,6 +72,22 @@ struct TravelRuleMetadataV0 {
 struct UnstructuredBytesMetadata {
     // Unstructured bytes metadata
     Option<Vec<u8>> metadata,
+}
+
+enum RefundMetadata {
+  RefundMetadataV0(RefundMetadataV0),
+}
+
+struct RefundMetadataV0 {
+  transaction_version: u64,
+  reason: RefundReason,
+}
+
+enum RefundReason {
+  OtherReason = 0,
+  InvalidSubaddress = 1,
+  UserInitiatedPartialRefund = 2,
+  UserInitiatedFullRefund = 3,
 }
 ```
 
@@ -154,29 +171,13 @@ RawTransaction {
 
 ## Refunds
 
-Merchant B now wishes to refund user A. But user A was sending from a custodial account so merchant B must send the funds back to the custodial account and include subaddress information so that the funds are directed back to user A.  Merchant B’s client now constructs a transaction via the following where referenced_event is the committed event sequence number under the sending account of the original sent payment event:
+Diem has two approaches to refunds, Refund transactions and refunds via a peer-to-peer payment in reverse. Refund transactions primarily exist for payment violations, e.g., the recipient has no knowledge about the metadata contained within the transaction.
 
-```
-metadata = Metadata::GeneralMetadata(
-  GeneralMetadata::GeneralMetadaVersion0(
-    GeneralMetadataV0 {
-      to_subaddress: 'alice',
-      referenced_event: 123,
-})));
+For human driven refunds, there are two cases two consider:
+* *TravelRule:* All travel rule refunds must execute the off-chain protocol defined in DIP-1 and submit a TravelRule transaction to the chain.
+* *General:* can either leverage a Refund transaction or submit follow up General payment swapping the subaddress 'to' and 'from' fields.
 
-
-program = encode_peer_to_peer_with_metadata_script(
-    "XDX" /*currency*/,
-    0x7777 /*recipient*/,
-    100 /*amount*/,
-    bcs.serialize(metadata, Metadata),
-    None /*metadata_signature*/);
-
-RawTransaction {
-    sender_account: 0x1234,
-    program: program,
-}
-```
+Refund transactions contain a RefundMetadata::RefundMetadataV0 object that contains the transaction version and a reason for the refund. The transaction version is a globally unique identifier for a transaction once it has been committed to the blockchain. The intent of the reason is to help support automated resolution on why a refund is being sent / received without off-chain interaction. The OtherReason is provided as a means to cover all possible refund types and to indicate that off-chain communication is likely required to resolve why a refund has been sent.
 
 ## C to C transaction flow
 
