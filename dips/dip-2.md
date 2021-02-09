@@ -44,7 +44,7 @@ The current roles in Diem are:
 | 1 |      DiemRoot      |      genesis       |         Globally          |  0xA550C18  |         N         |          -          |       N        |            3             |
 | 2 | TreasuryCompliance  |      genesis       |         Globally          |  0xB1E55ED  |         N         |          -          |       N        |            2             |
 | 3 |      Validator      |     DiemRoot      |  Per Association member   |      -      |         N         |          -          |       Y        |            1             |
-| 4 |  ValidatorOperator  |     DiemRoot      | At most one per Validator |      -      |         N         |          -          |       Y        |            1             |
+| 4 |  ValidatorOperator  |     DiemRoot      |  Per Validator            |      -      |         N         |          -          |       Y        |            1             |
 | 5 |  DesignatedDealer   | TreasuryCompliance |             N             |      -      |         Y         |          N          |       Y        |            1             |
 | 6 |     ParentVASP      | TreasuryCompliance |         Per VASP          |      -      |         Y         |          Y          |       Y        |            0             |
 | 7 | ChildVASP(**addr**) |     ParentVASP     |             N             |      -      |         Y         |          Y          |       Y        |            0             |
@@ -52,10 +52,10 @@ The current roles in Diem are:
 * DiemRoot - The root authority of DPN. Controlled jointly by DN and the Association Council.
 * TreasuryCompliance - DN account responsible for day-to-day treasury (e.g. minting, burning), and compliance (e.g., updating on-chain exchange rates, freezing accounts) operations.
 * Validator - The on-chain representation of a Diem Association member for validation purposes.
-* ValidatorOperator - A third-partity entity authorized by DN to operate validator nodes on behalf of Association members.
+* ValidatorOperator - An authorized by DN to operate validator nodes. Can either be an Association member or an authorized third party.
 * Designated Dealer - An entity with the authority to place  mint and burn orders for Diem Coins with DN and interact with the Diem Reserve.
 * ParentVASP - The primary account of a virtual asset service provider (VASP) operating on the Diem blockchain.
-* ChildVASP(**addr**) - A child account of a the ParentVASP account at **addr**
+* ChildVASP(**addr**) - A child account of a the ParentVASP account at **addr**.
 
 ### Notes
 * The "Granted by" column specifies which role can create accounts with the given role type (e.g., only DiemRoot can create accounts with the Validator role).
