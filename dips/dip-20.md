@@ -2,7 +2,7 @@
 dip: 20
 title: Diem On-Chain Currency Management
 authors: Tim Zakian, Sam Blackshear, Dahlia Malkhi
-status: Draft
+status: Last Call
 type: Informational
 created: 08/28/2020
 ---
