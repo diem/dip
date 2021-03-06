@@ -386,6 +386,7 @@ Some fields are immutable after they are defined once. Others can be updated mul
 | recipient_signature | str | N | Signature of the recipient of this transaction encoded in hex. The is signed with the compliance key of the recipient VASP and is used for on-chain attestation from the recipient party.  This may be omitted on blockchains which do not require on-chain attestation. Generated via [Recipient Signature](#recipient-signature) |
 | action | [`PaymentActionObject`](#paymentactionobject) | Y | Number of cryptocurrency + currency type (XUS, etc.)<a href="#note1" id="note1ref"><sup>1</sup></a> + type of action to take. This field is mandatory and immutable |
 | description | str | N | Description of the payment. To be displayed to the user. Unicode utf-8 encoded max length of 255 characters. This field is optional but can only be written once.
+| trade_ids | list of str | N | (Only relevant when this payment is a coin trade) the list of trade ids to settle. Trade id is Unicode utf-8 encoded max length of 255 characters. This field is optional but can only be written once.
 
 ```
 {
