@@ -14,7 +14,7 @@ A Blockchain coin trade is the process where an entity, for example a Virtual As
 
 # Terminology
 * trade_id
-  * a unified trade identifier used over the course, a UTF-8 string, max length 128 bytes. It is agreed upon, by both entities, during the trade initialization and negotiation phase. It should be buyer-seller pair-wise unique.
+  * a unified trade identifier used over the course, a UTF-8 string, max length 255 bytes. It is agreed upon, by both entities, during the trade initialization and negotiation phase. It should be buyer-seller pair-wise unique.
 
 # Specification
 We propose a new type of on-chain Metadata - `CoinTradeMetadata`.
