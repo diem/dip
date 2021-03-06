@@ -2,9 +2,10 @@
 dip: 12
 title: Blockchain Coin Trade Flow
 authors: Lu Zhang (@LuZhang-Lou)
+dip manager: David Wolinsky (@davidiw)
 status: Draft
 type: Informational
-created: 3/4/2021
+created: 3/5/2021
 ---
 # Summary and Motivation
 This document proposes a protocol standard for coin trade flows in the Diem Network. The flow is generic for coin purchase and coin sell transactions involving one or more Designated Dealers (DD). It supports a single trade settlement and batch settlement.
