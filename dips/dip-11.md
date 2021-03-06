@@ -1,5 +1,5 @@
 ---
-dip: 10
+dip: 11
 title: Diem Accounts
 authors: Sam Blackshear (@sblackshear), Bob Wilsion (@bob-wilson), Tim Zakian (@tzakian)
 status: Draft
