@@ -13,7 +13,7 @@
     "@docusaurus/core": "^2.0.0-alpha.70",
     "@docusaurus/preset-classic": "^2.0.0-alpha.70",
     "classnames": "^2.2.6",
-    "@libra-opensource/diem-docusaurus-components": "0.1.17",
+    "@libra-opensource/diem-docusaurus-components": "0.1.19",
     "object-assign-deep": "^0.4.0",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
