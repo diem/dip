@@ -1,7 +1,7 @@
 ---
 dip: 8
-title: Off-chain API Version 2 Extensions
-authors: Kevin Hurley (@kphfb)
+title: Off-chain API Version 2 Extensions - Funds pull pre approval
+authors: Kevin Hurley (@kphfb), Daniel Prinz
 status: Draft
 type: Standard
 created: 09/18/2020
@@ -9,58 +9,136 @@ created: 09/18/2020
 
 # Summary
 ---
-An extension of the Off-Chain protocol to provide support for more advanced merchant use-cases.
+An extension of the Off-Chain protocol to provide support for enabling the notion of periodic resettable limits within a single approval
 
 ---
 # Abstract / Motivation
 ---
 
-Versions 1/2 of the Off-Chain Protocol are described in [DIP 1](https://dip.diem.com/dip-1/).  Version 3 as described here is an extension of the Off-Chain Protocol and adds features to support more advanced functionality - particularly targeted to support merchant use-cases.  This is inclusive of pull payments, recurring payments, and auth/capture flows.
+Versions 1/2 of the Off-Chain Protocol are described in [DIP 1](https://dip.diem.com/dip-1/). 
+
+Version 3 as described here is an extension of the Off-Chain Protocol and adds features to support more advanced functionality - particularly targeted to support merchant use-cases. 
+
+This DIP aimed to support a scenario of setting a Diem wallet as a long term payment method in an app or an eCommerce website. 
+
+The high level flow is:
+1. The user asks to add their wallet to the app as a payment method
+2. The merchant VASP genereates a Funds Pull Pre Approval (FPPA) request 
+3. The user approves the FPA in their wallet (VASP)
+4. The user wallet VASP hands a billing agreement id (FPPA id) to the merchant VASP
+
+Whenever the app wants to charge the user: 
+1. The merchant VASP sends a payment request to the user wallet VASP mentioning the FPA id
+2. If the payment request does not fall out of the FPA scope, the payment is continued normally as the user was approved it (without user interaction)
 
 ---
 # Disclaimer
 ---
 
-This LIP does not contain the initial phase of a sub-account discovery that is required to start negotiating merchant scenarios.
-The process described below starts at the phase that both sides (particularly the biller side) have the relevant subaddresses. 
-For now, we will assume that such a discovery process took place and the merchant have the buyer subaddress at hand.
-  
+This DIP does not contain the phase of exchanging identifiers between VASPs that is required to negotiate merchant scenarios.
+
+For the purpose of this document, we will assume that given a payment object with two VASP addresses and some underline indetifier, there is a protocol for exchaning these identities under VASPs (buyer and merchant) without revealing their identities to the public. 
+
+The process described below starts at the phase that both sides have the relevant payment unique identifier (reference) and each VASP knows to corrlate it to its respectful entity under. 
+
+---
+# Synonyms
+---
+
+For the sake of simplicity, we use the following terms:
+* "Buyer VASP" - The VASP who submits payment transactions to the blockchain in order to pay to the other VASP
+* "Merchant" - The VASP who recieves the funds (transaction)
+* "Buyer user" - The buyer user who wants to pay to the merchant
+
 ---
 # Specification
 ---
 
-# Fund Pull Pre-Approval
 ### *VERSION SUPPORT: Supported only in version 3 of off-chain APIs*
 
-Establishes a relationship between sender and recipient where the recipient can then pull funds from the sender without sender approving each transaction.  This allows recipient to bill the sender without sender approving each payment.  This relationship exists between a subaddress on the biller side and a subaddress on the sender side.  After this request is POSTed, the target VASP can use out-of-band methods to determine if this request should be granted.  If the target VASP chooses to allow the relationship to be established, the biller can create a payment object and POST to the billed party’s VASP to request funds.  The “funds_pull_approval_id” object must then match the ID established by this request.
+Establishes a relationship between a buyer VASP and a merchant where the merchant can then pull funds from the buyer VASP without the buyer user approving each transaction, like billing the user without an interaction for each payment. This relationship marked by a unique identifier, that is the `**funds_pull_pre_approval_id**`. 
+
+## Funds pull pre approval request fields
+
+The following fields should be used to define a funds pull pre approval request. These fields should be encoded into a series of URL parameters appended to the query string. In case of QR code, the image should include the full link with all parameters. 
+
+| Field                  | Type    | Required?  | Description                                    |
+|------------------------|---------|------------|------------------------------------------------|
+| vasp_address               | str      | Y          | Address of account from which billing will happen. The address is encoded using bech32 and should uniquly identify the merchant. For Diem addresses format, refer to the "account identifiers" section in [DIP-5](https://dip.diem.com/dip-5/#account-identifiers). |
+| funds_pull_pre_approval_id | str      | Y          | A unique identifier of this pre-approval. Should be a UUID according to RFC4122 with "-"'s included. |
+| merchant_name              | str      | Y          | The name of the biller |
+| description                | str      | N          | Description of the funds pull pre-approval. May be utilized to show the user description about the request for funds pull pre-approval |
+| checkout_data_type         | str      | Y          | The fixed string `FUNDS_PULL_PRE_APPROVAL` |
+| action                     | str      | Y          | The fixed string `FUNDS_PULL_PRE_APPROVAL` |
+| expiration_timestamp       | uint     | N          | Unix timestamp indicating the time at which this pre-approval will expire - after which no funds pull can occur.  To expire an existing pre-approval early, this field can be updated with the current Unix timestamp. |
+| currency                   | str enum | N          | One of the supported on-chain currency types - ex. `XDX`, etc. |
+| reset_period_unit          | str enum | N          | One of: `day`, `week`, `month`, `year`. This unit should be treated as a sliding time window. E.g., one week would be summary of the past 7 days transactions, no matter what weekday it is. This field is mandatory in case `reset_period_value` and `amount_per_period` are set. |
+| reset_period_value         | uint     | N          | Number of "reset_period_unit"(s). This field is mandatory in case `reset_period_unit` and `amount_per_period` are set. |
+| amount_per_period          | uint     | N          | Max amount that is approved for a single period of time. This is the sum across all transactions that occur in the period. Base units are the same as for on-chain transactions for this currency. For example, if DiemUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. This field is mandatory in case `reset_period_unit` and `reset_period_value` are set. |
+| max_transaction_amount     | uint     | N          | Max transaction amount that is approved for funds pull pre-approval.  This is the maximum amount that may occur in a single transaction while utilizing this funds pull pre-approval. Base units are the same as for on-chain transactions for this currency. For example, if DiemUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. |
+| redirect_url               | str      | Y          | The URL to redirect the user after the process is completed (either for success or failure of the process). Note that the user will be redirected to this URL using `GET` HTTP method.  |
+
+E.g., for the following parameters: 
+
+| Field                      | Value                                                                             |
+|----------------------------|-----------------------------------------------------------------------------------|
+| vasp_address               | dm1pllhdmn9m42vcsamx24zrxgs3qqqpzg3ng32kvacapx5fl                                 | 
+| funds_pull_pre_approval_id | 51471b7a-4d2e-46b8-a818-6a6e74cb749b                                              |
+| merchant_name              | Kevin's online shop                                                               |
+| description                | Adding your wallet as a payment method for easier purchase experience             |
+| checkout_data_type         | FUNDS_PULL_PRE_APPROVAL                                                           |
+| action                     | FUNDS_PULL_PRE_APPROVAL                                                           |
+| expiration_timestamp       | 1615872312                                                                        |
+| currency                   | XDX                                                                               |
+| reset_period_unit          | week                                                                              |
+| reset_period_value         | 2                                                                                 |
+| amount_per_period          | 100000000                                                                         |
+| max_transaction_amount     | 25000000                                                                          |
+| redirect_url               | https://merchant.com/order/93c4963f-7f9e-4f9d-983e-7080ef782534/checkout/complete |
+
+The URL format would be (the domain and path are examples - the real wallet domain/path should be used):
+
+`https://some-diem-wallet.com/pay?vasp_address=dm1pllhdmn9m42vcsamx24zrxgs3qqqpzg3ng32kvacapx5fl&funds_pull_pre_approval_id=51471b7a-4d2e-46b8-a818-6a6e74cb749b&merchant_name=Kevin%27s%20online%20shop&description=Adding%20your%20wallet%20as%20a%20payment%20method%20for%20easier%20purchase%20experience&checkout_data_type=FUNDS_PULL_PRE_APPROVAL&action=FUNDS_PULL_PRE_APPROVAL&expiration_timestamp=1615872312&currency=XDX&reset_period_unit=week&reset_period_value=2&amount_per_period=100000000&max_transaction_amount=25000000&redirectUrl=https%3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete`
+
+
+After parsing this request, the buyer VASP can use out-of-band methods to determine if this request should be granted. E.g., asking the user to approve this request while presenting the scope of it. 
+
+
+After this request is POSTed, the buyer VASP can use out-of-band methods to determine if this request should be granted. E.g., asking the user to approve this agreement while presenting the scope of it. 
+
+If the buyer VASP chooses to allow the relationship to be established, the merchant can create a payment object and POST to the buyer VASP to request funds.  The `funds_pull_pre_approval_id` field must then match the ID established by this request.
 
 ## Request/Response Payload
-All requests between VASPs are structured as [`CommandRequestObject`s](https://dip.diem.com/dip-1/#commandrequestobject) and all responses are structured as [`CommandResponseObject`s](https://dip.diem.com/dip-1/#commandresponseobject).  For a fund pre-approval command, the resulting request takes a form of the following:
+All requests between VASPs are structured as [`CommandRequestObject`s](https://dip.diem.com/dip-1/#commandrequestobject) and all responses are structured as [`CommandResponseObject`s](https://dip.diem.com/dip-1/#commandresponseobject). 
+
+For a funds pull pre-approval command, the resulting request takes a form of the following:
 
 ```
 {
     "_ObjectType": "CommandRequestObject",
-    "command_type": "FundPullPreApprovalCommand",
-    "cid": "88b282d6181129f682be0421d0ee9887",
+    "command_type": "FundsPullPreApprovalCommand",
+    "cid": "88b282d6-1811-29f6-82be-0421d0ee9887",
     "command": {
-        "_ObjectType": "FundPullPreApprovalCommand",
-        "fund_pull_pre_approval": {
-            "address": "lbr1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
-            "biller_address": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pg9skzctpv9skzcg9kmwta",
-            "funds_pre_approval_id": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_7b8404c986f53fe072301fe950d030de",
+        "_ObjectType": "FundsPullPreApprovalCommand",
+        "funds_pull_pre_approval": {
+            "address": "dm1pqqgjyv6y24n80zye42aueh0wlll7ahwvhw4qpxg2y47hr",
+            "biller_address": "dm1pllhdmn9m42vcsamx24zrxgs3qqqpzg3ng32kvacapx5fl",
+            "funds_pull_pre_approval_id": "51471b7a-4d2e-46b8-a818-6a6e74cb749b",
             "scope": {
                 "type": "consent",
-                "expiration_timestamp": 72322, 
-                "max_cumulative_amount": {
-                    "unit": "week",
-                    "value": 1,
-                    "max_amount": {
-                        "amount": 100,
-                        "currency": "XDX",
-                    }
+                "expiration_timestamp": 1615872312, 
+                "currency": "XDX",
+                "reset": {
+                    "period": {
+                        "unit": "week",
+                        "value": 2
+                    },
+                    "amount_per_period": 100000000,
                 }
+                "max_transaction_amount": 25000000,                
             }
-            "description": "Kevin's online shop",
+            "merchant_name": "Kevin's online shop",
+            "description": "Adding your wallet as a payment method for easier purchase experience",
             "status": "pending",
         }
     },
@@ -77,146 +155,131 @@ A response would look like the following:
 ```
 
 ### CommandRequestObject
-For a fund pre-approval request, the [command_type](https://dip.diem.com/dip-1/#commandrequestobject) field is set to "FundPullPreApprovalCommand".  The command object is a [`FundPullPreApprovalCommand` object](#fundpullpreapprovalcommand-object).
+For a funds pull pre-approval request, the [command_type](https://dip.diem.com/dip-1/#commandrequestobject) field is set to "FundsPullPreApprovalCommand".  The command object is a [`FundsPullPreApprovalCommand` object](#fundspullpreapprovalcommand-object).
+
+
+### FundsPullPreApprovalCommand object
+| Field         | Type  | Required?     | Description   |
+|-------        |------ |-----------    |-------------  |
+| command_type   | str  | Y             | The fixed string `FundsPullPreApprovalCommand` |
+| command| [`FundsPullPreApprovalObject`](#fundspullpreapprovalobject) | Y | contains a `FundsPullPreApprovalObject` that creates a new pre-approval|
 
 ```
 {
-
     "_ObjectType": "CommandRequestObject",
-    "command_type": "FundPullPreApprovalCommand",
-    "cid": "88b282d6181129f682be0421d0ee9887",
-    "command": FundPullPreApprovalCommand(),
+    "command_type": "FundsPullPreApprovalCommand",
+    "cid": "c10db593-ce3d-4ac7-b83d-1e15600e9e63",
+    "command": FundsPullPreApprovalObject(),
 }
 ```
 
-### FundPullPreApprovalCommand object
-| Field         | Type  | Required?     | Description   |
-|-------        |------ |-----------    |-------------  |
-| _ObjectType   | str  | Y             | The fixed string `FundPullPreApprovalCommand` |
-| fund_pull_pre_approval| [`FundPullPreApprovalObject`](#fundpullpreapprovalobject) | Y | contains a `FundPullPreApprovalObject` that either creates a new pre-approval or updates an existing pre-approval. Note that strict validity checks apply when updating pre-approvals, that are listed in the section below describing these Objects. An invalid update or initial pre-approval object results in a Command error|
+### FundsPullPreApprovalObject
 
-```
-{
-    "_ObjectType": "FundPullPreApprovalCommand",
-    "fund_pull_pre_approval": {
-         FundPullPreApprovalObject(),
-    }
-}
-```
+The structure in this object must be a full funds pull pre-approval and all fields beside the `status` are immutable after the creation. In order to change the status, one may send only the `funds_pull_pre_approval_id` and `status` fields. Updating immutable fields with different values results in a command error, but it is acceptable to re-send the same value.
+It should be noted that initial creation of the FundsPullPreApprovalObject can be done by the VASP on either side (buyer or merchant). 
 
-### FundPullPreApprovalObject
 
-The structure in this object can be a full pre-approval or just the fields of an existing pre-approval object that need to be changed. Some fields are immutable after they are defined once (see below). Others can be updated multiple times. Updating immutable fields with different values results in a command error, but it is acceptable to re-send the same value. It should be noted that initial creation of the FundPullPreApprovalObject can be created or updated by the VASP on either side (buyer or seller).
+#### ___The buyer creates the initial request___
+A merchant doesn't knows the buyer details upfront, so it use an out-of-band channel to request a consent (e.g. QR code). The buyer wallet (VASP) decode the request and initiate FundsPullPreApproval flow from its side
+
+#### ___The merchant creates the initial request___
+A merchant knows the buyer details upfront. The merchant then can send an off-chain request to the buyer to request a consent. The buyer wallet (VASP) can then ask the user to approve the request
 
 | Field         | Type  | Required?     | Description   |
 |-------        |------ |-----------    |-------------  |
-| address | str | Required for creation | Address of account from which the pre-approval is being requested. Addresses may be single-use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Libra addresses, refer to the "account identifier" section in LIP-5 for format. |
-| biller_address | str | Required for creation | Address of account from which billing will happen. Addresses may be single-use or valid for a limited time, and therefore VASPs should not rely on them remaining stable across time or different VASP addresses. The addresses are encoded using bech32. The bech32 address encodes both the address of the VASP as well as the specific user's subaddress. They should be no longer than 80 characters. Mandatory and immutable. For Libra addresses, refer to the "account identifier" section in LIP-5 for format. |
-| expiration_timestamp | uint | N | Unix timestamp indicating the time at which this pre-approval will expire - after which no funds pulls can occur.  To expire an existing pre-approval early, this field can be updated with the current unix timestamp. |
-| funds_pre_approval_id | str | Y | Unique reference ID of this pre-approval on the pre-approval initiator VASP (the VASP which originally created this pre-approval object). This value should be unique, and formatted as “<creator_vasp_onchain_address_bech32>_<unique_id>”.  For example, ”lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_7b8404c986f53fe072301fe950d030de“. Note that this should be the VASP address and thus have a subaddress portion of 0. This field is mandatory on pre-approval creation and immutable after that.  Updates to an existing pre-approval must also include the previously created pre-approval ID. |
-| scope | [ScopeObject](#scopeobject) | Y | Technical definition. The parameters of the pre-approval, this contains the expiration time and the amount limits |
-| description | str | N | Description of the funds pre-approval.  May be utilized to show the user description about the request for funds pre-approval |
+| address | str | Y | Address of account from which the pre-approval is being requested. The address is encoded using bech32 and should uniquly identify the buyer. For Diem addresses format, refer to the "account identifiers" section in [DIP-5](https://dip.diem.com/dip-5/#account-identifiers). |
+| biller_address | str | Y | Address of account from which billing will happen. The address is encoded using bech32 and should uniquly identify the merchant. For Diem addresses format, refer to the "account identifiers" section in [DIP-5](https://dip.diem.com/dip-5/#account-identifiers). |
+| funds_pull_pre_approval_id | str | Y | A unique identifier of this pre-approval. Should be a UUID according to RFC4122 with "-"'s included. |
+| scope | [ScopeObject](#scopeobject) | Y | The scope of the agreement. This contains the expiration time and the amount limits |
+| merchant_name | str | Y | The name of the biller |
+| description | str | N | Description of the funds pull pre-approval. May be utilized to show the user description about the request for funds pull pre-approval |
 | status | str enum | N | Status of this pre-approval. See [Pre-Approval Status Enum](#pre-approval-status-enum) for valid statuses. 
 
 ```
 {
-    "address": "lbr1pgfpyysjzgfpyysjzgfpyysjzgf3xycnzvf3xycsm957ne",
-    "biller_address": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pg9skzctpv9skzcg9kmwta",
-    "funds_pre_approval_id": "lbr1pg9q5zs2pg9q5zs2pg9q5zs2pgyqqqqqqqqqqqqqqspa3m_7b8404c986f53fe072301fe950d030de"
-    "expiration_timestamp": 72322, 
-    "max_cumulative_amount": CurrencyObject(),
-    "description": "Kevin's online shop",
+    "address": "dm1pqqgjyv6y24n80zye42aueh0wlll7ahwvhw4qpxg2y47hr",
+    "biller_address": "dm1pllhdmn9m42vcsamx24zrxgs3qqqpzg3ng32kvacapx5fl",
+    "funds_pull_pre_approval_id": "51471b7a-4d2e-46b8-a818-6a6e74cb749b",
+    "scope": ScopeObject(),
+    "merchant_name": "Kevin's online shop",
+    "description": "Adding your wallet as a payment method for easier purchase experience",
     "status": "valid",
 }
 ```
 
 ### ScopeObject
 
-In this object the initiator VASP declares its intent for the pre-approval, this can be one of two options:
-  1. Save the consumer sub-account for future transactions (save_sub_account)- this will enable the initiator VASP (merchant) to charge the sub-account in the future but will require the owner to approve the transaction. When using this option, amount limits are not required
-  2. Save the consumer sub-account and get a consent for future payments (consent) - this enables the initiator VASP (merchant) to charge the sub-account without any interaction with the owner. 
-Also, the scope limits the FundPullPreApprovalObject to certain parameters of time and amount. This object can be later mutated by the initiator VASP if needed, but any change requires the target VASP to approve the scope change.
+In this object the initiator VASP declares its intent for the pre-approval.
+
+For now, only simple type of pre-approval is supported, that is `consent`. It is used for future payments and enables the merchant VASP to charge the buyer in the buyer VASP without any human interaction.  
+Also, the scope limits the `FundsPullPreApprovalObject` to certain parameters of time and amount.
 
 
 | Field         | Type  | Required?     | Description   |
 |-------        |------ |-----------    |-------------  |
-| type | str enum | Y | This can be either save_sub_account or consent |
+| type | str enum | Y | For now only `consent` is supported |
 | expiration_timestamp | uint | Y | Unix timestamp indicating the time at which this pre-approval will expire - after which no funds pull can occur.  To expire an existing pre-approval early, this field can be updated with the current Unix timestamp. |
-| max_cumulative_amount | [ScopedCumulativeAmountObject](#scopedcumulativeamountobject) | N | Max cumulative amount that is approved for funds pre-approval.  This is the sum across all transactions that occur while utilizing this pre-approval. |
-| max_transaction_amount | [CurrencyObject](#currencyobject) | N | Max transaction amount that is approved for funds pre-approval.  This is the maximum amount that may occur in a single transaction while utilizing this funds pre-approval. |
+| currency | str enum | Y | One of the supported on-chain currency types - ex. XDX, etc.|
+| reset | [ScopedResetObject](#scopedresetobject) | N | A defintion of a reset period of this pre-approval. When granting this agreement, one can review the periodic terms of what is the amount that can be withdrawan within a given period of time defined by this object |
+| max_transaction_amount | uint | N | Max transaction amount that is approved for funds pull pre-approval.  This is the maximum amount that may occur in a single transaction while utilizing this funds pull pre-approval. Base units are the same as for on-chain transactions for this currency. For example, if DiemUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. |
 
 ```
 {
     "scope": {
         "type": "consent",
-        "expiration_timestamp": 72322,
-        "max_cumulative_amount": {
-            "unit": "year",
-            "value": 1,
-            "max_amount": {
-                "amount": 100000,
-                "currency": "LBR",
-            }
-        },        
-        "max_transaction_amount": {
-            "amount": 100,
-            "currency": "LBR",
-        }
+        "expiration_timestamp": 1615872312,
+        "currency": "XDX",
+        "reset": ScopedResetObject(),        
+        "max_transaction_amount": 50000000
     }
 }
 ```
 
-### ScopedCumulativeAmountObject
+### ScopedResetObject
 
-This object describes the scope of an amount
+This object describes the scope period for reset the cummulation of transaction amounts 
 
 | Field         | Type       | Required?    | Description   |
 |-------        |--------    |-----------   |-------------  |
-| unit          | str enum   | N            | One of: "day", "week", "month", "year" |
-| value         | int        | N            | Number of "unit"(s)   |
-| max_amount | [CurrencyObject](#currencyobject) | N | Max cumulative amount that is approved for funds pre-approval.  This is the sum across all transactions that occur in the scope of the unit value. |
+| period | [PeriodObject](#periodobject) | Y | A definition of a period of time |
+| amount_per_period | uint | Y | Max amount that is approved for a single period of time. This is the sum across all transactions that occur in the period. Base units are the same as for on-chain transactions for this currency. For example, if DiemUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. |
 
 ```
 {
-    "max_cumulative_amount": {
-        "unit": "month",
-        "value": 1,
-        "max_amount": {
-            "amount": 100,
-            "currency": "LBR",
-        }
+    "reset": {
+        "period": PeriodObject(),
+        "amount_per_period": 1300000000,
     }
 }
 ```
 
+### PeriodObject
 
-
-### CurrencyObject
-
-Represents a limited scope for the approval. 
+Represents a period of time. 
 
 | Field 	    | Type 	| Required? 	| Description 	|
 |-------	    |------	|-----------	|-------------	|
-| amount | uint | Y | Base units are the same as for on-chain transactions for this currency.  For example, if DiemUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. |
-| currency | str enum | Y | One of the supported on-chain currency types - ex. XDX, etc.|
+| unit          | str enum   | Y            | One of: `day`, `week`, `month`, `year`. This unit should be treated as a sliding time window. E.g., one week would be summary of the past 7 days transactions, no matter what weekday it is |
+| value         | uint       | Y            | Number of "unit"(s)   |
 
 ```
 {
-    "amount": 100,
-    "currency": "XDX",
+    "unit": "week",
+    "value": 2
 }
 ```
 
+
 ### Pre Approval Status Enum
 Valid values are:
-* `pending` - Pending user/VASP approval.
+* `pending` - Pending buyer user/VASP approval.
 * `valid` - Approved by the user/VASP and ready for usage.
 * `rejected` - User/VASP did not approve the pre-approval request.
 * `closed` - Approval has been closed by the user/VASP and can no longer be used.
 
-**Valid Status Transitions**. Either party in the pre-approval agreement can mutate the status. The status always initially begins as `pending` at which time a user must agree to the pre-approval request.  Once the user has reviewed the request, the sender VASP (of the buyer) will update the pre-approval status to `valid` (if the user agreed) or `rejected` (if the user rejected the pre-approval).
+**Valid Status Transitions**. The status always initially begins as `pending` at which time a user must agree to the pre-approval request.  Once the user has reviewed the request, the buyer VASP will update the pre-approval status to `valid` (if the user agreed) or `rejected` (if the user rejected the pre-approval).
 
-At any point, the user can withdraw permission at which point the status will be updated to `closed`.
+When `valid`, at any point, the buyer or the merchant can withdraw permission at which point the status will be updated to `closed`.
 
 
 ### CommandResponseObject
@@ -230,57 +293,5 @@ Payment object remains the same as [PaymentObject](https://dip.diem.com/dip-1/#p
 
 | Field         | Type  | Required?     | Description   |
 |-------        |------ |-----------    |-------------  |
-| funds_pre_approval_id | str | N | ID of the funds pre-approval previously created via a [FundPullPreApprovalCommand](#fundpullpreapprovalcommand-object).  Must match the value of "funds_pre_approval_id" in the already-created funds pre-approval.
+| funds_pull_pre_approval_id | str | N | ID of the funds pull pre-approval previously created via a [FundsPullPreApprovalCommand](#fundspullpreapprovalcommand-object).  Must match the value of "funds_pull_pre_approval_id" in the already-created funds pull pre-approval.
 
----
-
-# Auth/Capture
-### *VERSION SUPPORT: Supported only in version 3 of off-chain APIs*
-
-Authorization allows the placing of holds on funds with the assurance that an amount up to the held amount can be captured at a later time.  An example of this is for delayed fulfillment or pre-authorizing an expected amount to ensure that an amount can be charged after services are rendered.
-
-When an authorization happens, the sender VASP (buyer) who agrees to the authorization request must lock the funds for the specified period. That is - the buyer VASP guarantees that the funds will be available if later captured.
-
-Auth/capture is an extension of [PaymentCommand](https://dip.diem.com/dip-1/#paymentcommand-object).  The extension happens primarily within the [PaymentActionObject](https://dip.diem.com/dip-1/#paymentactionobject) and the status changes within the [PaymentActor](https://dip.diem.com/dip-1/#paymentactorobject).
-
-Authorization is granted by the consumer/buyer VASP and can only be revoked by the merchant. Authorizations are expected to have a shorter expiration time than Fund Pull Pre-Approvals as they serve for a single payment.
-
-### PaymentActionObject Extension
-
-The [PaymentActionObject](https://dip.diem.com/dip-1/#paymentactionobject) now becomes:
-
-| Field 	    | Type 	| Required? 	| Description 	|
-|-------	    |------	|-----------	|-------------	|
-| amount | uint | Y | Amount of the transfer.  Base units are the same as for on-chain transactions for this currency.  For example, if DiemUSD is represented on-chain where “1” equals 1e-6 dollars, then “1” equals the same amount here.  For any currency, the on-chain mapping must be used for amounts. |
-| currency | enum | Y | One of the supported on-chain currency types - ex. XDX, etc. |
-| action | enum | Y | Populated in the request.  This value indicates the requested action to perform. For a normal transfer, "charge" is still used.  For auth and capture, "auth" and "capture" are now available.  "capture" can only be performed after a valid "auth" |
-| valid_until | uint | N | Unix timestamp indicating the time period for which this authorization is valid.  Once this time has been reached, the authorization is no longer able to be captured and funds should be unlocked. |
-| timestamp | uint | Y | Unix timestamp indicating the time that the payment Command was created.
-
-```
-{
-    "amount": 100,
-    "currency": "XDX",
-    "action": "auth",
-    "valid_until": 74000,
-    "timestamp": 72322,
-}
-```
-
-### StatusEnum
-
-The auth/capture flow now adds the following to the status enum of [PaymentActor](https://dip.diem.com/dip-1/#paymentactorobject):
-
-* `authorized` - The payment amount is authorized but not yet captured.
-
-`abort` may still be used to cancel the authorization early.  Once a capture action occurs, the status of the payment will now be updated to `ready_for_settlement`.
-
-**Valid Status Transitions**. `authorized` is now a valid initial value and may be followed by `ready_for_settlement` (upon a successful capture) or `abort` (if a valid cancel request was sent).
-
-## Cancellation
-
-This LIP describes two independent phases of a payment - pre-approval and auth/capture.
-
-The first one (pre-approval) may be canceled by either side (buyer or seller). A reasonable scenario is when a consumer wishes to cancel a subscription (buyer cancel) or asks a merchant app to remove the user wallet from the list of payment methods (seller cancel). 
-
-The second (authorization) could be canceled only by the biller (merchant) as it holds a guarantee of funds availability if requested. This has no reason to be canceled by the buyer. A request for such cancellation from the buyer should be rejected. 
