@@ -383,7 +383,7 @@ Some fields are immutable after they are defined once. Others can be updated mul
 | sender/receiver | [`PaymentActorObject`](#paymentactorobject) | Y | Information about the sender/receiver in this payment. |
 | reference_id | str | Y | Unique reference ID of this payment on the payment initiator VASP (the VASP which originally created this payment Object). This value must be globally unique. This field is mandatory on payment creation and immutable after that. We recommend using a 128 bits long UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included. |
 | original_payment_reference_id | str | N | Used to refer an old payment known to the other VASP. For example, used for refunds. The reference ID of the original payment will be placed into this field. This field is mandatory on refund and immutable. |
-| recipient_signature | str | N | Signature of the recipient of this transaction encoded in hex. A metadata payload is signed with the compliance key of the recipient VASP and is used for on-chain attestation from the recipient party.  This may be omitted on Blockchains which do not require on-chain attestation. Generated via [Recipient Signature](recipient-compliance-signature). |
+| recipient_signature | str | N | Signature of the recipient of this transaction encoded in hex. A metadata payload is signed with the compliance key of the recipient VASP and is used for on-chain attestation from the recipient party.  This may be omitted on Blockchains which do not require on-chain attestation. Generated via [Recipient Signature](#recipient-compliance-signature). |
 | action | [`PaymentActionObject`](#paymentactionobject) | Y | Number of cryptocurrency + currency type (XUS, etc.)<a href="#note1" id="note1ref"><sup>1</sup></a> + type of action to take. This field is mandatory and immutable. |
 | description | str | N | Description of the payment. To be displayed to the user. Unicode utf-8 encoded max length of 255 characters. This field is optional but can only be written once.
 
@@ -759,7 +759,7 @@ def add_payment_recipient_signature(payment: PaymentObject) -> None:
 ```
 
 # On-chain Transaction Submission
-Once both sender and receiver have a status of 'ready_for_settlement', the transaction may then be submitted on-chain by the sender VASP. This submission will utilize the `recipient_signature` which was provided by the receiver VASP (generated via [Recipient Signature](recipient-compliance-signature)).  The sender VASP will now generate a transaction via the following and then submit the transaction on-chain:
+Once both sender and receiver have a status of 'ready_for_settlement', the transaction may then be submitted on-chain by the sender VASP. This submission will utilize the `recipient_signature` which was provided by the receiver VASP (generated via [Recipient Signature](#recipient-compliance-signature)).  The sender VASP will now generate a transaction via the following and then submit the transaction on-chain:
 
 ```python
 from diem import stdlib, utils, diem_types, identifier
