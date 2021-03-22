@@ -9,6 +9,7 @@
 .docusaurus
 .cache-loader
 DIPMetadata.json
+.idea
 
 # Misc
 .DS_Store

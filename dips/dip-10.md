@@ -1,7 +1,8 @@
 ---
 dip: 10
 title: Diem ID Spec
-authors: Andrey Chursin(@andll), Kevin Hurley (@kphfb)
+authors: Andrey Chursin(@andll), Kevin Hurley (@kphfb), Sunmi Lee (@sunmilee)
+, David Wolinsky (@davidiw)
 status: Draft
 type: Informational
 created: 11/03/2020
@@ -13,47 +14,37 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 This DIP describes Diem ID - the human-readable identifier for user accounts.   
 
-In addition to describing the format of the Diem ID, this DIP also describes the off-chain protocol for the peer-2-peer payment with Diem ID.
-
 # Motivation
-Diem ID provides a convenient way to identify a user's account within a VASP. There are two main use cases for Diem ID:
-* For peer-2-peer payments, Diem ID allows a user to provide a human-readable ‘identifier’ to the sender. Basically, instead of sending a [dip-5 address](https://github.com/diem/dip/blob/master/dips/dip-5.md) (that needs to be refreshed for each payment, ideally), the receiver can just share their Diem ID once. In this case Diem ID plays the role of an email address for payments. Benefits for this use case:
-  * The Diem ID resolution process can facilitate the exchange of rich information(e.g. nicknames, profile picture, etc.) about both the sender and receiver of the payment
-  * Diem ID provides better privacy compared to using sub-addresses, because Diem ID is not shared on the chain and will always use a single-use identifier for the on-chain ID
+Diem ID provides a convenient way to identify a user's account within a VASP.
+* For peer-2-peer payments, Diem ID allows a user to provide a human-readable ‘identifier’ to the sender. Instead of sending a [dip-5 address](https://github.com/diem/dip/blob/master/dips/dip-5.md) (that ideally needs to be refreshed for each payment), the receiver can just share their Diem ID once. In this case Diem ID plays the role of an email address for payments. Benefits for this use case:
+  * Diem ID provides better privacy compared to using sub-addresses, because PayAddress is not shared on the chain and will always use a single-use identifier for the on-chain ID
   * From a user's perspective, Diem ID is a persistent identifier.  But from the perspective of the chain, Diem IDs do not exist and instead transactions are have a single-use ID to identify them. By contrast, from the viewpoint of both a user and the chain, a sub-address is an ephemeral user identifier that should be recycled frequently to preserve privacy, but appears on-chain and could thus be used to link payments if it isn't recycled upon each usage.
 
-# User story
-Below is an example of using Diem ID domain for transferring money from one user to another. 
+# Diem ID Format
+Diem defines globally unique identifiers to facilitate transacting on the Diem Payment Network. As Diem stores no PII on-chain, these identifiers are exchanged during the off-chain process between two VASPs to identify a distinct source and destinations within their respective VASPs in order to produce a reference_id that can be stored on-chain. The format for the identifiers follows:
+`[user_identifier]@[vasp_domain_identifier]`
 
-* Receiver shares their Diem ID with the sender (outside the scope of this document)
-* Sender enters receiver's Diem ID and other relevant information into their wallet application
-* Sender's wallet attempts to fetch the receiver's profile picture and full name along with a confirmation dialog
-* Sender confirms the identity of the recipient
-* Sender presses ‘send’ button
-* Receiver's account is credited the amount in the transaction
-* Receiver's wallet displays recent transactions and their senders
+Example: `alice@avasp`
 
-# Diem ID format
-Diem ID is a string in format `<user-id>$<diem-id-domain>`.
-
-Example: `andrey$novi`
-
-* **user-id**, identifies an account within a VASP:
+* `user_identifier` is a unique identifier meaningful only to a VASP that represents either the source or destination of a transaction. In practice, they are likely to be re-used and should be capable of both being the sender and recipient in a transaction. Their specific lifetime is undefined but should ideally be meaningful to the owner of the identifier. Specification:
   * Case insensitive
-  * Regex: `^[a-zA-Z0-9][a-zA-Z0-9-_+.]*$`
+  * Valid regular expression: ^[a-zA-Z0-9][a-zA-Z0-9-_\.]*$
   * Maximum length: 64 characters
-  * Stored internally in the VASP. Not published on the chain, there is no way for an external entity to list all the users within VASP.
-  * Defined by the VASP - user selected, auto-generated, etc.
-* **diem-id-domain** identifies a VASP:
+* `vasp_domain_identifier` is a well-known string that can be mapped to a VASP. Specification:
   * Case insensitive
-  * Regex: `^[a-zA-Z0-9][a-zA-Z0-9-]+$`
+  * Valid regular expression: ^[a-zA-Z0-9][a-zA-Z0-9-_\.]*$
   * Maximum length: 63 characters
-  * Association between diem id and VASP is published on the chain 
 
-## Diem ID domains
-Each Diem ID domain is associated with a single VASP. This information is stored on the block chain in a `DiemIdDomains` resource published in a parent VASP's on-chain account.
+
+# Naming Service (Off-Chain Lookup Service)
+The Diem ID specifies that VASPs can receive payments at a vasp_domain_identifier. The intent is to eventually store these values on-chain. As an initial effort into this space, the Diem Association stores a file mapping domain name to account address. The account address should be a parent VASP. The VASP sending a payment can then obtain the DualAttestation::Credentials::base_url to perform the ReferenceID exchange. An example CSV is:
+```
+avasp, 0xf72589b71ff4f8d139674a3f7369c69b
+bvasp, 0xc5ab123458df0003415689adbb47326d
+```
 
 # On-chain data
+## Diem ID Domain
 
 ```
 resource struct DiemIdDomains {
@@ -75,7 +66,7 @@ struct DiemIdDomain {
 * The Diem ID domain can be created as part of creating a `ParentVASP` account.
 * An entity (potentially the Association) may at some point choose to expose an open source application(*Indexer*) that will allow indexing available Diem IDs and could provide a convenient REST API for applications to fetch information about the domains. The API of such an indexer is out of scope of this RFC.
 
-## Diem ID domain events
+## Diem ID Domain Events
 
 The Move contract that manages Diem ID domains must emit an event every time Diem ID domain is created, removed or updated. Those events are critical for applications to be able to efficiently index existing Diem ID domains.
 
@@ -101,130 +92,62 @@ struct DiemIdDomainEvent {
   * `domain` - exact copy of `DiemIdDomain` that was added/removed from `DiemIdDomains` resource of a VASP account
   * `address` - address of an account where `DiemIdDomain` was added or removed
 
-# Off-chain protocol
 
-**TODO: This section may change in the future as we update DIP 1**
+# ReferenceID Exchange
+The PaymentMetadata transactions require a ReferenceID in order to submit a transaction to the chain. PaymentMetadata transactions reveal nothing distinctly about either the sender or recipient and do not create a linkability between the sender or receiver across payments. Hence, the ReferenceID must be established off-chain and this protocol defines one such way to do so leveraging the PaymentAddresses.
 
-<img alt="Payment flow" src={useBaseUrl('img/diem-id-flow.png')} />
+## ReferenceID Command
+A VASP intending to send a payment from one VASP to another when leveraging Diem IDs constructs a ReferenceIDCommand submits that to the recipient side. If the recipient knows the recipient PaymentAddress and can potentially accept payments, it returns a success. In the case it cannot, it returns an error indicating the reason.
 
-In order to support peer-2-peer payments, VASPs need to implement two Diem ID endpoints:
+In the case that the amount to be sent would exceed the limit of the travel rule, the sending party should follow this exchange with a PaymentCommand using the same reference_id and specify the sending and receiving subaddresses as all 0.
 
-* **Info endpoint** for querying optional information about the receiver. VASPs can provide this endpoint to improve UX and security of payment, but they are not obligated to - VASPs may choose not to share any information about the user via this endpoint, including whether the user exists or not.
-  * *For example*: VASP can define a 'contact list' and only share information if the sender is in receiver's contacts
-* **Payment endpoint** to perform actual money transfer.
-
-## Info endpoint
-
-**Info endpoint** is used by the **Sender** to request information about the **Receiver** before submitting an actual payment.
-
-Info endpoint takes both sender and receiver Diem IDs as arguments. Receiver VASP might decide to share more(or less) information based on sender ID, for example if the wallet supports some kind of contact list, they might decide to share more information if the sender is in the contact list of the receiver.
-
-**Request:**
-```json
+The format of the command is:
+```
 {
-   "sender": "<User Object>",
-   "receiver_id": "<Receiver Diem ID>"
+   "_ObjectType": "CommandRequestObject",
+    "command_type": "ReferenceIDCommand",
+    "command": {
+	    "_ObjectType": "ReferenceIDRequest",
+	    "sender": "alice@avasp",
+	    "sender_address": "f72589b71ff4f8d139674a3f7369c69b",
+	    "recipient": "bob@bvasp",
+	    "reference_id": "5b8403c9-86f5-3fe0-7230-1fe950d030cb", 
+    },
+    "cid": "12ce83f6-6d18-0d6e-08b6-c00fdbbf085a",
 }
 ```
 
-| Field 	   | Type 	     | Required? 	| Description 	           |
-|-------	   |------	     |-----------	|-------------	           |
-|sender        |[User Object](https://github.com/diem/dip/blob/master/dips/dip-10.md#user-object)  | Y            | Information about the sender |
-|receiver_id   |str          | Y            | Diem ID of the receiver |
-
-**Response:**
-```json
+The format of the success response is:
+```
 {
-   "receiver": "<User Object>"
+   "_ObjectType": "CommandResponseObject",
+    "status": "success",
+    "result": {
+	    "_ObjectType": "ReferenceIDResponse",
+	    "recipient_address": "c5ab123458df0003415689adbb47326d",
+    },
+    "cid": "12ce83f6-6d18-0d6e-08b6-c00fdbbf085a",
 }
 ```
 
-| Field 	   | Type 	     | Required? 	| Description 	             |
-|-------	   |------	     |-----------	|-------------	             |
-|receiver      |[User Object](https://github.com/diem/dip/blob/master/dips/dip-10.md#user-object)  | Y            | Information about the receiver |
 
-* Receiver Diem ID domain must belong to the Receiver VASP. Otherwise, Receiver VASP must return the `400` error code.
-* Sender Diem ID must have a Diem ID domain that belongs to Sender VASP. If this is not the case, the Receiver VASP should return the `400` error code 
-* Receiver VASP may optionally choose how much information to share based on the sender Diem ID. If Receiver VASP decides to not share data, it should return an empty `User Object` with only `diem_id` field set
-* If user is not found, the VASP should return error code `404`  
+# End-to-End Experience
+Below is an example of using Diem ID domain for transferring money from one user to another. 
 
-## Pay endpoint
-
-**TODO: This endpoint is going to be merged into DIP 1**
-
-**Pay endpoint** is used when a user is willing to make a money transfer.
-
-**Request:**
-```json
-{
-   "sender": "<User Object>",
-   "receiver_id": "<Receiver_Diem_ID>",
-   "amount": "<amount>",
-   "currency": "<currency>"
-}
+## Prerequisite:
+* VASPs get approval from association (via some offline process) on domain name
+* VASPs receive a CSV file from association that looks like this:
 ```
-
-| Field 	   | Type 	     | Required? 	| Description 	           |
-|-------	   |------	     |-----------	|-------------	           |
-|sender        |[User Object](https://github.com/diem/dip/blob/master/dips/dip-10.md#user-object)  | Y            | Information about the sender |
-|receiver_id   |str          | Y            | Diem ID of the receiver |
-|amount        |integer      | Y            | Amount of coins to transfer |
-|currency      |str          | Y            | Name of the coin |
-
-**Response:**
-```json
-{
-   "receiver_address": "<Receiver VASP on-chain account address>",
-   "reference_id": "<Payment_Reference_ID>",
-   "receiver": "<User Object>"
-}
+coinbase, 0xf72589b71ff4f8d139674a3f7369c69b
+novi, 0xc5ab123458df0003415689adbb47326d
 ```
+* VASPs store the mapping internally
 
-| Field 	      | Type       | Required? 	| Description 	           |
-|-------	      |------      |-----------	|-------------	           |
-|receiver_address |str         | Y            | On-chain account address for receiving the payment. This address must be encoded as a [Bech32 account identifier](https://github.com/diem/dip/blob/master/dips/dip-5.md#account-identifiers) **without** subaddress |
-|reference_id     |str         | Y            | Reference ID to be included into payment metadata |
-|receiver         |[User Object](https://github.com/diem/dip/blob/master/dips/dip-10.md#user-object) | Y            | Information about the receiver |
-
-* Pay endpoint is used to exchange details of the payment such as information about Sender and Receiver off the chain, and negotiate `Payment_Reference_ID`
-
-* Once the sender learns Payment_Reference_ID, it will submit an on-chain transaction including the `Payment_Reference_ID` as a metadata. Receiver will use the `Payment_Reference_ID` in the transaction to link the on-chain transaction to the payment.
-
-* Sender will submit a transaction to the `receiver_address` on-chain account in the response. This account address can be either Parent VASP, or any of Child VASP accounts of the receiver VASP. This is needed to allow the receiver VASP to manage load between different on-chain accounts.
-
-* `Payment_Reference_ID` must be unique for each payment, it must not be reused in any way to avoid leaking privacy information on-chain.
-
-* `Payment_Reference_ID` returned by this endpoint is not signed for KYC purposes. This means that payment above KYC threshold can not be submitted right away using the provided Payment_Reference_ID. Instead, sender VASP needs to proceed to KYC endpoint to negotiate the signed Reference ID.
-
-* KYC endpoint API will be updated to accept `Payment_Reference_ID` returned by the Diem ID endpoint instead of address/subaddress.
-
-## User Object
-User Object defines reach information about the user.
-
-All fields, except for `diem_id`, in this object are optional - VASP can choose to share either of those fields or none.
-
-Additionally, all fields in this object are informational - **they must not be used for KYC and only intended for UI purposes**.
-```json
-{
-   "diem_id": "<Diem_ID>",
-   "display_name": "<Display name>",
-   "profile_picture": "<profile_picture_uri>"
-}
-```
-
-| Field 	      | Type  | Required? 	| Description 	           |
-|-------	      |------ |-----------	|-------------	           |
-|diem_id         |str    | Y           | Diem ID of the user |
-|display_name     |str    | N           | Display name of the user. Usually a full name |
-|profile_picture  |str    | N           | Profile picture URL(see below) |
-
-If a user does not exist, VASP can choose to return an HTTP error, or the empty User Object, depending on it’s privacy choices.
-
-## Profile Picture URI
-Profile picture URI is a URI that represents a profile picture of a user. Wallet app must support two possible URI schemas for profile picture.
-
-* **Https schema.** If URI starts with https:, wallet must attempt to fetch profile picture from the HTTP URI provided. When fetching this URI wallet app will not provide any authentication. Wallet app will use GET method to fetch the profile picture specified using https schema.
-  * Ex.: *https://novi.com/pictures/alice.png*
-* **Data schema.** If URI starts with data:, wallet must interpret the URI as a [Data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) that contains profile picture encoded.
-  * Ex.: *data:image/gif;base64,AAAAAAAA*
-* **Unencrypted http** schema must not be used to share profile pictures.
+## User Story: 
+* Bob wants to receive funds from Alice
+* Bob registers a Diem ID at his VASP (bvasp): bob@bvasp
+* Bob shares either this Diem ID, bob@bvasp, or a PaymentURI, diem://bob@bvasp with Alice
+* Alice logs into her VASP (avasp), enters Bob’s identifier, an amount to pay, and submits payment
+* Alice’s VASP contacts Bob’s VASP’s off-chain API with the sender identifier (alice@avasp) and requests a reference_id, rb1
+* Alice’s VASP constructs a transaction with the specified amount and the reference_id (rb1) and submits it to the diem network
+* Bob’s VASP receives a transaction with metadata containing rb1, deposits the amount in his account, and attaches the relevant metadata (e.g., Alice’s Diem ID) so Bob can confirm the transaction
