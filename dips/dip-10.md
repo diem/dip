@@ -1,8 +1,7 @@
 ---
 dip: 10
-title: Diem ID Spec
-authors: Andrey Chursin(@andll), Kevin Hurley (@kphfb), Sunmi Lee (@sunmilee)
-, David Wolinsky (@davidiw)
+title: Pay Address Spec
+authors: Andrey Chursin(@andll), Kevin Hurley (@kphfb), Sunmi Lee (@sunmilee), David Wolinsky (@davidiw)
 status: Draft
 type: Informational
 created: 11/03/2020
@@ -12,15 +11,15 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Summary
 
-This DIP describes Diem ID - the human-readable identifier for user accounts.   
+This DIP describes Pay Address - the human-readable identifier for user accounts.   
 
 # Motivation
-Diem ID provides a convenient way to identify a user's account within a VASP.
-* For peer-2-peer payments, Diem ID allows a user to provide a human-readable ‘identifier’ to the sender. Instead of sending a [dip-5 address](https://github.com/diem/dip/blob/master/dips/dip-5.md) (that ideally needs to be refreshed for each payment), the receiver can just share their Diem ID once. In this case Diem ID plays the role of an email address for payments. Benefits for this use case:
-  * Diem ID provides better privacy compared to using sub-addresses, because PayAddress is not shared on the chain and will always use a single-use identifier for the on-chain ID
-  * From a user's perspective, Diem ID is a persistent identifier.  But from the perspective of the chain, Diem IDs do not exist and instead transactions are have a single-use ID to identify them. By contrast, from the viewpoint of both a user and the chain, a sub-address is an ephemeral user identifier that should be recycled frequently to preserve privacy, but appears on-chain and could thus be used to link payments if it isn't recycled upon each usage.
+Pay Address provides a convenient way to identify a user's account within a VASP.
+* For peer-2-peer payments, Pay Address allows a user to provide a human-readable ‘identifier’ to the sender. Instead of sending a [dip-5 address](https://github.com/diem/dip/blob/master/dips/dip-5.md) (that ideally needs to be refreshed for each payment), the receiver can just share their Pay Address once. In this case Pay Address plays the role of an email address for payments. Benefits for this use case:
+  * Pay Address provides better privacy compared to using sub-addresses, because PayAddress is not shared on the chain and will always use a single-use identifier for the on-chain ID
+  * From a user's perspective, Pay Address is a persistent identifier.  But from the perspective of the chain, Pay Addresss do not exist and instead transactions are have a single-use ID to identify them. By contrast, from the viewpoint of both a user and the chain, a sub-address is an ephemeral user identifier that should be recycled frequently to preserve privacy, but appears on-chain and could thus be used to link payments if it isn't recycled upon each usage.
 
-# Diem ID Format
+# Pay Address Format
 Diem defines globally unique identifiers to facilitate transacting on the Diem Payment Network. As Diem stores no PII on-chain, these identifiers are exchanged during the off-chain process between two VASPs to identify a distinct source and destinations within their respective VASPs in order to produce a reference_id that can be stored on-chain. The format for the identifiers follows:
 `[user_identifier]@[vasp_domain_identifier]`
 
@@ -37,14 +36,14 @@ Example: `alice@avasp`
 
 
 # Naming Service (Off-Chain Lookup Service)
-The Diem ID specifies that VASPs can receive payments at a vasp_domain_identifier. The intent is to eventually store these values on-chain. As an initial effort into this space, the Diem Association stores a file mapping domain name to account address. The account address should be a parent VASP. The VASP sending a payment can then obtain the DualAttestation::Credentials::base_url to perform the ReferenceID exchange. An example CSV is:
+The Pay Address specifies that VASPs can receive payments at a vasp_domain_identifier. The intent is to eventually store these values on-chain. As an initial effort into this space, the Diem Association stores a file mapping domain name to account address. The account address should be a parent VASP. The VASP sending a payment can then obtain the DualAttestation::Credentials::base_url to perform the ReferenceID exchange. An example CSV is:
 ```
 avasp, 0xf72589b71ff4f8d139674a3f7369c69b
 bvasp, 0xc5ab123458df0003415689adbb47326d
 ```
 
 # On-chain data
-## Diem ID Domain
+## Pay Address Domain
 
 ```
 resource struct DiemIdDomains {
@@ -56,21 +55,21 @@ struct DiemIdDomain {
 }
 ```
 * Fields definition:
-   * `domain` - name of a Diem ID domain 
+   * `domain` - name of a Pay Address domain 
 * The `DiemIdDomains` resource can only be published into an account with `Role == PARENT_VASP_ROLE_ID`.
-* The `DiemIdDomains` contains a list of `DiemIdDomain` structs that are associated with a VASP. As such, it is possible to register more than one Diem ID Domain for a given VASP. We are providing this opportunity to support possible situations when two VASPs merge into one, or when a company wants to provide multiple wallet apps, while having only a single VASP parent account on the chain.
+* The `DiemIdDomains` contains a list of `DiemIdDomain` structs that are associated with a VASP. As such, it is possible to register more than one Pay Address Domain for a given VASP. We are providing this opportunity to support possible situations when two VASPs merge into one, or when a company wants to provide multiple wallet apps, while having only a single VASP parent account on the chain.
 * Only special Treasury Compliance account (address `0xB1E55ED`) can manipulate DiemIdDomains resource:
   * Only TC account can create and publish `DiemIdDomains` resource
   * Only TC account can add, remove or update an `DiemIdDomain` within `DiemIdDomains` resource
-* In order to register a Diem Id domain, a VASP needs to submit a request to Diem Association. LA will perform certain checks (out of scope of this document) before issuing an on-chain transaction to register a Diem Id Domain. These checks intend to mitigate irrelevant claims and enforce uniqueness
-* The Diem ID domain can be created as part of creating a `ParentVASP` account.
-* An entity (potentially the Association) may at some point choose to expose an open source application(*Indexer*) that will allow indexing available Diem IDs and could provide a convenient REST API for applications to fetch information about the domains. The API of such an indexer is out of scope of this RFC.
+* In order to register a Pay Address domain, a VASP needs to submit a request to Diem Association. LA will perform certain checks (out of scope of this document) before issuing an on-chain transaction to register a Pay Address Domain. These checks intend to mitigate irrelevant claims and enforce uniqueness
+* The Pay Address domain can be created as part of creating a `ParentVASP` account.
+* An entity (potentially the Association) may at some point choose to expose an open source application(*Indexer*) that will allow indexing available Pay Addresss and could provide a convenient REST API for applications to fetch information about the domains. The API of such an indexer is out of scope of this RFC.
 
-## Diem ID Domain Events
+## Pay Address Domain Events
 
-The Move contract that manages Diem ID domains must emit an event every time Diem ID domain is created, removed or updated. Those events are critical for applications to be able to efficiently index existing Diem ID domains.
+The Move contract that manages Pay Address domains must emit an event every time Pay Address domain is created, removed or updated. Those events are critical for applications to be able to efficiently index existing Pay Address domains.
 
-While Diem ID domains are published into VASP accounts, Diem ID domain events are published under the Treasury Compliance account. We consolidate events under single account to allow indexers to follow single event stream.
+While Pay Address domains are published into VASP accounts, Pay Address domain events are published under the Treasury Compliance account. We consolidate events under single account to allow indexers to follow single event stream.
 
 To store events, `DiemIdDomainManager` resource is published under the Treasure Compliance account(address `0xB1E55ED`).
 
@@ -97,7 +96,7 @@ struct DiemIdDomainEvent {
 The PaymentMetadata transactions require a ReferenceID in order to submit a transaction to the chain. PaymentMetadata transactions reveal nothing distinctly about either the sender or recipient and do not create a linkability between the sender or receiver across payments. Hence, the ReferenceID must be established off-chain and this protocol defines one such way to do so leveraging the PaymentAddresses.
 
 ## ReferenceID Command
-A VASP intending to send a payment from one VASP to another when leveraging Diem IDs constructs a ReferenceIDCommand submits that to the recipient side. If the recipient knows the recipient PaymentAddress and can potentially accept payments, it returns a success. In the case it cannot, it returns an error indicating the reason.
+A VASP intending to send a payment from one VASP to another when leveraging Pay Addresss constructs a ReferenceIDCommand submits that to the recipient side. If the recipient knows the recipient PaymentAddress and can potentially accept payments, it returns a success. In the case it cannot, it returns an error indicating the reason.
 
 In the case that the amount to be sent would exceed the limit of the travel rule, the sending party should follow this exchange with a PaymentCommand using the same reference_id and specify the sending and receiving subaddresses as all 0.
 
@@ -132,7 +131,7 @@ The format of the success response is:
 
 
 # End-to-End Experience
-Below is an example of using Diem ID domain for transferring money from one user to another. 
+Below is an example of using Pay Address domain for transferring money from one user to another. 
 
 ## Prerequisite:
 * VASPs get approval from association (via some offline process) on domain name
@@ -145,9 +144,9 @@ novi, 0xc5ab123458df0003415689adbb47326d
 
 ## User Story: 
 * Bob wants to receive funds from Alice
-* Bob registers a Diem ID at his VASP (bvasp): bob@bvasp
-* Bob shares either this Diem ID, bob@bvasp, or a PaymentURI, diem://bob@bvasp with Alice
+* Bob registers a Pay Address at his VASP (bvasp): bob@bvasp
+* Bob shares either this Pay Address, bob@bvasp, or a PaymentURI, diem://bob@bvasp with Alice
 * Alice logs into her VASP (avasp), enters Bob’s identifier, an amount to pay, and submits payment
 * Alice’s VASP contacts Bob’s VASP’s off-chain API with the sender identifier (alice@avasp) and requests a reference_id, rb1
 * Alice’s VASP constructs a transaction with the specified amount and the reference_id (rb1) and submits it to the diem network
-* Bob’s VASP receives a transaction with metadata containing rb1, deposits the amount in his account, and attaches the relevant metadata (e.g., Alice’s Diem ID) so Bob can confirm the transaction
+* Bob’s VASP receives a transaction with metadata containing rb1, deposits the amount in his account, and attaches the relevant metadata (e.g., Alice’s Pay Address) so Bob can confirm the transaction
