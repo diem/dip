@@ -31,11 +31,15 @@ The two parties that participate in the off-chain protocol communicate through H
 
 # Specification
 ---
-## On-Chain Account Setup {#on-chain-account-setup}
+## On-Chain Account Setup
 
 A VASP’s on-chain account must be created and set up in accordance with the standard VASP account creation process.
 
-Of particular note for off-chain APIs is the compliance key and base url, [DualAttestation::Credential](https://github.com/diem/diem/blob/release-1.1/language/stdlib/modules/DualAttestation.move)’s `compliance_public_key` and `base_url`. The compliance key value is the Ed25519 key with which a VASP signs travel rule statements which are verified on-chain and all off-chain requests and responses. During account setup, a VASP should set their compliance key and base url which will be stored under the Parent VASP account, see [DIP-2](https://github.com/diem/dip/blob/master/dips/dip-2.md) for more information on on-chain roles.
+Of particular note for off-chain APIs is the compliance key and base url, [DualAttestation::Credential](https://github.com/diem/diem/blob/release-1.1/language/stdlib/modules/DualAttestation.move)’s `compliance_public_key` and `base_url`. During account setup, a VASP should set their compliance key and base url which will be stored under the Parent VASP account, see [DIP-2](https://github.com/diem/dip/blob/master/dips/dip-2.md) for more information on on-chain roles.
+
+The compliance key value is the Ed25519 key with which a VASP signs travel rule statements which are verified on-chain and all off-chain requests and responses.
+
+The `base_url` frameowrk does not support multiplexing and should not be shared across different providers and accounts.
 
 ## HTTP End-point
 
@@ -55,9 +59,8 @@ The HTTP request sender must use the compliance key of the VASP account linked w
 All HTTP responses must contain:
 
 * A header `X-REQUEST-ID` copied from the HTTP request.
-* A header `X-DIEM-ADDRESS`, the value should be a hex-encoded diem onchain account address bytes that can be used for looking up the compliance key that can decode the response body JWS message.
 
-The HTTP response sender must use the compliance key of the VASP account linked with the responder's address to sign the response JWS body. The response receiver uses this address to find the appropriate compliance key to verify the signed request. For example: VASP A transfers funds to VASP B. The HTTP response from B to A contains `X-DIEM-ADDRESS` as VASP B's address.
+The HTTP response sender must use the compliance key of the VASP account linked with the responder's address to sign the response JWS body.
 
 ## Payloads
 
@@ -191,7 +194,6 @@ The following sections list all error codes for various validations when process
 * Could not find the compliance key of the onchain account found by the `X-REQUEST-SENDER-ADDRESS` header value.
 * The compliance key found from the onchain account by `X-REQUEST-SENDER-ADDRESS` is not a valid ED25519 public key.
 * `X-REQUEST-ID` is not in valid UUID format.
-* `X-DIEM-ADDRESS` is not valid.
 
 `missing_http_header`: missing HTTP header `X-REQUEST-ID` or `X-REQUEST-SENDER-ADDRESS`.
 
@@ -301,7 +303,6 @@ V3 changes:
 * Add an optional result field to responses
 * Improve statements around cid on responses
 * Use must and instead of should around UUID requirements
-* Add X-DIEM-ADDRESS as required -- this seems ... how did this get
   added to the specification as required?
 * Removed example code -- should be in a guide not in a spec
 * Introduce a PingCommand
