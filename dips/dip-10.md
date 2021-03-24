@@ -14,10 +14,9 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 This DIP describes Diem ID - the human-readable identifier for user accounts.   
 
 # Motivation
-Diem ID provides a convenient method for identifying users within a VASP.
-* For peer-2-peer payments, Diem ID allows users to exchange human-readable identifiers as either the sender or the recipient of peer-to-peer payments. Instead of sending a [dip-5 address](https://github.com/diem/dip/blob/master/dips/dip-5.md) (that ideally needs to be refreshed for each payment), the receiver can just share their Diem ID once. In this case Diem ID plays the role of an email address for payments. Benefits for this use case:
-  * Privacy: There are concerns around leakage of PII when using subaddresses. Diem ID provides better privacy compared to sub-addresses, because unlike sub-addresses, Diem ID is intended to be used in tandem with an off-chain protocol. Hence, Diem ID does not need to expose PII to the chain 
-  * Persistent Identifiers: Currently there is a lack of persistent user identifiers in the Diem ecosystem. while subaddresses need to be refreshed for each payment, Diem ID is a persistent identifier from a user's perspective. From the perspective of the chain, Diem IDs does not exist.
+Diem ID provides a convenient method for identifying users within a VASP. For peer-2-peer payments, Diem ID allows users to exchange human-readable identifiers as either the sender or the recipient of peer-to-peer payments. Instead of sending a [dip-5 address](https://github.com/diem/dip/blob/master/dips/dip-5.md) (that ideally needs to be refreshed for each payment), the receiver can just share their Diem ID once. In this case Diem ID plays the role of an email address for payments. Benefits for this use case:
+* Privacy: There are concerns around leakage of personally identifiable information (PII) when using subaddresses. Diem ID provides better privacy compared to sub-addresses, because unlike sub-addresses, Diem ID is intended to be used in tandem with an off-chain protocol. Hence, Diem ID eliminates the need to expose PII on the chain 
+* Persistent Identifiers: Currently there is a lack of persistent user identifiers in the Diem ecosystem. while subaddresses need to be refreshed for each payment, Diem ID is a persistent identifier from a user's perspective. From the perspective of the chain, Diem IDs does not exist.
 
 # End-to-End Experience
 Below is an example of using Diem ID domain for transferring money from one user to another. 
@@ -33,11 +32,11 @@ bvasp, 0xc5ab123458df0003415689adbb47326d
 * Bob wants to receive funds from Alice
 * Bob registers a Diem ID at VASP B: `bob@bvasp`
 * Alice's Diem ID is registered at VASP A: `alice@avasp`
-* Bob shares either this Diem ID, `bob@bvasp`, or a PaymentURI, `diem://bob@bvasp` with Alice
+* Bob shares either this Diem ID, `bob@bvasp` with Alice
 * Alice logs into VASP A, enters Bob’s identifier, an amount to pay, and submits payment
 * Alice’s VASP (VASP A) contacts Bob’s VASP’s (VASP B) off-chain API with the sender identifier `alice@avasp` and requests a reference_id, `rb1`
 * VASP A constructs a transaction with the specified amount and the reference_id `rb` and submits it to the diem network
-* VASP B receives a transaction with metadata containing `rb1`, deposits the amount in his account, and attaches the relevant metadata (e.g., Alice’s Diem ID) to the transaction so Bob can confirm the transaction
+* VASP B receives a transaction with metadata containing `rb`, deposits the amount in Bob's account, and attaches the relevant metadata (e.g., Alice’s Diem ID) to the transaction so Bob can confirm the transaction
 
 
 # Diem ID Format
@@ -78,19 +77,18 @@ struct DiemIdDomain {
 * Fields definition:
    * `domain` - name of a Diem ID domain 
 * The `DiemIdDomains` resource can only be published into an account with `Role == PARENT_VASP_ROLE_ID`.
-* The `DiemIdDomains` contains a list of `DiemIdDomain` structs that are associated with a VASP. As such, it is possible to register more than one Diem ID Domain for a given VASP. We are providing this opportunity to support possible situations when two VASPs merge into one, or when a company wants to provide multiple wallet apps, while having only a single VASP parent account on the chain.
+* The `DiemIdDomains` contains a list of `DiemIdDomain` structs that are associated with a VASP. As such, it is possible to register more than one Diem ID Domain for a given VASP
 * Only special Treasury Compliance account (address `0xB1E55ED`) can manipulate DiemIdDomains resource:
   * Only TC account can create and publish `DiemIdDomains` resource
   * Only TC account can add, remove or update an `DiemIdDomain` within `DiemIdDomains` resource
-* In order to register a Diem ID domain, a VASP needs to submit a request to Diem Association. LA will perform certain checks (out of scope of this document) before issuing an on-chain transaction to register a Diem ID Domain. These checks intend to mitigate irrelevant claims and enforce uniqueness
-* The Diem ID domain can be created as part of creating a `ParentVASP` account.
-* An entity (potentially the Association) may at some point choose to expose an open source application(*Indexer*) that will allow indexing available Diem IDs and could provide a convenient REST API for applications to fetch information about the domains. The API of such an indexer is out of scope of this RFC.
+* In order to register a Diem ID domain, a VASP needs to submit a request to Diem Association. Diem Association will perform certain checks (out of scope of this document) before issuing an on-chain transaction to register a Diem ID Domain. These checks intend to mitigate irrelevant claims and enforce uniqueness
+* `DiemIDDomains` resource will be created as part of creating a `ParentVASP` account resource, and existing `ParentVASP` accounts without `DiemIDDomains` will have the resource instantiated by the DiemRoot account.
 
 ## Diem ID Domain Events
 
 The Move contract that manages Diem ID domains must emit an event every time Diem ID domain is created, removed or updated. Those events are critical for applications to be able to efficiently index existing Diem ID domains.
-
-While Diem ID domains are published into VASP accounts, Diem ID domain events are published under the Treasury Compliance account. We consolidate events under single account to allow indexers to follow single event stream.
+An application can be built to listen for these events to construct a mapping of Diem ID domains to VASP accounts for lookup of onchain addresses given a Diem ID domain.
+While Diem ID domains are published into VASP account resource, Diem ID domain events are published under the Treasury Compliance account. We consolidate events under single account to allow indexers to follow a single event stream.
 
 To store events, `DiemIdDomainManager` resource is published under the Treasure Compliance account(address `0xB1E55ED`).
 
@@ -116,7 +114,6 @@ struct DiemIdDomainEvent {
 # ReferenceID Exchange
 The PaymentMetadata transactions require a ReferenceID in order to submit a transaction to the chain. PaymentMetadata transactions reveal nothing distinctly about either the sender or recipient and do not create a linkability between the sender or receiver across payments. Hence, the ReferenceID must be established off-chain and this protocol defines one such way to do so leveraging Diem ID.
 
-## ReferenceID Command
 A VASP intending to send a payment from one VASP to another when leveraging Diem IDs constructs a ReferenceIDCommand submits that to the recipient side. If the recipient knows the recipient Diem ID and can potentially accept payments, it returns a success. In the case it cannot, it returns an error indicating the reason.
 
 In the case that the amount to be sent would exceed the limit of the travel rule, the sending party should follow this exchange with a PaymentCommand using the same reference_id and specify the sending and receiving subaddresses as all 0.
