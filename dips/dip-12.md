@@ -7,6 +7,9 @@ status: Draft
 type: Informational
 created: 3/5/2021
 ---
+
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # Summary and Motivation
 This document proposes a standardized method for coin trade flows in the Diem Network. The flow is generic for coin purchase and coin sell transactions. It supports single and batch settlements.
 
