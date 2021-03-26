@@ -147,6 +147,17 @@ The format of the success response is:
 }
 ```
 
+If the amount is below the travel rule limit, the sending VASP can send a p2p transaction with PaymentMetadata and the `reference_id` VASPs agreed on to settle the transaction. 
+```
+enum PaymentMetadata {
+    PaymentMetadataV0(ReferenceId),
+}
+type ReferenceId = [u8, 16];
+```
+
+If the amount exceeds the travel rule limit, VASP must trigger an off-chain protocol for KYC exchange. The same `reference_id` must be used to perform a TR as described in [DIP-1](https://github.com/diem/dip/blob/master/dips/dip-1.md).
+
+
 # Diem ID or Subaddress?
 [DIP-5](https://github.com/diem/dip/blob/master/dips/dip-5.md) defines subaddresses as a way of defining a user address. Between subaddress and Diem ID, the recommended way of representing a user address is to use a Diem ID, as Diem ID provides clear benefits over subaddresses:  
 * Subaddresses are ideally one-time use addresses, and need to be refreshed for each payment. However, a Diem ID can be shared once and will be a persistent identifier from a user's perspective.
