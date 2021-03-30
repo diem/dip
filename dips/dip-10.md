@@ -1,7 +1,7 @@
 ---
 dip: 10
 title: Diem ID Spec
-authors: Andrey Chursin(@andll), Kevin Hurley (@kphfb), Sunmi Lee (@sunmilee), David Wolinsky (@davidiw)
+authors: Sunmi Lee (@sunmilee), David Wolinsky (@davidiw), Andrey Chursin(@andll), Kevin Hurley (@kphfb)
 status: Draft
 type: Informational
 created: 11/03/2020
@@ -34,7 +34,7 @@ bvasp, 0xc5ab123458df0003415689adbb47326d
 * Alice's Diem ID is registered at VASP A: `alice@avasp`
 * Bob shares the Diem ID, `bob@bvasp` with Alice
 * Alice logs into VASP A, enters Bob’s identifier, an amount to pay, and submits payment
-* Alice’s VASP (VASP A) contacts Bob’s VASP’s (VASP B) off-chain API with the sender identifier `alice@avasp` and requests a reference_id, `rb1`
+* Alice’s VASP (VASP A) contacts Bob’s VASP’s (VASP B) off-chain API with the sender identifier `alice@avasp` and requests a reference_id, `rb`
 * VASP A constructs a transaction with the specified amount and the reference_id `rb` and submits it to the Diem network
 * VASP B receives a transaction with metadata containing `rb`, deposits the amount in Bob's account, and attaches the relevant metadata (e.g., Alice’s Diem ID) to the internally stored transaction so Bob can confirm the transaction
 
@@ -47,11 +47,11 @@ Example: `alice@avasp`
 
 * `user_identifier` is a reusable identifier that represents either the source or destination end-user of a payment transaction. It is unique to per user at VASP level. Specification:
   * Case insensitive
-  * Valid regular expression: [a-zA-Z0-9]+
+  * Valid regular expression: `[a-zA-Z0-9]+`
   * Maximum length: 64 characters
 * `vasp_domain_identifier` is a unique string that is mapped to a VASP. Specification:
   * Case insensitive
-  * Valid regular expression: [a-zA-Z0-9]+
+  * Valid regular expression: `[a-zA-Z0-9]+`
   * Maximum length: 63 characters
 
 
@@ -119,6 +119,7 @@ A VASP intending to send a payment from one VASP to another when leveraging Diem
 In the case that the amount to be sent would exceed the limit of the travel rule, the sending party should follow this exchange with a PaymentCommand using the same reference_id and specify the sending and receiving subaddresses as all 0.
 
 The format of the command is:
+
 ```
 {
    "_ObjectType": "CommandRequestObject",
@@ -134,6 +135,26 @@ The format of the command is:
 }
 ```
 
+**CommandRequestObject:**
+
+| Field 	    | Type 	     | Required? 	| Description 	           |
+|-------	    |------	     |-----------	|-------------	           |
+| _ObjectType   | str        | Y | Fixed value: `CommandRequestObject`|
+| command_type  | str        | Y | Fixed value: `ReferenceIDCommand`|
+| command       | Command object | Y | The Command to sequence. |
+| cid           | str         | Y            | A unique identifier for the Command. Should be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included. |
+
+**CommandObject:**
+
+| Field 	    | Type 	     | Required? 	| Description 	           |
+|-------	    |------	     |-----------	|-------------	           |
+| _ObjectType   | str    | Y | Fixed value: `ReferenceIDCommand`|
+| sender        | str          | Y            | Sender's full Diem ID |
+| sender_address| str          | Y            | Sender's on-chain address |
+| recipient     | str          | Y            | Receiver's full Diem ID |
+| reference_id  | str          | Y            | Reference ID of this transaction to be included into payment metadata |
+
+
 The format of the success response is:
 ```
 {
@@ -147,6 +168,22 @@ The format of the success response is:
 }
 ```
 
+**CommandResponseObject:**
+
+| Field 	    | Type 	     | Required? 	| Description 	           |
+|-------	    |------	     |-----------	|-------------	           |
+| _ObjectType   | str        | Y | Fixed value: `CommandResponseObject`|
+| status       | str | Y | Either `success` or `failure`. |
+| result       | Result object | Y | The Result obejct of response. |
+| cid           | str         | Y            | A unique identifier for the Command. Should be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included. |
+
+**CommandResultObject:**
+
+| Field 	    | Type 	     | Required? 	| Description 	           |
+|-------	    |------	     |-----------	|-------------	           |
+| _ObjectType   | str        | Y | Fixed value: `ReferenceIDCommandResponse`|
+| recipient_address       | str | Y | Receiver's on-chain address |
+
 If the amount is below the travel rule limit, the sending VASP can send a p2p transaction with PaymentMetadata and the `reference_id` VASPs agreed on to settle the transaction. 
 ```
 enum PaymentMetadata {
@@ -155,10 +192,5 @@ enum PaymentMetadata {
 type ReferenceId = [u8, 16];
 ```
 
-If the amount exceeds the travel rule limit, VASP must trigger an off-chain protocol for KYC exchange. The same `reference_id` must be used to perform a TR as described in [DIP-1](https://github.com/diem/dip/blob/master/dips/dip-1.md).
+If the amount exceeds the travel rule limit, VASPs should trigger an off-chain protocol for KYC exchange. The same `reference_id` must be used to perform a TR as described in [DIP-1](https://github.com/diem/dip/blob/master/dips/dip-1.md).
 
-
-# Diem ID or Subaddress?
-[DIP-5](https://github.com/diem/dip/blob/master/dips/dip-5.md) defines subaddresses as a way of defining a user address. Between subaddress and Diem ID, the recommended way of representing a user address is to use a Diem ID, as Diem ID provides clear benefits over subaddresses:  
-* Subaddresses are ideally one-time use addresses, and need to be refreshed for each payment. However, a Diem ID can be shared once and will be a persistent identifier from a user's perspective.
-* There are concerns around leakage of PII when using subaddresses, because the subaddress has to be included in the on-chain transaction metadata. Diem ID provides better privacy, because Diem ID is exchanged off-chain.
