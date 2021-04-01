@@ -5,6 +5,8 @@ authors: Sunmi Lee (@sunmilee), David Wolinsky (@davidiw), Andrey Chursin(@andll
 status: Draft
 type: Informational
 created: 11/03/2020
+last_updated: 04/01/2021
+issue: https://github.com/diem/dip/issues/156
 ---
 
 import useBaseUrl from '@docusaurus/useBaseUrl';
