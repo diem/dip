@@ -14,18 +14,18 @@ This DIP describes a new scheme of user transaction: multi-agent transactions.
 
 # Abstract
 
-Currently in the Diem Framework, a single transaction acts on behalf of a single on-chain account. However, there is no mechanism for multiple on-chain accounts to agree on a single atomic transaction. This DIP presents a new scheme of transactions--multi-agent transactions--which act on behalf of multiple on-chain accounts. Multi-agent transactions leverage Move’s [_`signer`_](https://developers.diem.com/docs/move/move-signer/) type to allow essentially any arbitrary atomic actions in one transaction involving multiple on-chain accounts.
+Currently in the Diem Framework, a transaction acts on behalf of a single on-chain account. However, there is no mechanism for multiple on-chain accounts to agree on a single atomic transaction. This DIP presents a new scheme of transactions--multi-agent transactions--which act on behalf of multiple on-chain accounts. Multi-agent transactions leverage Move’s [_`signer`_](https://developers.diem.com/docs/move/move-signer/) type to allow essentially any arbitrary atomic actions in one transaction involving multiple on-chain accounts.
 
 ## Terminology:
 
 * Primary signer: This is the account that the transaction is sent from. This account’s sequence number is incremented, and is the account that pays gas. There is precisely one of these for every transaction.
-* Secondary signer: This is any account that participates in a multi-signer/agent transaction that isn’t the primary sender. There can be 0-N of these. The 0 case is a normal transaction today. 
+* Secondary signer: This is any account that participates in a multi-agent transaction that isn’t the primary sender. There can be 0-N of these. The 0 case is a normal transaction today. 
 
 # Motivation/Use Cases
 
 ## Minting Directly to VASPs
 
-Today in the Diem Framework, we need two transactions in order to mint money through designated dealers to VASPs. The first transaction is a tiered-mint transaction sent by the treasury compliance account to mint money to a designated dealer’s account. And the second transaction transfers the minted funds from the designed dealer’s account into the VASP’s account. This procedure requires two transactions due to the restriction that each transaction can only have one signer argument. In the multi-agent scheme, this restriction no longer exists and we can perform both steps in a single atomic transaction(see code sample below). This atomicity implies that designated dealers no longer need custody services for the money they temporarily hold in their accounts, making it more affordable and much quicker to operate as a designated dealer. This should make it much easier for more DDs to onboard in the Diem ecosystem, providing more options for VASPs. It is highly likely that in the future, DDs primarily mint directly on requests from VASPs.
+Today in the Diem Framework, we need two transactions in order to mint money through designated dealers to VASPs. The first transaction is a tiered-mint transaction sent by the treasury compliance account to mint money to a designated dealer’s account. The second transaction transfers the minted funds from the designed dealer’s account into the VASP’s account. This procedure requires two transactions due to the restriction that each transaction can only have one signer argument. In the multi-agent scheme, this restriction no longer exists and we can perform both steps in a single atomic transaction (see code sample below). This atomicity implies that designated dealers no longer need custody services for the money they temporarily hold in their accounts, making it more affordable and much quicker to operate as a designated dealer. This should make it much easier for more DDs to onboard in the Diem ecosystem, providing more options for VASPs. It is highly likely that in the future, DDs primarily mint directly on requests from VASPs.
 
 ```
 fun mint<Coin>(
@@ -51,7 +51,7 @@ fun mint<Coin>(
 
 ## Atomic Swaps
 
-In order to do a currency exchange in the current scheme between two on-chain entities Alice and Bob, we need two transactions and possibly an escrow. The time gap between the two transactions can lead to potential problems such as resource lockup. With the new multi-agent transaction scheme, we only need one atomic transaction signed by both Alice and Bob, in which payments are sent in both directions(see the code sample below). In this case, both Alice and Bob have the same control over the transaction contents including exchange rates and expiration time.
+In order to do a currency exchange in the current scheme between two on-chain entities Alice and Bob, we need two transactions and possibly an escrow. The time gap between the two transactions can lead to potential problems such as resource lockup. With the new multi-agent transaction scheme, we only need one atomic transaction signed by both Alice and Bob, in which payments are sent in both directions (see the code sample below). In this case, both Alice and Bob have the same control over the transaction contents including exchange rates and expiration time.
 
 
 ```
@@ -237,7 +237,6 @@ while (i < num_secondary_signers) {
     i = i + 1;
 };
 ```
-
 
 
 
