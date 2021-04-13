@@ -145,7 +145,7 @@ The format of the command is:
 |-------	    |------	     |-----------	|-------------	           |
 | _ObjectType   | str    | Y | Fixed value: `ReferenceIDCommand`|
 | sender        | str          | Y            | Sender's full DiemID |
-| sender_address| str          | Y            | Sender's [bech32 identifier](https://github.com/diem/dip/blob/main/dips/dip-5.md) on-chain address |
+| sender_address| str          | Y            | Sender's onchain [account identifier](https://github.com/diem/dip/blob/main/dips/dip-5.md) with subaddress set to `None` or `00000000` |
 | receiver     | str          | Y            | Receiver's full DiemID |
 | reference_id  | str          | Y            | Reference ID of this transaction to be included into payment metadata |
 
@@ -179,7 +179,7 @@ The format of the failed response is:
 |-------	    |------	     |-----------	|-------------	           |
 | _ObjectType   | str        | Y | Fixed value: `CommandResponseObject`|
 | status       | str | Y | Either `success` or `failure`. |
-| result       | Result object | Y | The Result obejct of response. |
+| result       | Result object | N | The Result obejct of response. |
 | cid           | str         | Y            | A unique identifier for the Command. Should be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included. |
 | error          | [OffChainErrorObject](https://github.com/diem/dip/blob/main/dips/dip-1.mdx#offchainerrorobject) | N | Details of the error when status == "failure" |
 
@@ -189,7 +189,7 @@ The format of the failed response is:
 | Field 	    | Type 	     | Required? 	| Description 	           |
 |-------	    |------	     |-----------	|-------------	           |
 | _ObjectType   | str        | Y | Fixed value: `ReferenceIDCommandResponse`|
-| receiver_address       | str | Y | Receiver's [bech32 identifier](https://github.com/diem/dip/blob/main/dips/dip-5.md) |
+| receiver_address       | str | Y | Receiver's onchain [account identifier](https://github.com/diem/dip/blob/main/dips/dip-5.md) with subaddress set to `None` or `00000000`|
 
 
 #### Error Codes
