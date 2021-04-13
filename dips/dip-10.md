@@ -18,25 +18,25 @@ This DIP describes DiemID - the human-readable identifier for user accounts.
 # Motivation
 DiemID provides a convenient method for identifying users within a VASP. DiemID allows users to exchange human-readable identifiers as either the sender or the receiver of peer-to-peer payments, and plays the role of an email address for payments. The benefits of using a DiemID are:
 * Privacy: DiemID needs to be used in tandem with an off-chain protocol between VASPs in order to exchange information about the end user corresponding to the DiemID. By initializing an off-chain preflight to exchange a reference ID, we do not need to include any potentially identifiable user information in a transaction 
-* Persistent Identifiers: Currently there is a lack of persistent user identifiers in the Diem ecosystem. DiemID is a persistent identifier from a user's perspective. From the perspective of the chain, DiemIDs do not exist.
+* Persistent Identifiers: Currently there is a lack of persistent user identifiers in the Diem ecosystem. DiemID is a persistent identifier from a user's perspective. From the perspective of the chain, DiemIDs do not exist
 
 # End-to-End Experience
 Below is an example of using DiemID domain for transferring money from one user to another. 
 
 ## Prerequisite:
-* VASPs get approval from association (via some offline process) on domain name. VASPs optionally have created a local mapping of domain ID to parent VASP address by reading the DiemID event stream under Treasury Compliance on-chain account:
+* VASPs get approval from association (via some offline process) on domain name. VASPs optionally have locally stored a mapping of domain ID to parent VASP address by reading the DiemID event stream under Treasury Compliance on-chain account:
 ```
 avasp, 0xf72589b71ff4f8d139674a3f7369c69b
 bvasp, 0xc5ab123458df0003415689adbb47326d
 ```
 
-## P2P Transaction Flow: 
+## Illustration - An example P2P Transaction Flow: 
 * Bob wants to receive funds from Alice
-* Bob registers a DiemID at VASP B: `bob@bvasp`
-* Alice's DiemID is registered at VASP A: `alice@avasp`
+* Alice has an account with VASP A: `alice@avasp`
+* Bob has an account with VASP B: `bob@bvasp`
 * Bob shares the DiemID, `bob@bvasp` with Alice
 * Alice logs into VASP A, enters Bob’s identifier, an amount to pay, and submits payment
-* Alice’s VASP (VASP A) contacts Bob’s VASP’s (VASP B) off-chain API with the sender identifier `alice@avasp` and requests a reference_id, `rb`
+* VASP A contacts VASP B via an off-chain API with the sender identifier `alice@avasp` and requests a reference_id, `rb`
 * VASP A constructs a transaction with the specified amount and the reference_id `rb` and submits it to the Diem network
 * VASP B receives a transaction with metadata containing `rb`, deposits the amount in Bob's account, and attaches the relevant data (e.g., Alice’s DiemID) to the internally stored transaction so Bob can confirm the transaction
 
@@ -122,7 +122,7 @@ The format of the command is:
     "command": {
 	    "_ObjectType": "ReferenceIDCommand",
 	    "sender": "alice@avasp",
-	    "sender_address": "f72589b71ff4f8d139674a3f7369c69b",
+	    "sender_address": "dm1pptdxvfjck4jyw3rkfnm2mnd2t5qqqqqqqqqqqqq305frg",
 	    "receiver": "bob@bvasp",
 	    "reference_id": "5b8403c9-86f5-3fe0-7230-1fe950d030cb", 
     },
@@ -145,7 +145,7 @@ The format of the command is:
 |-------	    |------	     |-----------	|-------------	           |
 | _ObjectType   | str    | Y | Fixed value: `ReferenceIDCommand`|
 | sender        | str          | Y            | Sender's full DiemID |
-| sender_address| str          | Y            | Sender's on-chain address |
+| sender_address| str          | Y            | Sender's [bech32 identifier](https://github.com/diem/dip/blob/main/dips/dip-5.md) on-chain address |
 | receiver     | str          | Y            | Receiver's full DiemID |
 | reference_id  | str          | Y            | Reference ID of this transaction to be included into payment metadata |
 
@@ -157,7 +157,7 @@ The format of the success response is:
     "status": "success",
     "result": {
 	    "_ObjectType": "ReferenceIDCommandResponse",
-	    "receiver_address": "c5ab123458df0003415689adbb47326d",
+	    "receiver_address": "dm1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4us2vfufk",
     },
     "cid": "12ce83f6-6d18-0d6e-08b6-c00fdbbf085a",
 }
@@ -168,10 +168,6 @@ The format of the failed response is:
 {
    "_ObjectType": "CommandResponseObject",
     "status": "failure",
-    "result": {
-	    "_ObjectType": "ReferenceIDCommandResponse",
-	    "receiver_address": "",
-    },
     "cid": "12ce83f6-6d18-0d6e-08b6-c00fdbbf085a",
     "error": OffChainErrorObject(),
 }
@@ -193,14 +189,14 @@ The format of the failed response is:
 | Field 	    | Type 	     | Required? 	| Description 	           |
 |-------	    |------	     |-----------	|-------------	           |
 | _ObjectType   | str        | Y | Fixed value: `ReferenceIDCommandResponse`|
-| receiver_address       | str | Y | Receiver's on-chain address |
+| receiver_address       | str | Y | Receiver's [bech32 identifier](https://github.com/diem/dip/blob/main/dips/dip-5.md) |
 
 
 #### Error Codes
 
 `duplicate_ref_id`: Duplicate Reference ID was rejected by the receiving end
 
-`invalid_user`: Receiving end could not find the user with the given user_identifier
+`invalid_receiver`: Receiving end could not find the user with the given user_identifier
 
 ## On-Chain Transaction Settlement
 If the amount is below the travel rule limit, the sending VASP can send a p2p transaction with PaymentMetadata and the `reference_id` VASPs agreed on to settle the transaction. 
@@ -211,4 +207,4 @@ enum PaymentMetadata {
 type ReferenceId = [u8, 16];
 ```
 
-If the amount exceeds the travel rule limit, VASPs should trigger an off-chain protocol for KYC exchange. The same `reference_id` must be used to perform a TR as described in [DIP-1](https://github.com/diem/dip/blob/master/dips/dip-1.md).
+If the amount is at or above the travel rule limit, VASPs should trigger an off-chain protocol for KYC exchange. The same `reference_id` must be used to perform a TR as described in [DIP-1](https://github.com/diem/dip/blob/master/dips/dip-1.md).
