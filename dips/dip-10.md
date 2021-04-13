@@ -1,11 +1,11 @@
 ---
 dip: 10
 title: DiemID Spec
-authors: Sunmi Lee (@sunmilee), David Wolinsky (@davidiw), Andrey Chursin(@andll), Kevin Hurley (@kphfb)
+author: Sunmi Lee (@sunmilee), David Wolinsky (@davidiw), Andrey Chursin(@andll), Kevin Hurley (@kphfb)
 status: Draft
 type: Informational
-created: 11/03/2020
-last_updated: 04/01/2021
+created: 2020-11-03
+updated: 2021-04-14
 issue: https://github.com/diem/dip/issues/156
 ---
 
