@@ -17,20 +17,21 @@ This DIP describes DiemID - the human-readable identifier for user accounts.
 
 # Motivation
 DiemID provides a convenient method for identifying users within a VASP. DiemID allows users to exchange human-readable identifiers as either the sender or the receiver of peer-to-peer payments, and plays the role of an email address for payments. The benefits of using a DiemID are:
-* Privacy: DiemID needs to be used in tandem with an off-chain protocol between VASPs in order to exchange information about the end user corresponding to the DiemID. By initializing an off-chain preflight to exchange a reference ID, we do not need to include any potentially identifiable user information in a transaction 
-* Persistent Identifiers: Currently there is a lack of persistent user identifiers in the Diem ecosystem. DiemID is a persistent identifier from a user's perspective. From the perspective of the chain, DiemIDs do not exist
+* Privacy: DiemID needs to be used in tandem with an off-chain protocol between VASPs in order to exchange information about the end user corresponding to the DiemID. By initializing an off-chain preflight reference ID exchange, DiemID does require any potentially identifiable user information in an on-chain transaction
+* Persistent Identifiers: Currently there is a lack of persistent user identifiers in the Diem ecosystem. DiemID is a persistent identifier from a user's perspective. From the perspective of the on-chain transactions, DiemIDs are irrelevant and provide no meaningful information
 
 # End-to-End Experience
 Below is an example of using DiemID domain for transferring money from one user to another. 
 
 ## Prerequisite:
-* VASPs get approval from association (via some offline process) on domain name. VASPs optionally have locally stored a mapping of domain ID to parent VASP address by reading the DiemID event stream under Treasury Compliance on-chain account:
+* VASPs get approval from association (via some offline process) on domain name. 
+* VASPs have access to a storage solution mapping domain IDs to parent VASP address
 ```
 avasp, 0xf72589b71ff4f8d139674a3f7369c69b
 bvasp, 0xc5ab123458df0003415689adbb47326d
 ```
 
-## Illustration - An example P2P Transaction Flow: 
+## An Example P2P Transaction Flow: 
 * Bob wants to receive funds from Alice
 * Alice has an account with VASP A: `alice@avasp`
 * Bob has an account with VASP B: `bob@bvasp`
@@ -163,40 +164,20 @@ The format of the success response is:
 }
 ```
 
-The format of the failed response is:
-```
-{
-   "_ObjectType": "CommandResponseObject",
-    "status": "failure",
-    "cid": "12ce83f6-6d18-0d6e-08b6-c00fdbbf085a",
-    "error": OffChainErrorObject(),
-}
-```
-
-**CommandResponseObject:**
-
-| Field 	    | Type 	     | Required? 	| Description 	           |
-|-------	    |------	     |-----------	|-------------	           |
-| _ObjectType   | str        | Y | Fixed value: `CommandResponseObject`|
-| status       | str | Y | Either `success` or `failure`. |
-| result       | Result object | N | The Result obejct of response. |
-| cid           | str         | Y            | A unique identifier for the Command. Should be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included. |
-| error          | [OffChainErrorObject](https://github.com/diem/dip/blob/main/dips/dip-1.mdx#offchainerrorobject) | N | Details of the error when status == "failure" |
-
-
 **CommandResultObject:**
 
 | Field 	    | Type 	     | Required? 	| Description 	           |
 |-------	    |------	     |-----------	|-------------	           |
 | _ObjectType   | str        | Y | Fixed value: `ReferenceIDCommandResponse`|
-| receiver_address       | str | Y | Receiver's onchain [account identifier](https://github.com/diem/dip/blob/main/dips/dip-5.md) with subaddress set to `None` or `00000000`|
-
+| receiver_address       | str | Y | Receiver's onchain [account identifier](https://github.com/diem/dip/blob/main/dips/dip-5.md) with subaddress set to `None` or the zero subaddress |
 
 #### Error Codes
 
-`duplicate_ref_id`: Duplicate Reference ID was rejected by the receiving end
+`duplicate_reference_id`: Duplicate Reference ID was rejected by the receiving end
 
 `invalid_receiver`: Receiving end could not find the user with the given user_identifier
+
+`invalid_field_value`: Reference ID is in the wrong format. See more details in [DIP-1](https://github.com/diem/dip/blob/main/dips/dip-1.mdx#request-object-validation-error-codes)
 
 ## On-Chain Transaction Settlement
 If the amount is below the travel rule limit, the sending VASP can send a p2p transaction with PaymentMetadata and the `reference_id` VASPs agreed on to settle the transaction. 
