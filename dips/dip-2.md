@@ -41,10 +41,10 @@ The current roles in Diem are:
 |   |                     |         A          |             B             |      C      |         D         |          E          |       F        |            G             |
 |:-:|:-------------------:|:------------------:|:-------------------------:|:-----------:|:-----------------:|:-------------------:|:--------------:|:------------------------:|
 |   |      **Role**       |   **Granted by**   |        **Unique?**        | **Address** | **Has balances?** | **Account limits?** | **Freezable?** | **Transaction priority** |
-| 1 |      DiemRoot      |      genesis       |         Globally          |  0xA550C18  |         N         |          -          |       N        |            3             |
+| 1 |      DiemRoot       |      genesis       |         Globally          |  0xA550C18  |         N         |          -          |       N        |            3             |
 | 2 | TreasuryCompliance  |      genesis       |         Globally          |  0xB1E55ED  |         N         |          -          |       N        |            2             |
-| 3 |      Validator      |     DiemRoot      |  Per Association member   |      -      |         N         |          -          |       Y        |            1             |
-| 4 |  ValidatorOperator  |     DiemRoot      | At most one per Validator |      -      |         N         |          -          |       Y        |            1             |
+| 3 |      Validator      |      DiemRoot      |  Per Association member   |      -      |         N         |          -          |       Y        |            1             |
+| 4 |  ValidatorOperator  |      DiemRoot      | At most one per Validator |      -      |         N         |          -          |       Y        |            1             |
 | 5 |  DesignatedDealer   | TreasuryCompliance |             N             |      -      |         Y         |          N          |       Y        |            1             |
 | 6 |     ParentVASP      | TreasuryCompliance |         Per VASP          |      -      |         Y         |          Y          |       Y        |            0             |
 | 7 | ChildVASP(**addr**) |     ParentVASP     |             N             |      -      |         Y         |          Y          |       Y        |            0             |
@@ -92,17 +92,18 @@ The current permissions in Diem are:
 | 5  |      UpdateExchangeRate(**type**)       |      TreasuryCompliance      |   Per currency **type**   |         N         |
 | 6  |       UpdateDualAttestationLimit        |      TreasuryCompliance      |             Y             |         N         |
 | 7  |        {Freeze,Unfreeze}Account         |      TreasuryCompliance      |             Y             |         N         |
-| 8  |           RegisterNewCurrency           |          DiemRoot           |             Y             |         N         |
-| 9  |       ProcessWriteSetTransaction        |          DiemRoot           |             Y             |         N         |
-| 10 |       UpdateDiemProtocolVersion        |          DiemRoot           |             Y             |         N         |
-| 11 |             UpdateVMConfig              |          DiemRoot           |             Y             |         N         |
-| 12 |              PublishModule              |          DiemRoot           |             Y             |         N         |
-| 13 |          {Add,Remove}Validator          |          DiemRoot           |             Y             |         N         |
-| 14 |     UpdateValidatorConfig(**addr**)     |      ValidatorOperator       |       Per validator       |         N         |
-| 15 | {Set,Remove}ValidatorOperator(**addr**) |          Validator           |       Per validator       |         N         |
-| 16 |   RotateDualAttestationInfo(**addr**)   | ParentVASP, DesignatedDealer | Per VASP/DesignatedDealer |         N         |
-| 17 |    RotateAuthenticationKey(**addr**)    |     Account at **addr**      |        Per address        |         Y         |
-| 18 |     WithdrawalCapability(**addr**)      |     Account at **addr**      |        Per address        |         Y         |
+| 8  |           RegisterNewCurrency           |           DiemRoot           |             Y             |         N         |
+| 9  |       ProcessWriteSetTransaction        |           DiemRoot           |             Y             |         N         |
+| 10 |        UpdateDiemProtocolVersion        |           DiemRoot           |             Y             |         N         |
+| 11 |             UpdateVMConfig              |           DiemRoot           |             Y             |         N         |
+| 12 |          ManageConsensusConfig          |           DiemRoot           |             Y             |         N         |
+| 13 |              PublishModule              |           DiemRoot           |             Y             |         N         |
+| 14 |          {Add,Remove}Validator          |           DiemRoot           |             Y             |         N         |
+| 15 |     UpdateValidatorConfig(**addr**)     |      ValidatorOperator       |       Per validator       |         N         |
+| 16 | {Set,Remove}ValidatorOperator(**addr**) |          Validator           |       Per validator       |         N         |
+| 17 |   RotateDualAttestationInfo(**addr**)   | ParentVASP, DesignatedDealer | Per VASP/DesignatedDealer |         N         |
+| 18 |    RotateAuthenticationKey(**addr**)    |     Account at **addr**      |        Per address        |         Y         |
+| 19 |     WithdrawalCapability(**addr**)      |     Account at **addr**      |        Per address        |         Y         |
 
 
 * MintCurrency(**type**): Create currency of the given **type**
@@ -116,6 +117,7 @@ The current permissions in Diem are:
 * ProcessWriteSetTransaction: Process writeset transactions (i.e., direct writesets and admin scripts) to update the Diem protocol by changing on-chain Move modules and/or global state
 * UpdateDiemProtocolVersion: Change the current Diem protocol version. This will atomically update the behavior of node software
 * UpdateVMConfig: Update the transaction script allowlist, module publishing options, or gas costs
+* ManageConsensusConfig: Initialize and update the consensus config for the Diem blockchain.
 * PublishModule: Publish a new Move module
 * {Add,Remove}Validator: Add and remove validators
 * UpdateValidatorConfig(**addr**): Rotate the consensus public key and network address for the validator account at **addr**
@@ -139,5 +141,6 @@ Conceptually, each permission encodes the authority to mutate some piece of on-c
 * [`WriteSetManager`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/DiemWriteSetManager.md): ProcessWriteSetTransaction
 * [`DiemVersion`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/DiemVersion.md): UpdateDiemProtocolVersion
 * [`DiemVMConfig`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/DiemVMConfig.md): UpdateVMConfig
+* [`DiemConsensusConfig`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/DiemConsensusConfig.md): UpdateConsensusConfig
 * [`DiemSystem`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/DiemSystem.md): {Add,Remove}Validator, UpdateValidatorConfig, {Set,Remove}ValidatorOperator
 * [`DiemAccount`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/DiemAccount.md): RotateAuthenticationKey, Withdraw

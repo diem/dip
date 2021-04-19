@@ -106,8 +106,8 @@ Every currency on chain is represented as a Move-defined type. This type
 can be either a resource or struct type. In order for the system to view a
 type `C` as representing a currency on chain, it must first be registered by
 either
-[`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency) or
-[`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency)
+[`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/diem-framework/modules/doc/Diem.md#0x1_Diem_register_SCS_currency) or
+[`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/diem-framework/modules/doc/Diem.md#0x1_Diem_register_currency)
 instantiated with the type `C`. The first call registers a new single
 currency stablecoin, the second a synthetic currency.
 
@@ -117,9 +117,9 @@ type---[`Diem::CurrencyInfo<C>`](https://github.com/diem/diem/blob/master/langua
 metadata about the currency being registered under the
 [DiemRoot](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles)
 account address (see the implementation of
-[`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency)
+[`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/diem-framework/modules/doc/Diem.md#0x1_Diem_register_SCS_currency)
 and
-[`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency)).
+[`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/diem-framework/modules/doc/Diem.md#0x1_Diem_register_currency)).
 
 ## <a name="metadata_spec">Required Information for Registration of a Currency</a>
 
@@ -167,9 +167,9 @@ determining exchange rates for value transfer between different currencies.
 ### `is_synthetic`
 
 This immutable field defines whether the given currency is synthetic or an SCS. In the case of
-[`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency)
+[`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/diem-framework/modules/doc/Diem.md#0x1_Diem_register_SCS_currency)
 the function sets this to `false`. For
-[`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency)
+[`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/diem-framework/modules/doc/Diem.md#0x1_Diem_register_currency)
 this value must be provided to the function.
 
 ### <a name="scaling_factor">`scaling_factor`</a>
@@ -231,9 +231,9 @@ When a type `C` is registered as a currency a
 and
 [`BurnCapability<C>`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#resource-burncapability)
 are created. If the currency is registered using the
-[`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_scs_currency)
+[`Diem::register_SCS_currency`](https://github.com/diem/diem/blob/master/language/diem-framework/modules/doc/Diem.md#0x1_Diem_register_SCS_currency)
 function, both of these capabilities are stored under and controlled by the Treasury Compliance account at address
-`0xB1E55ED`. In the case that [`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-register_currency)
+`0xB1E55ED`. In the case that [`Diem::register_currency`](https://github.com/diem/diem/blob/master/language/diem-framework/modules/doc/Diem.md#0x1_Diem_register_currency)
 is used to register the currency both of these capabilities are returned to the caller, which may store them in other structures.
 The `MintCapability` and `BurnCapability` for each currency are [unique](https://github.com/diem/dip/blob/master/dips/dip-2.md#permissions); after
 registration of a currency no future mint and burn capabilities for the currency may be created.

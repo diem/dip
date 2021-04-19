@@ -111,7 +111,7 @@ function DocItem(props) {
 
   const githubEditURL = getEditUrl(editUrl, dip !== undefined);
 
-  const Title = Heading('h2');
+  const Title = Heading('h1');
 
   const Authors = displayDipTable
     ? parseAuthors(authors).map(({title, username}, i) =>
