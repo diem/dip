@@ -7,6 +7,10 @@ type: Informational
 created: 08/28/2020
 ---
 
+### DISCLAIMER:
+
+The functionality described in this DIP (including but not limited to, XDX) may not be available on DPN at the time of publication of this DIP.
+
 ---
 # Summary
 ---
@@ -32,7 +36,7 @@ module](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Die
 and [DIP-2](https://github.com/diem/dip/blob/master/dips/dip-2.md). The
 Diem module defines the representation of Diem
 currencies, the set of operations that can be performed on Diem Coins
-(e.g., splitting, minting, burning) and their corresponding permissions,
+(e.g., minting, burning) and their corresponding permissions,
 and the registration process of a Move type as representing a Diem
 currency. Once a currency is registered it remains registered forever.
 
@@ -161,7 +165,7 @@ The initial exchange rate to ≋XDX must be provided at the time of registration
 exchange rate may be [updated](https://github.com/diem/diem/blob/master/language/stdlib/modules/doc/Diem.md#function-update_xdx_exchange_rate)
 by an account with the [Treasury Compliance role](https://github.com/diem/dip/blob/master/dips/dip-2.md#roles) to correspond to
 fluctuations in the real-time exchange rate between the specified currency `C` and
-≋XDX. Note that this is not meant to be an exact exchange rate and _should not_ be used for
+≋XDX. Note that this field is meant for internal use and is not meant to be an exact exchange rate, therefore it _should not_ be used for
 determining exchange rates for value transfer between different currencies.
 
 ### `is_synthetic`
@@ -187,7 +191,7 @@ denomination coin in common usage is one cent (1/100th of an XUS dollar),
 so the `fractional_part` for XUS would be
 100. If you wanted to translate from an on-chain value `v` to a number that
 could be represented in XUS's off-chain denominations, you would
-multiply by 1,000,000 (XUS's `scaling_factor`) and then display the value
+divide by 1,000,000 (XUS's `scaling_factor`) and then display the value
 showing the fractional value to the hundredths place.
 
 ### `currency_code`
@@ -202,9 +206,9 @@ off-chain use as an on-chain configuration defined in the
 ### <a name="total_value">`total_value`</a>
 
 This *mutable* field holds the current value of all coins in circulation
-on chain in the given currency. The field's value remains constant with the
+on chain in the given currency. The field's value is denominated in the base units for the currency (see [`scaling_factor`](#scaling_factor)), and remains constant with the
 exception of minting and burning operations.  Details on these operations
-and how they effect the `total_value` for the currency are given in the
+and how they affect the `total_value` for the currency are given in the
 section on [minting and burning of value](#minting_and_burning).
 
 ### `preburn_value`
@@ -277,7 +281,7 @@ if the Move value has the type `Diem<C>` with a `value` field equal to `v`.
 
 The minting and burning of Diem Coins on chain represent changes to the
 total value held on the network. These operations are designed to support a
-system of single-currency stablecoins (SCS) backed by reserves. Hence, they
+system of single-currency stablecoins (SCS) backed by the Reserve. Hence, these operations
 require special privileges dedicated for reserve management, e.g.,
 [MintCurrency, BurnCurrency, and PreburnCurrency](https://github.com/diem/dip/blob/master/dips/dip-2.md#permissions).
 
