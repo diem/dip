@@ -3,7 +3,7 @@ dip: 10
 title: DiemID Spec
 author: Sunmi Lee (@sunmilee), David Wolinsky (@davidiw), Andrey Chursin(@andll), Kevin Hurley (@kphfb)
 status: Draft
-type: Informational
+type: Standard
 created: 2020-11-03
 updated: 2021-04-14
 issue: https://github.com/diem/dip/issues/156
@@ -13,15 +13,15 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Summary
 
-This DIP describes DiemID - the human-readable identifier for user accounts.   
+This DIP describes DiemID, a human-readable identifier for user accounts, and a protocol standard for pre-flight exchange using DiemID to form payment transactions.   
 
 # Motivation
 DiemID provides a convenient method for identifying users within a VASP. DiemID allows users to exchange human-readable identifiers as either the sender or the receiver of peer-to-peer payments, and plays the role of an email address for payments. The benefits of using a DiemID are:
-* Privacy: DiemID needs to be used in tandem with an off-chain protocol between VASPs in order to exchange information about the end user corresponding to the DiemID. By initializing an off-chain preflight reference ID exchange, DiemID does require any potentially identifiable user information in an on-chain transaction
-* Persistent Identifiers: Currently there is a lack of persistent user identifiers in the Diem ecosystem. DiemID is a persistent identifier from a user's perspective. From the perspective of the on-chain transactions, DiemIDs are irrelevant and provide no meaningful information
+* Privacy: DiemID's do not appear on-chain. The standard includes an off-chain protocol between VASPs that forms a pre-flight agreement on a transaction reference ID. Hence, the use of DiemIDs does not require any potentially identifiable user information in on-chain transactions.
+* Persistent Identifiers: Currently there are no persistent user identifiers in the Diem ecosystem. DiemID establishes a persistent identifier from a user's perspective which are not used publicly on-chain.
 
 # End-to-End Experience
-Below is an example of using DiemID domain for transferring money from one user to another. 
+Below is an example of using DiemID for transferring money from one user to another. 
 
 ## Prerequisite:
 * VASPs get approval from association (via some offline process) on domain name. 
@@ -39,12 +39,11 @@ bvasp, 0xc5ab123458df0003415689adbb47326d
 * Alice logs into VASP A, enters Bob’s identifier, an amount to pay, and submits payment
 * VASP A contacts VASP B via an off-chain API with the sender identifier `alice@avasp` and requests a reference_id, `rb`
 * VASP A constructs a transaction with the specified amount and the reference_id `rb` and submits it to the Diem network
-* VASP B receives a transaction with metadata containing `rb`, deposits the amount in Bob's account, and attaches the relevant data (e.g., Alice’s DiemID) to the internally stored transaction so Bob can confirm the transaction
+* VASP B receives a transaction with metadata containing `rb`, deposits the amount in Bob's account. (VASP B may use Alice’s DiemID for its own record keeping or seek receipt confirmation from Bob.)
 
 
 # DiemID Format
-Diem defines globally unique identifiers to facilitate transacting on the Diem Payment Network. As Diem stores no personally identifiable information on-chain, these identifiers are exchanged during the off-chain process between two VASPs to identify a distinct source and destinations within their respective VASPs in order to produce a reference_id that can be stored on-chain. The format for the identifiers follows:
-`[user_identifier]@[vasp_domain_identifier]`
+Diem defines globally unique identifiers to facilitate transacting on the Diem Payment Network. As Diem stores no personally identifiable information on-chain, these identifiers are exchanged during the off-chain process between two VASPs to identify a distinct source and destinations within their respective VASPs in order to produce a reference_id that can be stored on-chain. The format of identifiers is `[user_identifier]@[vasp_domain_identifier]`
 
 Example: `alice@avasp`
 
@@ -74,19 +73,19 @@ struct DiemIdDomain {
    * `domain` - name of a DiemID domain 
 * The `DiemIdDomains` resource can only be published into an account with `Role == PARENT_VASP_ROLE_ID`.
 * The `DiemIdDomains` contains a list of `DiemIdDomain` structs that are associated with a VASP. As such, it is possible to register more than one DiemID Domain for a given VASP
-* Only special Treasury Compliance account (address `0xB1E55ED`) can manipulate DiemIdDomains resource:
-  * Only TC account can create and publish `DiemIdDomains` resource
-  * Only TC account can add, remove or update an `DiemIdDomain` within `DiemIdDomains` resource
-* `DiemIDDomains` resource will be created in an empty state as part of creating a `ParentVASP` account resource, and existing `ParentVASP` accounts without `DiemIDDomains` will have the resource instantiated by the DiemRoot account.
-* In order to register a DiemID domain, a VASP needs to submit a request to Diem Association. Diem Association will perform certain checks (out of scope of this document) before issuing an on-chain transaction to register a DiemID Domain. These checks intend to mitigate irrelevant claims and enforce uniqueness
+* Only the special TreasuryCompliance account (address `0xB1E55ED`) can manipulate a DiemIdDomains resource:
+  * Only TC account can create and publish a `DiemIdDomains` resource
+  * Only TC account can add, remove or update a `DiemIdDomain` within `DiemIdDomains` resource
+* `DiemIDDomains` resource will be created in an empty state as part of creating a `ParentVASP` account resource, and existing `ParentVASP` accounts without `DiemIDDomains` will have the resource instantiated by the DiemRoot account
+* In order to register a DiemID domain, a VASP needs to submit a request to Diem Association. After approval, Diem Association will use TreasuryCompliance account to issue an on-chain transaction to register a DiemID Domain
 
 ## DiemID Domain Events
 
 The Move contract that manages DiemID domains must emit an event every time DiemID domain is created, removed or updated. Those events are critical for applications to be able to efficiently index existing DiemID domains.
 An application can be built to listen for these events to construct a mapping of DiemID domains to VASP accounts for lookup of onchain addresses given a DiemID domain.
-While DiemID domains are published into VASP account resource, DiemID domain events are published under the Treasury Compliance account. We consolidate events under single account to allow indexers to follow a single event stream.
+While DiemID domains are published into VASP account resource, DiemID domain events are published under the TreasuryCompliance account. We consolidate events under single account to allow indexers to follow a single event stream.
 
-To store events, `DiemIdDomainManager` resource is published under the Treasure Compliance account(address `0xB1E55ED`).
+To store events, `DiemIdDomainManager` resource is published under the TreasuryCompliance account(address `0xB1E55ED`).
 
 ```
 resource struct DiemIdDomainManager {
@@ -108,9 +107,9 @@ struct DiemIdDomainEvent {
 
 
 # ReferenceID Exchange
-The PaymentMetadata transactions require a ReferenceID in order to submit a transaction to the chain. PaymentMetadata transactions reveal nothing distinctly about either the sender or receiver and do not create a linkability between the sender or receiver across payments. Hence, the ReferenceID must be established off-chain and this protocol defines one such way to do so leveraging DiemID.
+Transactions with PaymentMetadata require a ReferenceID in order to submit a transaction to the chain. PaymentMetadata reveal nothing distinctly about either the sender or receiver and do not create a linkability between the sender or receiver across payments. Hence, the ReferenceID must be established off-chain and this protocol defines one such way to do so leveraging DiemID.
 
-A VASP intending to send a payment from one VASP to another when leveraging DiemIDs constructs a ReferenceIDCommand submits that to the receiver. If the receiver knows the recipient DiemID and can potentially accept payments, it returns a success. In the case it cannot, it returns an error indicating the reason.
+A VASP intending to send a payment to another using DiemIDs constructs a ReferenceIDCommand and transmits it to the receiver. If the receiver knows the recipient DiemID and can potentially accept payments, it returns a success. Otherwise, it returns an error indicating the reason.
 
 In the case that the amount to be sent would exceed the limit of the travel rule, the sending party should follow this exchange with a PaymentCommand using the same reference_id and specify the sending and receiving subaddresses as all 0.
 
