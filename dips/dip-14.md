@@ -1,7 +1,7 @@
 ---
 dip: 14
 title: Multi-Agent Transactions
-author: Emma Zhong(@emmazzz), Tim Zakian, Sam Blackshear
+authors: Emma Zhong(@emmazzz), Tim Zakian, Sam Blackshear
 Status: Draft
 type: Standard
 created: 04/05/2021
