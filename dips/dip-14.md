@@ -1,8 +1,8 @@
 ---
 dip: 14
 title: Multi-Agent Transactions
-authors: Emma Zhong(@emmazzz), Tim Zakian, Sam Blackshear
-Status: Draft
+authors: Emma Zhong, Tim Zakian, Sam Blackshear
+status: Draft
 type: Standard
 created: 04/05/2021
 ---
@@ -138,6 +138,7 @@ pub enum RawTransactionWithData {
 
 Previously each transaction can only have one signer, which is the sender of the transaction. In the multi-agent scheme, with the ability to have multiple signers, the transaction can potentially have multiple authenticators from different accounts and of different schemes. An `AccountAuthenticator` serves as the authenticator for one account. And a `TransactionAuthenticator` can contain multiple `AccountAuthenticator`s, as shown in the next subsection.
 
+Notice that `AccountAuthenticator` has a multi-signature variant `MultiEd25519`. `MultiEd25519` is a signature scheme an account uses to generate signatures. This is different from multi-agent, which is a new type of transaction.
 
 ```
 pub enum AccountAuthenticator {
@@ -159,6 +160,8 @@ pub enum AccountAuthenticator {
 ### Add New Variants to `TransactionAuthenticator`
 
 We have added two new variants to `TransactionAuthenticator` to differentiate single-agent and multi-agent transaction scheme. In the single-agent scheme, sender is the only signer and sender’s signature is verified against the `RawTransaction`. While in the multi-agent scheme, the sender and all the secondary signers have to sign over `RawTransactionWithData::MultiAgent{ raw_txn, secondary_signer_addresses }`, to make sure that all parties agree to transact with each other. 
+
+`Ed25519` and `MultiEd25519` are signature schemes of a single account so we have moved them to a new enum `AccountAuthenticator`(see the previous section). They are kept in `TransactionAuthenticator` for backwards compatibility.
 
 
 ```
