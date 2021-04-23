@@ -3,7 +3,7 @@ dip: 10
 title: DiemID Spec
 author: Sunmi Lee (@sunmilee), David Wolinsky (@davidiw), Andrey Chursin(@andll), Kevin Hurley (@kphfb)
 status: Draft
-type: Standard
+type: Informational
 created: 2020-11-03
 updated: 2021-04-14
 issue: https://github.com/diem/dip/issues/156
@@ -49,11 +49,11 @@ Example: `alice@avasp`
 
 * `user_identifier` is a reusable identifier that represents either the source or destination end-user of a payment transaction. It is unique to per user at VASP level. Specification:
   * Case insensitive
-  * Valid regular expression: `[a-zA-Z0-9]+`
+  * Valid regular expression: `^[a-zA-Z0-9][a-zA-Z0-9.]*$`
   * Maximum length: 64 characters
 * `vasp_domain_identifier` is a unique string that is mapped to a VASP. Specification:
   * Case insensitive
-  * Valid regular expression: `[a-zA-Z0-9]+`
+  * Valid regular expression: `^[a-zA-Z0-9][a-zA-Z0-9.]*$`
   * Maximum length: 63 characters (64 including `@`)
 
 
@@ -136,16 +136,16 @@ The format of the command is:
 |-------	    |------	     |-----------	|-------------	           |
 | _ObjectType   | str        | Y | Fixed value: `CommandRequestObject`|
 | command_type  | str        | Y | Fixed value: `ReferenceIDCommand`|
-| command       | Command object | Y | The Command to sequence. |
+| command       | Command object | Y | The Command to request. In this DIP, refers to ReferenceIDCommandObject |
 | cid           | str         | Y            | A unique identifier for the Command. Should be a UUID according to [RFC4122](https://tools.ietf.org/html/rfc4122) with "-"'s included. |
 
-**CommandObject:**
+**ReferenceIDCommandObject:**
 
 | Field 	    | Type 	     | Required? 	| Description 	           |
 |-------	    |------	     |-----------	|-------------	           |
 | _ObjectType   | str    | Y | Fixed value: `ReferenceIDCommand`|
 | sender        | str          | Y            | Sender's full DiemID |
-| sender_address| str          | Y            | Sender's onchain [account identifier](https://github.com/diem/dip/blob/main/dips/dip-5.md) with subaddress set to `None` or `00000000` |
+| sender_address| str          | Y            | Sender's onchain [account identifier](https://github.com/diem/dip/blob/main/dips/dip-5.md) with subaddress set to `None` or the zero subaddress|
 | receiver     | str          | Y            | Receiver's full DiemID |
 | reference_id  | str          | Y            | Reference ID of this transaction to be included into payment metadata |
 
@@ -163,7 +163,7 @@ The format of the success response is:
 }
 ```
 
-**CommandResultObject:**
+**ReferenceIDCommandResultObject:**
 
 | Field 	    | Type 	     | Required? 	| Description 	           |
 |-------	    |------	     |-----------	|-------------	           |
