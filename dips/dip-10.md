@@ -1,11 +1,11 @@
 ---
 dip: 10
 title: DiemID Spec
-author: Sunmi Lee (@sunmilee), David Wolinsky (@davidiw), Andrey Chursin(@andll), Kevin Hurley (@kphfb)
+authors: Sunmi Lee (@sunmilee), David Wolinsky (@davidiw), Andrey Chursin(@andll), Kevin Hurley (@kphfb)
 status: Draft
 type: Informational
-created: 2020-11-03
-updated: 2021-04-14
+created: 11/03/2020
+last_updated: 04/28/2021
 issue: https://github.com/diem/dip/issues/156
 ---
 
@@ -188,4 +188,4 @@ enum PaymentMetadata {
 type ReferenceId = [u8, 16];
 ```
 
-If the amount is at or above the travel rule limit, VASPs should trigger an off-chain protocol for KYC exchange. The same `reference_id` must be used to perform a TR as described in [DIP-1](https://github.com/diem/dip/blob/master/dips/dip-1.md).
+If the amount is at or above the travel rule limit, VASPs should trigger an off-chain protocol for KYC exchange. The same `reference_id` must be used to perform a travel rule exchange as described in [DIP-1](https://github.com/diem/dip/blob/master/dips/dip-1.md).
