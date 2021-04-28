@@ -17,7 +17,7 @@ This DIP describes DiemID, a human-readable identifier for user accounts, and a 
 
 # Motivation
 DiemID provides a convenient method for identifying users within a VASP. DiemID allows users to exchange human-readable identifiers as either the sender or the receiver of peer-to-peer payments, and plays the role of an email address for payments. The benefits of using a DiemID are:
-* Privacy: DiemID's do not appear on-chain. The standard includes an off-chain protocol between VASPs that forms a pre-flight agreement on a transaction reference ID. Hence, the use of DiemIDs does not require any potentially identifiable user information in on-chain transactions.
+* Privacy: DiemID's do not appear on-chain. The standard uses a pre-flight off-chain exchange between VASPs to agree on a reference ID. The sending VASP can then submit an on-chain transaction containing only this reference ID and without any potentially identifiable user information.
 * Persistent Identifiers: Currently there are no persistent user identifiers in the Diem ecosystem. DiemID establishes a persistent identifier from a user's perspective which are not used publicly on-chain.
 
 # End-to-End Experience
@@ -56,6 +56,7 @@ Example: `alice@avasp`
   * Valid regular expression: `^[a-zA-Z0-9][a-zA-Z0-9.]*$`
   * Maximum length: 63 characters (64 including `@`)
 
+We are starting with a small character set to keep it compatible with most naming schemes, but may add on to the set in the future. 
 
 # On-chain data
 ## DiemID Domain
