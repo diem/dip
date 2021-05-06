@@ -30,7 +30,7 @@ The two `TransactionPayload` variants relevant to this DIP are `ScriptFunction` 
 
 ## Script signature requirements
 
-Both script functions and the single function in a transaction script bytecode file have the following restrictions. For a function` f<ability_params>(param_types): ret_types` :
+Both script functions and the single function in a transaction script bytecode file have the following requirements. For a function` f<ability_params>(param_types): ret_types`:
 
 * The `ret_types` list is empty (i.e., the function does not return a value)
 * The `param_types` list begins with one or more `signer` types
