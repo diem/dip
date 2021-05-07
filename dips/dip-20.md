@@ -2,7 +2,7 @@
 dip: 20
 title: Diem On-Chain Currency Management
 authors: Tim Zakian, Sam Blackshear, Dahlia Malkhi
-status: Last Call
+status: Final
 type: Informational
 created: 08/28/2020
 ---
@@ -189,7 +189,7 @@ that the smallest denomination coin in common usage off-chain is at the
 time of registration. For example, for XUS the smallest off-chain
 denomination coin in common usage is one cent (1/100th of an XUS dollar),
 so the `fractional_part` for XUS would be
-100. If you wanted to translate from an on-chain value `v` to a number that
+100. If you wanted to translate from an on-chain value to a number that
 could be represented in XUS's off-chain denominations, you would
 divide by 1,000,000 (XUS's `scaling_factor`) and then display the value
 showing the fractional value to the hundredths place.
