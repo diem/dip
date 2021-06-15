@@ -54,3 +54,45 @@ Example: `alice@avasp`
 * `vasp_domain_identifier` is a unique string that is mapped to a VASP defined in [DIP-182](https://github.com/diem/dip/blob/main/dips/dip-182.md)
 
 We are starting with a small character set to keep it compatible with most naming schemes, but may add on to the set in the future. 
+
+# On-chain Domain Resolution
+Given a receiver's DiemID, `bob@bvasp`, the sender VASP uses its `vasp_domain_identifier` (`bvasp`) to look up the receiving VASP's on-chain address using the on-chain domain resolution process defined in [DIP-182](https://github.com/diem/dip/blob/main/dips/dip-182.md).
+
+Sender VASP may build an application to listen for domain events to construct a mapping of DiemID domains to VASP on-chain addresses to lookup onchain addresses given a DiemID domain.
+
+
+# ReferenceID Exchange
+Once the sender VASP gets the receiving VASP's address using on-chain domain lookup, the sender VASP initiates a reference ID exchange as defined in [DIP-183](https://github.com/diem/dip/blob/main/dips/dip-183.md)
+in order settle on a unique reference ID and submit the transaction on-chain. 
+
+The format of the command is:
+
+```
+{
+   "_ObjectType": "CommandRequestObject",
+    "command_type": "SenderInitiatedReferenceID",
+    "command": {
+	    "_ObjectType": "ReferenceIDCommand",
+	    "sender": "alice@avasp",
+	    "sender_address": "dm1pptdxvfjck4jyw3rkfnm2mnd2t5qqqqqqqqqqqqq305frg",
+	    "receiver": "bob@bvasp",
+	    "reference_id": "5b8403c9-86f5-3fe0-7230-1fe950d030cb", 
+    },
+    "cid": "12ce83f6-6d18-0d6e-08b6-c00fdbbf085a",
+}
+```
+
+The format of the success response is:
+```
+{
+   "_ObjectType": "CommandResponseObject",
+    "status": "success",
+    "result": {
+	    "_ObjectType": "SenderInitiatedReferenceIDResponse",
+	    "receiver_address": "dm1p7ujcndcl7nudzwt8fglhx6wxn08kgs5tm6mz4us2vfufk",
+    },
+    "cid": "12ce83f6-6d18-0d6e-08b6-c00fdbbf085a",
+}
+```
+
+Once the reference ID exchange is done and two VASPs have settled on a reference ID, the sender VASP uses that reference ID to create a p2p transaction with [PaymentMetadata](https://github.com/diem/dip/blob/main/dips/dip-183.md#on-chain-transaction-settlement) and submits the transaction on-chain. 
