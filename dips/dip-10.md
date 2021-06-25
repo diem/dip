@@ -72,7 +72,7 @@ The format of the command is:
    "_ObjectType": "CommandRequestObject",
     "command_type": "SenderInitiatedReferenceIDExchange",
     "command": {
-	    "_ObjectType": "ReferenceIDCommand",
+	    "_ObjectType": "SenderInitiatedReferenceIDExchange",
 	    "sender": "alice@avasp",
 	    "sender_address": "dm1pptdxvfjck4jyw3rkfnm2mnd2t5qqqqqqqqqqqqq305frg",
 	    "receiver": "bob@bvasp",
