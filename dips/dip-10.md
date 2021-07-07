@@ -3,7 +3,7 @@ dip: 10
 title: DiemID
 authors: Sunmi Lee (@sunmilee), David Wolinsky (@davidiw), Andrey Chursin(@andll), Kevin Hurley (@kphfb)
 status: Draft
-type: Informational
+type: Standard
 created: 11/03/2020
 last_updated: 06/15/2021
 issue: https://github.com/diem/dip/issues/156
