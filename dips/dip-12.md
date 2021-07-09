@@ -3,7 +3,7 @@ dip: 12
 title: Blockchain Coin Trade Flow
 authors: Lu Zhang (@LuZhang-Lou)
 dip manager: David Wolinsky (@davidiw)
-status: Draft
+status: Last Call
 type: Informational
 created: 3/5/2021
 ---
