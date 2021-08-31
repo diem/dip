@@ -5,6 +5,7 @@ authors: diem
 status: final
 type: Informational
 created: 2/26/20
+updated: 8/24/21
 ---
 
 # DIP-0 - Diem Improvement Proposals
@@ -20,8 +21,7 @@ The Diem project operates under the governance of the Diem Association. Technica
 
 The Lead Maintainer will update the TSC periodically about the progress of DIPs. While technical decisions are supervised by the TSC, day-to-day technical decisions are made using a framework inspired by standards bodies (such as the W3C and IETF) and open source projects (such as Python, the Linux Foundation, and Apache) to coordinate the work of open source contributors. This process is based on the family of approaches derived from Python’s PEP process. The process is supported by a team of Maintainers who work to build consensus on technical decisions. When specifically asked, the Lead Maintainer will bring a DIP to explicit TSC approval and for changing the status of a DIP from “Last Call” to “Accepted” (and eventually, to “Final”).
 
-The Lead Maintainer is responsible for assigning a Maintainer as DIP Manager for each DIP, assigning a DIP to a Working Group when relevant, and providing the TSC updates on DIPs.
-The DIP Managers are given broad latitude to make decisions on DIP status evolution and outcome, and thus are expected to use best efforts to find consensus among the relevant Diem community members about decisions. While broad latitude granted to DIP Managers is the norm, the DIP process ultimately operates under the authority of the TSC and the Association Council. This authority should generally be applied through constructive conversations with the DIP Managers to engage in a disagree-and-commit decision. The TSC should serve as a resource to community members who feel that a DIP Manager is unfair in their leadership of the DIP process and work to ensure constructive conversation.
+The Lead Maintainer is responsible for assigning a Maintainer as DIP Manager for each DIP, assigning a DIP to a Working Group when relevant, and providing the TSC updates on DIPs.  The DIP Managers are given broad latitude to make decisions on DIP status evolution and outcome, and thus are expected to use best efforts to find consensus among the relevant Diem community members about decisions. While broad latitude granted to DIP Managers is the norm, the DIP process ultimately operates under the authority of the TSC and the Association Council. This authority should generally be applied through constructive conversations with the DIP Managers to engage in a disagree-and-commit decision. The TSC should serve as a resource to community members who feel that a DIP Manager is unfair in their leadership of the DIP process and work to ensure constructive conversation.
 
 ## DIP types
 
@@ -39,11 +39,11 @@ It is highly recommended that a single DIP should contain a single key proposal 
 
 The formal DIP process will typically (and advisably) begin after the champion of the proposal has already discussed and socialized it with the Diem community (see below for what goes into a DIP). It is comprised of the following steps:
 
-  * **Idea** – Authors will socialize their idea with the developer community and Maintainers, possibly by writing a GitHub Issue and getting feedback. If possible (and relevant), authors should include in discussions an implementation to support their proposal.
+  * **Idea** – Authors will socialize their idea with the developer community and Maintainers, by writing a GitHub Issue and getting feedback. If possible (and relevant), authors should include in discussions an implementation to support their proposal.
 
-    Once the discussion reaches a mature point, the formal DIP process starts with a pull-request to the diem/dip folder. The status field of the document should be “Draft” at this point. A DIP Manager will review/comment/approve/deny the pull-request.
+    Once the discussion reaches a mature point, the formal DIP process starts with a pull-request to the diem/dip folder. The status field of the document should be “Draft” at this point. DIP numbers are the same as the issue number from the initial proposal as assigned above. A DIP Manager will review/comment/approve/deny the pull-request.
 
-    * ✅ Draft – If agreeable, DIP Manager will assign the DIP a number (generally the issue or PR number related to the DIP, and ask to rename or move to a folder/file with that number) and approve the pull request. The DIP Manager will not unreasonably deny a DIP.
+    * ✅ Draft – If agreeable, the DIP Manager approve the pull request. The DIP Manager will not unreasonably deny a DIP
     * 🛑 Draft – Reasons for denying Draft status include misalignment with Diem mission or Association policy, being too unfocused, too broad, duplication of effort, being technically unjustified, not providing proper motivation, or not addressing backwards compatibility. The Authors can work to refine and resubmit their DIP Idea for review again.
 
   * **Draft** – After the draft is merged, additional changes may be submitted via pull requests. When a DIP appears to be completed and stable, Authors may ask to change the status to Last Call.
@@ -67,6 +67,8 @@ The formal DIP process will typically (and advisably) begin after the champion o
 
 A DIP may refer to related/dependent DIPs. Every DIP will be assigned a status tag as it evolves. At every stage there can be multiple revisions/reviews until the next stage.
 
+As an example, [DIP-169](https://github.com/diem/dip/blob/main/dips/dip-169.md) began as an [issue][https://github.com/diem/dip/issues/169] with a [history of changes](https://github.com/diem/dip/commits/main/dips/dip-169.md), before entering **Last Call** and **Accepted**.
+
 ## DIP Status
 
 Each DIP shall maintain its current status in a Status: field in a DIP document header (see below discussion of header fields). Statuses include:
@@ -88,7 +90,7 @@ A change in the author of a DIP can be made at the discretion of the DIP Manager
 
 ## DIP Discussions
 
-Discussions about DIPs in progress are best held over pull-requests and reviews in diem/dip. They may optionally use media channels such as the Diem Slack channel or a Discourse thread. In this case, an Author may include a reference to the discussion thread (see below the “discussions-to” header field in the DIP document).
+Discussions about DIPs in progress are best held over pull-requests and the issue proposing the DIP. They may optionally use media channels such as the Diem Slack channel or a Discourse thread. In this case, an Author may include a reference to the discussion thread (see below the “discussions-to” header field in the DIP document).
 
 ## Should this be a PR, DIP, or Issue?
 
@@ -105,25 +107,24 @@ DIPs shall be hosted on GitHub in a dedicated repository: *diem/dip*.
 
   * Each DIP file should include the following information:
 Preamble - [RFC 822](https://tools.ietf.org/html/rfc822) style headers containing metadata about the DIP, including the DIP number, a short descriptive title (limited to a maximum of 44 characters), and the author details.
-  * Simple Summary - Provide a simplified and layman-accessible explanation of the DIP.
-  * Abstract - a short (~200 word) description of the technical issue being addressed.
-  * Motivation (*optional) - The motivation is critical for DIPs that want to change the Diem protocol. It should clearly explain why the existing protocol specification is inadequate to address the problem that the DIP solves. DIP submissions without sufficient motivation may be rejected outright.
+  * Summary - a short (~200 word) description of the DIP.
+  * Motivation (\*optional) - The motivation is critical for DIPs that want to change the Diem protocol. It should clearly explain why the existing protocol specification is inadequate to address the problem that the DIP solves. DIP submissions without sufficient motivation may be rejected outright.
   * Specification - The technical specification should describe the syntax and semantics of any new feature. The specification should be detailed enough to allow competing, interoperable implementations of the Diem protocol or any other Diem platforms that may emerge.
   * Rationale - The rationale fleshes out the specification by describing what motivated the design and why particular design decisions were made. It should describe alternate designs that were considered and related work, e.g., how the feature is supported in other languages. The rationale may also provide evidence of consensus within the community, and should discuss important objections or concerns raised during discussion.
-  * Backwards Compatibility - All DIPs that introduce backwards incompatibilities must include a section describing these incompatibilities and their severity. The DIP must explain how the author proposes to deal with these incompatibilities. DIP submissions without a sufficient backwards compatibility treatise may be rejected outright.
-  * Test Cases - Test cases for an implementation are mandatory for DIPs that are affecting consensus changes. Other DIPs can choose to include links to test cases if applicable.
-  * Implementations - The implementations must be completed before any DIP is given status “Final,” but it need not be completed before the DIP is merged as draft. While there is merit to the approach of reaching consensus on the specification and rationale before writing code, the principle of “rough consensus and running code” is still useful when it comes to resolving many discussions of API details.
+  * Backwards Compatibility (\*optional) - All DIPs that introduce backwards incompatibilities must include a section describing these incompatibilities and their severity. The DIP must explain how the author proposes to deal with these incompatibilities. DIP submissions without a sufficient backwards compatibility treatise may be rejected outright.
+  * Test Cases(\*optional) - Test cases for an implementation are mandatory for DIPs that involve interoperability such as networking, consensus, off-chain protocols, etc. Other DIPs can choose to include links to test cases if applicable.
+  * Implementations - The implementations must be completed before any DIP is given status “Final,” but it need not be completed before the DIP is merged as draft. While there is merit to the approach of reaching consensus on the specification and rationale before writing code, the principle of “rough consensus and running code” is still useful when it comes to resolving many discussions of API details. This should be a link to the implementation and not an implementation defined within the DIP itself.
   * Copyright Waiver - All DIPs must be in the public domain. See the bottom of this DIP for an example copyright waiver.
 
 
 ## DIP Header Preamble
 
-Each DIP must begin with an [RFC 822](https://www.ietf.org/rfc/rfc822.txt) style header preamble, preceded and followed by three hyphens (---). This header is also termed ["front matter" by Jekyll](https://jekyllrb.com/docs/front-matter/). The headers must appear in the following order. Headers marked with "*" are optional and are described below. All other headers are required.
+Each DIP must begin with an [RFC 822](https://www.ietf.org/rfc/rfc822.txt) style header preamble, preceded and followed by three hyphens (---). This header is also termed ["front matter" by Jekyll](https://jekyllrb.com/docs/front-matter/). The headers must appear in the following order. Headers marked with "\*" are optional and are described below. All other headers are required.
 
-`DIP:` (this is determined by the DIP Manager).
+`DIP:` DIP number is dictated by the GitHub issue.
 `title`:
 `author:` a list of the author's or authors' name(s) and/or username(s), or name(s) and email(s). Details are below.
-`* discussions-to:` a url pointing to the official discussion thread
+`issue:` a hyperlink to the GitHub issue.
 `Status:` <Draft | Last Call | Accepted | Final | Rejected>
 `* last-call-end-date:`
 `type:` <Standards Track (Core, Networking, Interface, Application) | Informational | Meta>
@@ -152,13 +153,9 @@ Random J. User
 
 if the email address is not given.
 
-### `discussions-to` header
+### `issue' header
 
-While a DIP is a draft, a `discussions-to` header will indicate the URL where the DIP is being discussed. As mentioned above, the Diem Community Discourse is the preferred location for DIP discussions.
-
-No `discussions-to` header is necessary if the DIP is being discussed privately with the author.
-
-As a single exception, `discussions-to` cannot point to GitHub pull requests.
+The issue will indicate the URL for the GitHub issue where the DIP is being discussed.
 
 ### `type` header
 
@@ -174,7 +171,7 @@ The `created` header records the date that the DIP was assigned a number. Both h
 ### `updated` header
 The `updated` header records the date(s) when the DIP was updated with "substantial" changes. This header is only valid for DIPs of Draft and Active status.
 
-`requires` header
+### `requires` header
 DIPs may have a `requires` header, indicating the DIP numbers that this DIP depends on.
 
 ### `superseded-by` and `replaces` headers
@@ -183,11 +180,22 @@ DIPs may also have a `superseded-by` header indicating that a DIP has been rende
 ## Example
 dip: 0
 title: Introducing Diem Improvement Proposals
-author: @diemdev
+author: Diem Dev (@diemdev)
+issue: https://github.com/diem/dip/issues/0
 discussions-to: https://community.diem.com/t/introducing-diem-improvements-proposals
 Status: Draft
 type: Informational
 created: 2019-06-29
+
+## Copyright Notice
+
+At the bottom of each DIP, include the following:
+
+```
+# Copyright Notice
+
+This documentation is made available under the Creative Commons Attribution 4.0 International (CC BY 4.0) license (available at https://creativecommons.org/licenses/by/4.0/).
+```
 
 ## Auxiliary Files
 DIPs may include auxiliary files such as diagrams. Such files must be named DIP-XXXX-Y.ext, where “XXXX” is the DIP number, “Y” is a serial number (starting at 1), and “ext” is replaced by the actual file extension (e.g. “png”).
